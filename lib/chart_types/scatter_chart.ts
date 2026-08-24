@@ -6,6 +6,7 @@ import { DatapointNavNodeType, NavNode, NavNodeOptionsType, ScatterPointNavNodeO
 import { Datapoint, PlaneModel } from '@fizz/paramodel';
 import { DataSymbols } from '../view/symbol';
 import { LegendItem } from '../view/legend';
+import { CardinalDirection } from '../common_exports';
 
 
 export class ScatterChartInfo extends PointChartInfo {
@@ -161,7 +162,7 @@ export class ScatterChartInfo extends PointChartInfo {
     super.navRunDidEnd(cursor, quiet)
   }
 
-  legend(): LegendItem[] {
+  legend(): Array<{ position: CardinalDirection, items: LegendItem[] }> {
     const model = this._paraState.model!;
     const types = new DataSymbols().types;
     if (model.multi || !this.clustering) {
@@ -169,16 +170,17 @@ export class ScatterChartInfo extends PointChartInfo {
       if (this._paraState.config.legend.itemOrder === 'alphabetical') {
         seriesKeys.sort();
       }
-      return seriesKeys.map((key, i) => ({
+      const items = seriesKeys.map((key, i) => ({
         label: model.atKey(key)!.getLabel(),
         seriesKey: key,
         colorIndex: this._paraState.seriesProperties!.properties(key).colorIndex,
         symbol: types[i],
         symbolOptions: { lighten: true }
       }));
+      return [{ position: "north", items: items }];
     }
     else {
-      return this.clustering.map((c, i) => ({
+      const items = this.clustering.map((c, i) => ({
         label: `cluster ${i + 1} (${c.regionDesc})`,
         seriesKey: model.seriesKeys[0],
         colorIndex: i,
@@ -186,6 +188,7 @@ export class ScatterChartInfo extends PointChartInfo {
         symbolOptions: { lighten: true },
         clusterIndex: i
       }))
+      return [{ position: "north", items: items }];
     }
   }
 }

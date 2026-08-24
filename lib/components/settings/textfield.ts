@@ -46,7 +46,7 @@ export class TextfieldSettingControl extends SettingControl<'textfield'> {
             const value = isNumber ? parseFloat(input.value) : input.value;
             if (this._validateInput(value, input)) {
               this._value = value;
-              this._updateSetting(this.info.key, value);
+              this._updateSetting(this.info.key, value, this.info.instanceId);
             } else {
               input.value = this._value!.toString();
             }

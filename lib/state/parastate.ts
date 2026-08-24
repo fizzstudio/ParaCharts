@@ -65,7 +65,7 @@ import { firstDataset, type Manifest } from '../loader/common';
 import { ClusterShellView } from '../view/layers';
 import { computeLabels } from '../common/axisinfo';
 import { numberToScaledNumberRounded } from '@fizz/number-scaling-rounding';
-import { LegendItem } from '../view/legend';
+import { Legend, LegendItem } from '../view/legend';
 import { type BubbleChartInfo } from '../chart_types/bubble_chart';
 import { Threshold } from '../view/layers/annotation/threshold';
 
@@ -265,12 +265,13 @@ export class ParaState extends BaseState {
   protected _seriesAnalyzerConstructor?: SeriesAnalyzerConstructor;
   protected _pairAnalyzerConstructor?: PairAnalyzerConstructor;
   protected _annotID: number = 0;
+  protected _legendID: number = 0;
   protected log: Logger = getLogger("ParaState");
   protected _chartInfo!: BaseChartInfo;
   protected _seriesAnalyses: Record<string, SeriesAnalysis | null> = {};
   protected _comboChartInfo: LineChartInfo | null = null;
   protected _currentDataset = 0;
-
+  _legends: Legend[] = [];
   public idList: Record<string, boolean> = {};
 
   /** Runtime contrast warnings from the last ColorPrefManager resolution. Empty when all colors pass. */
@@ -421,6 +422,14 @@ export class ParaState extends BaseState {
     return this._annotID++;
   }
 
+  nextLegendID(): number {
+    return this._legendID++;
+  }
+
+  resetLegendID(): void {
+    this._legendID = 0;
+  }
+
   get index(): number {
     return this._globalState.paraStates.indexOf(this);
   }
@@ -528,42 +537,120 @@ export class ParaState extends BaseState {
   //   return patches;
   // }
 
-  updateConfig(updater: (draft: Config) => void, ignoreObservers = false) {
-    const [newConfig, patches, inversePatches] = produceWithPatches(this.config, updater);
-    this.config = newConfig;
-    const filtered = patches.filter(p => synchronizedSettings.includes(p.path.join('.')));
-    const counterpart = this._globalState.paraStates[1 - this.index];
-    if (counterpart) {
-      counterpart.config = applyPatches(counterpart.config, filtered);
+  updateConfig(updater: (draft: Config) => void, ignoreObservers = false, instanceId?: string) {
+    if (!instanceId) {
+      const [newConfig, patches, inversePatches] = produceWithPatches(this.config, updater);
+      this.config = newConfig;
+      const filtered = patches.filter(p => synchronizedSettings.includes(p.path.join('.')));
+      const counterpart = this._globalState.paraStates[1 - this.index];
+      if (counterpart) {
+        counterpart.config = applyPatches(counterpart.config, filtered);
+      }
+      if (ignoreObservers) {
+        return patches;
+      }
+      this._syncPatchesToManifest(patches);
+      const observed: { [path: string]: Partial<{ oldValue: ConfigSetting, newValue: ConfigSetting }> } = {};
+      for (const patch of patches) {
+        if (patch.op !== 'replace') {
+          this.log.error(`unexpected patch op '${patch.op}' (${patch.path})`);
+          continue;
+        }
+        observed[patch.path.join('.')] = { newValue: patch.value };
+      }
+      for (const patch of inversePatches) {
+        if (patch.op !== 'replace') {
+          this.log.error(`unexpected patch op '${patch.op}' (${patch.path})`);
+          continue;
+        }
+        observed[patch.path.join('.')].oldValue = patch.value;
+      }
+      for (const [path, values] of Object.entries(observed)) {
+        this._settingObservers[path]?.forEach(observer =>
+          observer(values.oldValue, values.newValue)
+        );
+        this.settingDidChange(path, values.oldValue, values.newValue);
+      }
+      return patches;
     }
+
+    // -------- instance-specific update flow --------
+    // Build a canonical list of all setting leaf paths
+    const allSettings = SettingsManager.getAllSettings(this.config);
+    const allPaths = Object.keys(allSettings);
+
+    // Build current instance override object by comparing per-path instance value vs canonical
+    const overrideBefore: any = {};
+    const setNested = (obj: any, path: string, value: any) => {
+      const segs = path.split('.');
+      let cur = obj;
+      for (let i = 0; i < segs.length - 1; i++) {
+        const s = segs[i];
+        if (cur[s] === undefined) cur[s] = {};
+        cur = cur[s];
+      }
+      cur[segs[segs.length - 1]] = value;
+    };
+    for (const path of allPaths) {
+      const instVal = SettingsManager.getForInstance(path, this.config, instanceId);
+      const canonVal = SettingsManager.get(path, this.config);
+      if (instVal !== canonVal) {
+        setNested(overrideBefore, path, instVal);
+      }
+    }
+
+    // Create mergedBefore (canonical + existing override) and produce patches by applying updater
+    const canonicalClone = SettingsManager.cloneSettings(this.config as Config) as any;
+    SettingsManager.applySettings(overrideBefore as Partial<any>, canonicalClone);
+    const [mergedAfter, patches, inversePatches] = produceWithPatches(canonicalClone as Config, updater);
+
+    // Derive new instance override object by comparing mergedAfter vs canonical
+    const overrideAfter: any = {};
+    // getAllSettings on mergedAfter to ensure we iterate same leaves
+    const mergedLeaves = SettingsManager.getAllSettings(mergedAfter as any);
+    for (const path of Object.keys(mergedLeaves)) {
+      const mergedVal = SettingsManager.get(path, mergedAfter as any);
+      const canonVal = SettingsManager.get(path, this.config);
+      if (mergedVal !== canonVal) {
+        setNested(overrideAfter, path, mergedVal);
+      }
+    }
+
+    // Persist instance overrides
+    SettingsManager.setInstanceOverrides(instanceId, overrideAfter);
+
+    // Notify observers using patches from the merged produce
     if (ignoreObservers) {
       return patches;
     }
+
+    // Sync to manifest (we still want the changed paths recorded)
     this._syncPatchesToManifest(patches);
-    const observed: { [path: string]: Partial<{ oldValue: ConfigSetting, newValue: ConfigSetting }> } = {};
+
+    const observedInst: { [path: string]: Partial<{ oldValue: ConfigSetting, newValue: ConfigSetting }> } = {};
     for (const patch of patches) {
       if (patch.op !== 'replace') {
         this.log.error(`unexpected patch op '${patch.op}' (${patch.path})`);
         continue;
       }
-      observed[patch.path.join('.')] = { newValue: patch.value };
+      observedInst[patch.path.join('.')] = { newValue: patch.value };
     }
     for (const patch of inversePatches) {
       if (patch.op !== 'replace') {
         this.log.error(`unexpected patch op '${patch.op}' (${patch.path})`);
         continue;
       }
-      observed[patch.path.join('.')].oldValue = patch.value;
+      observedInst[patch.path.join('.')].oldValue = patch.value;
     }
-    for (const [path, values] of Object.entries(observed)) {
+    for (const [path, values] of Object.entries(observedInst)) {
       this._settingObservers[path]?.forEach(observer =>
         observer(values.oldValue, values.newValue)
       );
       this.settingDidChange(path, values.oldValue, values.newValue);
     }
+
     return patches;
   }
-
   observeSetting(path: string, observer: (oldValue: ConfigSetting, newValue: ConfigSetting) => void) {
     if (!this._settingObservers[path]) {
       this._settingObservers[path] = [];

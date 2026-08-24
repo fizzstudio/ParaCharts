@@ -63,6 +63,7 @@ export abstract class PlanePlotView extends DataLayer {
     if ([`type.${this.paraview.paraState.type}.minYValue`, `type.${this.paraview.paraState.type}.maxYValue`, 'legend.isAlwaysDrawLegend',
       'legend.useDirectLegends', 'legend.itemOrder', 'legend.position'].includes(path)) {
       this.paraview.paraState.createChartInfo();
+      this.paraview.paraState.resetLegendID();
       this.paraview.paraState.chartInfo.setup().then(() => {
         this.paraview.createDocumentView();
         this.paraview.requestUpdate();

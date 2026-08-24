@@ -40,7 +40,7 @@ export class DropdownSettingControl extends SettingControl<'dropdown'> {
         selected=${this.values.indexOf(this._value)}
         @select=${(e: CustomEvent) => {
           const idx = (e.target as Dropdown).selectedIndex;
-          this._updateSetting(this.info.key, this.values[idx]);
+          this._updateSetting(this.info.key, this.values[idx], this.info.instanceId);
         }}
       ></fizz-dropdown>
     `;

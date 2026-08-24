@@ -32,7 +32,7 @@ export class CheckboxSettingControl extends SettingControl<'checkbox'> {
           .checked=${!!this._value}
           @change=${(e: Event) => {
             this._updateSetting(
-              this.info.key, (e.target as HTMLInputElement).checked)
+              this.info.key, (e.target as HTMLInputElement).checked), this.info.instanceId
           }}
         >
         <span>${this.label}</span>

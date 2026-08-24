@@ -30,13 +30,15 @@ export class LegendSettingsDialog extends SettingControlContainer {
 
     connectedCallback() {
         super.connectedCallback();
-        this._paraState.settingControls.insert('legend.isAlwaysDrawLegend');
-        this._paraState.settingControls.insert('legend.itemOrder');
-        this._paraState.settingControls.insert('legend.position');
         document.addEventListener('paranotice', (e: CustomEvent<any>) => {
-            if (e.detail.value?.key === 'manifestSet') {
-                if (['bar', 'column', 'line'].includes(this._paraState.type)) {
-                    this._paraState.settingControls.insert('legend.useDirectLegends');
+            if (e.detail.key === 'docView created') {
+                for (let legend of this._paraState._legends) {
+                    this._paraState.settingControls.insert('legend.isAlwaysDrawLegend', { instanceID: legend.id }, undefined, undefined, legend.id);
+                    this._paraState.settingControls.insert('legend.itemOrder', { instanceID: legend.id }, undefined, undefined, legend.id);
+                    this._paraState.settingControls.insert('legend.position', { instanceID: legend.id }, undefined, undefined, legend.id);
+                    if (['bar', 'column', 'line'].includes(this._paraState.type)) {
+                        this._paraState.settingControls.insert('legend.useDirectLegends', undefined, undefined, undefined, legend.id);
+                    }
                 }
             }
         });

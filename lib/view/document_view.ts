@@ -30,7 +30,7 @@ import { type ParaView } from '../paraview';
 import { CloseXView } from './close_x';
 import { BANA_MARGIN_PX, CSS_DPI, MM_PER_INCH, PAPER_INFO } from '../common/paper';
 
-export type Legends = Partial<{ [dir in CardinalDirection]: Legend }>;
+export type Legends = Partial<{ [dir in CardinalDirection]: Legend[] }>;
 
 /**
  * Root of the view hierarchy.
@@ -47,7 +47,7 @@ export class DocumentView extends Container(View) {
   protected _vertAxis?: VertAxis;
   protected _secondaryVertAxis?: VertAxis;
   protected _titleText!: string;
-  protected _legends: Legends = {};
+  protected _legends: Legends = { east: [], west: [], north: [], south: [] };
   protected _closeX: CloseXView;
 
   protected _paraState: ParaState;
@@ -151,10 +151,25 @@ export class DocumentView extends Container(View) {
     }
     this._positionTitles();
 
+    this.createLegends()
+    /*
     if (this._shouldAddLegend && this._paraState.config.legend.position === 'north' && this._paraState.type !== 'venn') {
       this.createLegend('north');
     }
 
+    // Create any west legend bc it affects the position of the vert axis
+    if (this._shouldAddLegend && this._paraState.config.legend.position === 'west' && this._paraState.type !== 'venn') {
+      this.createLegend('west');
+    }
+
+    if (this._shouldAddLegend && this._paraState.config.legend.position === 'south' && this._paraState.type !== 'venn') {
+      this.createLegend('south');
+    }
+
+    if (true) {
+      this.createLegend('east');
+    }
+*/
     // const horizAxisPos = this._paraState.settings.axis.horiz.position;
 
     const horizFacet = this.paraview.paraState.chartInfo.getFacetForOrientation('horiz');
@@ -175,21 +190,14 @@ export class DocumentView extends Container(View) {
       this._createSecondaryVertAxis(comboFacet, this.paraview.paraState.comboChartInfo as PlaneChartInfo, this._height);
     }
 
-    // Create any west legend bc it affects the position of the vert axis
-    if (this._shouldAddLegend && this._paraState.config.legend.position === 'west' && this._paraState.type !== 'venn') {
-      this.createLegend('west');
-    }
 
-    if (this._shouldAddLegend && this._paraState.config.legend.position === 'south' && this._paraState.type !== 'venn') {
-      this.createLegend('south');
-    }
     // Recreate the axes using the size info computed above
     if (this._paraState.config.axis.vert.isDrawAxis && vertFacet) {
       this._createVertAxis(vertFacet, this.paraview.paraState.chartInfo as PlaneChartInfo, this._height
         - (this._titleLabel?.paddedHeight || 0)
         - (this._subtitleLabel?.paddedHeight || 0)
-        - (this._legends.north?.paddedHeight || 0)
-        - (this._legends.south?.paddedHeight || 0)
+        - (this._legends.north?.map(l => l.paddedHeight).reduce((acc, curr) => acc + curr, 0) || 0)
+        - (this._legends.south?.map(l => l.paddedHeight).reduce((acc, curr) => acc + curr, 0) || 0)
         - (this._horizAxis?.height || 0)
       );
       this.append(this._vertAxis!);
@@ -204,16 +212,14 @@ export class DocumentView extends Container(View) {
       this._directLabelStrip.updateSize();
     }
 
-    if (this._shouldAddLegend && this._paraState.config.legend.position === 'east' && this._paraState.type !== 'venn') {
-      this.createLegend('east');
-    }
+
 
     if (this._paraState.config.axis.horiz.isDrawAxis && horizFacet) {
       this._createHorizAxis(horizFacet, this.paraview.paraState.chartInfo as PlaneChartInfo, this._width
         - (this._vertAxis?.width ?? 0)
         - (this._secondaryVertAxis?.width ?? 0)
         - (this._directLabelStrip?.width ?? 0)
-        - (this._legends.east?.width ?? this._legends.west?.width ?? 0));
+        - (this._legends.east?.map(l => l.width).reduce((acc, curr) => acc + curr, 0) ?? this._legends.west?.map(l => l.width).reduce((acc, curr) => acc + curr, 0) ?? 0));
       this.append(this._horizAxis!);
     }
 
@@ -221,8 +227,8 @@ export class DocumentView extends Container(View) {
       this._createSecondaryVertAxis(comboFacet, this.paraview.paraState.comboChartInfo as PlaneChartInfo, this._height
         - (this._titleLabel?.paddedHeight || 0)
         - (this._subtitleLabel?.paddedHeight || 0)
-        - (this._legends.north?.paddedHeight || 0)
-        - (this._legends.south?.paddedHeight || 0)
+        - (this._legends.north?.map(l => l.paddedHeight).reduce((acc, curr) => acc + curr, 0) || 0)
+        - (this._legends.south?.map(l => l.paddedHeight).reduce((acc, curr) => acc + curr, 0) || 0)
         - (this._horizAxis?.height || 0)
       );
       this.append(this._secondaryVertAxis!);
@@ -249,13 +255,13 @@ export class DocumentView extends Container(View) {
       - (this._vertAxis?.width ?? 0)
       - (this._secondaryVertAxis?.width ?? 0)
       - (this._directLabelStrip?.width ?? 0)
-      - (this._legends.east?.width ?? this._legends.west?.width ?? 0);
+      - (this._legends.east?.map(l => l.width).reduce((acc, curr) => acc + curr, 0) ?? this._legends.west?.map(l => l.width).reduce((acc, curr) => acc + curr, 0) ?? 0);
     const plotHeight = this._height
-      - (this._legends.north?.paddedHeight ?? 0)
+      - (this._legends.north?.map(l => l.paddedHeight).reduce((acc, curr) => acc + curr, 0) ?? 0)
       - (this._titleLabel?.paddedHeight ?? 0)
       - (this._subtitleLabel?.paddedHeight ?? 0)
       - (this._horizAxis?.height ?? 0)
-      - (this._legends.south?.paddedHeight ?? 0);
+      - (this._legends.south?.map(l => l.paddedHeight).reduce((acc, curr) => acc + curr, 0) ?? 0);
     this._chartLayers?.remove();
     this._chartLayers = new PlotLayerManager(this.paraview, plotWidth, plotHeight);
     this.append(this._chartLayers);
@@ -283,45 +289,77 @@ export class DocumentView extends Container(View) {
       this._vertAxis.addGridRules(this._chartLayers.width);
     }
     if (this._paraState.config.legend.useDirectLegends) {
-      if (this._legends.east) {
-        this._legends.east.makeDirect("east");
+      if (this._legends.east?.length) {
+        for (let legend of this._legends.east) {
+          legend.makeDirect("east");
+        }
       }
-      if (this._legends.west) {
-        this._legends.west.makeDirect("west");
+      if (this._legends.west?.length) {
+        for (let legend of this._legends.west) {
+          legend.makeDirect("west");
+        }
       }
-      if (this._legends.north) {
-        this._legends.north.makeDirect("north");
+      if (this._legends.north?.length) {
+        for (let legend of this._legends.north) {
+          legend.makeDirect("north");
+        }
       }
-      if (this._legends.south) {
-        this._legends.south.makeDirect("south");
+      if (this._legends.south?.length) {
+        for (let legend of this._legends.south) {
+          legend.makeDirect("south");
+        }
       }
     }
   }
 
   protected _positionLegends() {
-    if (this._legends.north) {
-      this._legends.north.top = this._subtitleLabel?.paddedBottom ?? this._titleLabel?.paddedBottom ?? this.top;
-      this._legends.north.centerX = this.centerX;
+    if (this._legends.north?.length) {
+      const firstLegend = this._legends.north[0]
+      firstLegend.top = this._subtitleLabel?.paddedBottom ?? this._titleLabel?.paddedBottom ?? this.top;
+      firstLegend.centerX = this.centerX;
+      for (let i = 1; i < this._legends.north?.length; i++) {
+        const l = this._legends.north[i];
+        l.top = this._legends.north[i - 1].paddedBottom;
+        l.centerX = this.centerX;
+      }
     }
-    if (this._legends.east) {
-      this._legends.east.right = this.right;
-      this._legends.east.top = this._subtitleLabel?.paddedBottom ?? this._titleLabel?.paddedBottom ?? this.top;
+    if (this._legends.east?.length) {
+      const firstLegend = this._legends.east[0]
+      firstLegend.right = this.right;
+      firstLegend.top = this._legends.north?.at(-1)?.paddedBottom ?? this._subtitleLabel?.paddedBottom ?? this._titleLabel?.paddedBottom ?? this.top;
+      for (let i = 1; i < this._legends.east?.length; i++) {
+        const l = this._legends.east[i];
+        l.right = this._legends.east[i - 1].paddedLeft;
+        l.top = this._subtitleLabel?.paddedBottom ?? this._titleLabel?.paddedBottom ?? this.top;
+      }
     }
-    if (this._legends.west) {
-      this._legends.west.left = this.left;
-      this._legends.west.top = this._subtitleLabel?.paddedBottom ?? this._titleLabel?.paddedBottom ?? this.top;
+    if (this._legends.west?.length) {
+      const firstLegend = this._legends.west[0]
+      firstLegend.left = this.left;
+      firstLegend.top = this._legends.north?.at(-1)?.paddedBottom ?? this._subtitleLabel?.paddedBottom ?? this._titleLabel?.paddedBottom ?? this.top;
+      for (let i = 1; i < this._legends.west?.length; i++) {
+        const l = this._legends.west[i];
+        l.left = this._legends.west[i - 1].paddedRight;
+        l.top = this._subtitleLabel?.paddedBottom ?? this._titleLabel?.paddedBottom ?? this.top;
+      }
     }
-    if (this._legends.south) {
-      this._legends.south.bottom = this.bottom;
-      this._legends.south.centerX = this.centerX;
+    if (this._legends.south?.length) {
+      const firstLegend = this._legends.south[0]
+      firstLegend.bottom = this.bottom;
+      firstLegend.centerX = this.centerX;
+      for (let i = 1; i < this._legends.south?.length; i++) {
+        const l = this._legends.south[i];
+        l.bottom = this._legends.south[i - 1].top;
+        l.centerX = this.centerX;
+      }
     }
   }
 
   protected _positionAxes() {
     if (this._vertAxis) {
-      this._vertAxis.left = this._legends.west?.paddedRight ?? this.left;
-      if (this._legends.north) {
-        this._vertAxis.paddedTop = this._legends.north.paddedBottom;
+      this._vertAxis.left = this._legends.west?.at(-1)?.paddedRight ?? this.left;
+      if (this._legends.north?.length) {
+        this._vertAxis.paddedTop = this._legends.north.at(-1)?.paddedBottom ?? 0;
       } else if (this._subtitleLabel && this._paraState.config.chart.title.position === 'top') {
         this._vertAxis.top = this._subtitleLabel!.paddedBottom;
       } else if (this._titleLabel && this._paraState.config.chart.title.position === 'top') {
@@ -331,9 +369,9 @@ export class DocumentView extends Container(View) {
       }
     }
     if (this._secondaryVertAxis) {
-      this._secondaryVertAxis.right = this._legends.east?.left ?? this.right;
-      if (this._legends.north) {
-        this._secondaryVertAxis.paddedTop = this._legends.north.paddedBottom;
+      this._secondaryVertAxis.right = this._legends.east?.at(-1)?.left ?? this.right;
+      if (this._legends.north?.length) {
+        this._secondaryVertAxis.paddedTop = this._legends.north.at(-1)?.paddedBottom ?? 0;
       } else if (this._subtitleLabel && this._paraState.config.chart.title.position === 'top') {
         this._secondaryVertAxis.top = this._subtitleLabel!.paddedBottom;
       } else if (this._titleLabel && this._paraState.config.chart.title.position === 'top') {
@@ -347,8 +385,8 @@ export class DocumentView extends Container(View) {
         this._horizAxis.bottom = this._titleLabel.paddedTop;
       } else if (this._subtitleLabel && this._paraState.config.chart.title.position === 'bottom') {
         this._horizAxis.bottom = this._subtitleLabel.paddedTop;
-      } else if (this._legends.south) {
-        this._horizAxis.bottom = this._legends.south.paddedTop;
+      } else if (this._legends.south?.length) {
+        this._horizAxis.bottom = this._legends.south.at(-1)?.paddedTop ?? this.bottom;
       } else {
         this._horizAxis.bottom = this.bottom;
       }
@@ -361,8 +399,8 @@ export class DocumentView extends Container(View) {
       this._chartLayers.left = this._vertAxis.right;
     } else if (this._horizAxis) {
       this._chartLayers.centerX = this._horizAxis?.centerX;
-    } else if (this._legends.west) {
-      this._chartLayers.left = this._legends.west.right;
+    } else if (this._legends.west?.length) {
+      this._chartLayers.left = this._legends.west.at(-1)?.right ?? 0;
     } else {
       this._chartLayers.left = 0;
     }
@@ -641,79 +679,92 @@ export class DocumentView extends Container(View) {
     update(this);
   }*/
 
-  createLegend(position: CardinalDirection) {
+  createLegends() {
     const margin = this._paraState.config.legend.margin;
-    if (position === 'east') {
-      const items = this.paraview.paraState.chartInfo.legend('east');
-      this._legends.east?.remove();
-      this._legends.east = new Legend(this.paraview, items,
-        {
-          orientation: 'vert',
-          rowGap: 10
+    this._legends.east?.forEach(l => l.remove())
+    this._legends.west?.forEach(l => l.remove())
+    this._legends.north?.forEach(l => l.remove())
+    this._legends.south?.forEach(l => l.remove())
+    for (let item of this.paraview.paraState.chartInfo.legend()) {
+      const position = item.position;
+      const items = item.items
+      if (position === 'east') {
+        const eastLegend = new Legend(this.paraview, items,
+          {
+            orientation: 'vert',
+            rowGap: 10,
+            position: 'east'
+          });
+        eastLegend.padding = {
+          top: 0,
+          right: 0,
+          bottom: 0,
+          left: margin,
+        };
+        this._legends.east?.push(eastLegend)
+        this.append(eastLegend);
+        this._paraState._legends.push(eastLegend)
+        // this._legends.east.updateSize();
+        // this._grid.setColGap(this._directLabelStrip ? 2 : 1, margin);
+      } else if (position === 'west') {
+        const westLegend = new Legend(this.paraview, items,
+          {
+            orientation: 'vert',
+            rowGap: 10,
+            position: 'west'
+          });
+        westLegend.padding = {
+          top: 0,
+          right: margin,
+          bottom: 0,
+          left: 0
+        };
+        this._legends.west?.push(westLegend)
+        this.append(westLegend);
+        this._paraState._legends.push(westLegend)
+        // this._grid.addColumnLeft();
+      } else if (position === 'south') {
+        const southLegend = new Legend(this.paraview, items, {
+          orientation: 'horiz',
+          wrapWidth: this._width,
+          rowGap: 10,
+          position: 'south'
         });
-      this._legends.east.padding = {
-        top: 0,
-        right: 0,
-        bottom: 0,
-        left: margin,
-      };
-      this.append(this._legends.east);
-      // this._legends.east.updateSize();
-      // this._grid.setColGap(this._directLabelStrip ? 2 : 1, margin);
-    } else if (position === 'west') {
-      const items = this.paraview.paraState.chartInfo.legend('west');
-      this._legends.west?.remove();
-      this._legends.west = new Legend(this.paraview, items,
-        {
-          orientation: 'vert',
-          rowGap: 10
+        southLegend.padding = {
+          top: margin / 2,
+          right: 0,
+          bottom: 0,
+          left: 0
+        };
+        this._legends.south?.push(southLegend)
+        this.append(southLegend);
+        this._paraState._legends.push(southLegend)
+      } else if (position === 'north') {
+        const northLegend = new Legend(this.paraview, items, {
+          orientation: 'horiz',
+          wrapWidth: this._width,
+          rowGap: 10,
+          position: 'north'
         });
-      this._legends.west.padding = {
-        top: 0,
-        right: margin,
-        bottom: 0,
-        left: 0
-      };
-      this.append(this._legends.west);
-      // this._grid.addColumnLeft();
-    } else if (position === 'south') {
-      const items = this.paraview.paraState.chartInfo.legend('south');
-      this._legends.south?.remove();
-      this._legends.south = new Legend(this.paraview, items, {
-        orientation: 'horiz',
-        wrapWidth: this._width,
-        rowGap: 10
-      });
-      this._legends.south.padding = {
-        top: margin / 2,
-        right: 0,
-        bottom: 0,
-        left: 0
-      };
-      this.append(this._legends.south);
-    } else if (position === 'north') {
-      const items = this.paraview.paraState.chartInfo.legend('north');
-      this._legends.north?.remove();
-      this._legends.north = new Legend(this.paraview, items, {
-        orientation: 'horiz',
-        wrapWidth: this._width,
-        rowGap: 10
-      });
-      this._legends.north.padding = {
-        top: 0,
-        right: 0,
-        bottom: margin,
-        left: 0
-      };
-      // this._grid.insertRow(this._paraState.settings.chart.title.isDrawTitle && this._paraState.title ? 1 : 0);
-      // this._grid.append(this._legends.north, {
-      //   x: 1,
-      //   y: 0,
-      //   width: 1,
-      //   colAlign: 'center',
-      //   //margin: {bottom: margin}
-      // });
-      this.append(this._legends.north);
+        northLegend.padding = {
+          top: 0,
+          right: 0,
+          bottom: margin,
+          left: 0
+        };
+        // this._grid.insertRow(this._paraState.settings.chart.title.isDrawTitle && this._paraState.title ? 1 : 0);
+        // this._grid.append(this._legends.north, {
+        //   x: 1,
+        //   y: 0,
+        //   width: 1,
+        //   colAlign: 'center',
+        //   //margin: {bottom: margin}
+        // });
+        this._legends.north?.push(northLegend)
+        this.append(northLegend);
+        this._paraState._legends.push(northLegend)
+      }
+
     }
   }
 
@@ -725,14 +776,14 @@ export class DocumentView extends Container(View) {
         ? this._horizAxis.renderHighlight('bg') : ''}
       ${this._vertAxis && this._paraState.isVerticalAxisHighlighted
         ? this._vertAxis.renderHighlight('bg') : ''}
-      ${this._legends.east && this._paraState.isEastLegendHighlighted
-        ? this._legends.east.renderHighlight('bg') : ''}
-      ${this._legends.west && this._paraState.isWestLegendHighlighted
-        ? this._legends.west.renderHighlight('bg') : ''}
-      ${this._legends.north && this._paraState.isNorthLegendHighlighted
-        ? this._legends.north.renderHighlight('bg') : ''}
-      ${this._legends.south && this._paraState.isSouthLegendHighlighted
-        ? this._legends.south.renderHighlight('bg') : ''}
+      ${this._legends.east?.length && this._paraState.isEastLegendHighlighted
+        ? this._legends.east.forEach(l => l.renderHighlight('bg')) : ''}
+      ${this._legends.west?.length && this._paraState.isWestLegendHighlighted
+        ? this._legends.west.forEach(l => l.renderHighlight('bg')) : ''}
+      ${this._legends.north?.length && this._paraState.isNorthLegendHighlighted
+        ? this._legends.north.forEach(l => l.renderHighlight('bg')) : ''}
+      ${this._legends.south?.length && this._paraState.isSouthLegendHighlighted
+        ? this._legends.south.forEach(l => l.renderHighlight('bg')) : ''}
       ${this._paraState.index === 0 ? this._closeX.render() : ''}
       ${super.content()}
       ${this._titleLabel && this._paraState.isTitleHighlighted
@@ -741,14 +792,14 @@ export class DocumentView extends Container(View) {
         ? this._horizAxis.renderHighlight('fg') : ''}
       ${this._vertAxis && this._paraState.isVerticalAxisHighlighted
         ? this._vertAxis.renderHighlight('fg') : ''}
-      ${this._legends.east && this._paraState.isEastLegendHighlighted
-        ? this._legends.east.renderHighlight('fg') : ''}
-      ${this._legends.west && this._paraState.isWestLegendHighlighted
-        ? this._legends.west.renderHighlight('fg') : ''}
-      ${this._legends.north && this._paraState.isNorthLegendHighlighted
-        ? this._legends.north.renderHighlight('fg') : ''}
-      ${this._legends.south && this._paraState.isSouthLegendHighlighted
-        ? this._legends.south.renderHighlight('fg') : ''}
+      ${this._legends.east?.length && this._paraState.isEastLegendHighlighted
+        ? this._legends.east.forEach(l => l.renderHighlight('fg')) : ''}
+      ${this._legends.west?.length && this._paraState.isWestLegendHighlighted
+        ? this._legends.west.forEach(l => l.renderHighlight('fg')) : ''}
+      ${this._legends.north?.length && this._paraState.isNorthLegendHighlighted
+        ? this._legends.north.forEach(l => l.renderHighlight('fg')) : ''}
+      ${this._legends.south?.length && this._paraState.isSouthLegendHighlighted
+        ? this._legends.south.forEach(l => l.renderHighlight('fg')) : ''}
     `;
   }
 

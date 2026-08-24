@@ -23,8 +23,7 @@ import { PointChartInfo } from './point_chart';
 import { datapointIdToCursor, type ParaState, queryMessages, describeSelections, describeAdjacentDatapoints, getDatapointMinMax } from '../state';
 import { NavNode } from '../view/layers';
 import { DataSymbols } from '../view/symbol';
-import { Interval } from '@fizz/chart-classifier-utils';
-import { ConfigSetting } from '../config/config_types';
+import { CardinalDirection, ConfigSetting } from '../config/config_types';
 import { AxisRangeInfo } from './plane_chart';
 import { LegendItem } from '../view/legend';
 
@@ -107,12 +106,12 @@ export class LineChartInfo extends PointChartInfo {
     const range = super._numericYAxisRange(facetKey);
     return this._paraState.comboModel
       ? {
-          interval: {
-            start: Math.min(0, range.interval.start),
-            end: range.interval.end
-          },
-          step: range.step
-        }
+        interval: {
+          start: Math.min(0, range.interval.start),
+          end: range.interval.end
+        },
+        step: range.step
+      }
       : range;
   }
 
@@ -132,7 +131,7 @@ export class LineChartInfo extends PointChartInfo {
     }
   }
 
-  legend(): LegendItem[] {
+  legend(): Array<{ position: CardinalDirection, items: LegendItem[] }> {
     const model = this.model!;
     const seriesKeys = enumerate([...model.seriesKeys]);
     const types = new DataSymbols().types;
@@ -158,13 +157,14 @@ export class LineChartInfo extends PointChartInfo {
         - endChord.find(point => point.seriesKey === a[0])!.facetValueAsNumber("y")!
       );
     }
-    return seriesKeys.map(key => ({
+    const items = seriesKeys.map(key => ({
       label: model.atKey(key[0])!.getLabel(),
       seriesKey: key[0],
       colorIndex: this.seriesProperties.properties(key[0]).colorIndex,
       symbol: types[key[1]],
       symbolOptions: { lighten: true }
     }));
+    return [{ position: this._paraState.config.legend.position, items: items }];
   }
 
   // TODO: localize this text output

@@ -36,7 +36,7 @@ export class RadioSettingControl extends SettingControl<'radio'> {
         layout=${opts!.layout ?? nothing}
         ?wrap=${opts!.wrap}
         @select=${(e: CustomEvent) => this._updateSetting(
-          this.info.key, e.detail)}
+          this.info.key, e.detail, this.info.instanceId)}
       >
         <span slot="legend">${this.label}</span>
       </fizz-radiogroup>

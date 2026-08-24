@@ -575,6 +575,7 @@ export class ParaView extends ParaComponent implements ViewContext {
       this.log.error('dataUpdated error:', error);
       this._jimReadyRejector();
     }
+     this.paraState.postNotice('docView created', null)
   }
 
   protected willUpdate(changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {

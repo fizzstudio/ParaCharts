@@ -56,7 +56,7 @@ export class SliderSettingControl extends SettingControl<'slider'> {
         ?showvalue=${opts?.showValue}
         ?compact=${opts?.compact}
         @update=${(e: CustomEvent) => this._updateSetting(
-          this.info.key, e.detail)}
+          this.info.key, e.detail, this.info.instanceId)}
       ></fizz-slider>
     `;
   }

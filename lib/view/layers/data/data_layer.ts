@@ -203,7 +203,7 @@ export abstract class DataLayer extends PlotLayer {
   protected abstract _createDatapoints(): void;
 
   protected _beginDatapointLayout() {
-    this.paraview.paraState.thresholds.push(new Threshold(this.paraview, 'horiz', 58476, 'Medium: 58476'))
+    //this.paraview.paraState.thresholds.push(new Threshold(this.paraview, 'horiz', 58476, 'Medium: 58476'))
     //this.paraview.paraState.thresholds.push(new Threshold(this.paraview, 'horiz', 55000, 'Low 55000'))
     //this.paraview.paraState.thresholds.push(new Threshold(this.paraview, 'horiz', 61000, 'High 61000'))
     //this.paraview.paraState.thresholds.push(new Threshold(this.paraview, 'horiz', 55000, '55000'))

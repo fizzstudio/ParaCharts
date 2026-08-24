@@ -34,6 +34,7 @@ export interface LegendOptions {
   orientation: LegendOrientation;
   wrapWidth: number;
   rowGap: number;
+  position?: CardinalDirection;
 }
 
 const intersperse = (...arrays: any[][]) => {
@@ -64,14 +65,20 @@ export class Legend extends Container(View) {
   }
 
   get config() {
-    return SettingsManager.getGroupLink<LegendConfig>('legend', this.paraview.paraState.config);
+    return SettingsManager.getGroupLinkForInstance<LegendConfig>('legend', this.paraview.paraState.config, this.id);
   }
+
+  get options() {
+    return this._options;
+  }
+  
 
   get classInfo() {
     return { legend: true };
   }
 
   protected _addedToParent() {
+    this.id = `legend-${this.paraview.paraState.nextLegendID()}`
     const symbols: View[] = [];
     const labels: View[] = [];
     const hasLegendBox = this.config.boxStyle.outline !== 'none' || this.config.boxStyle.fill !== 'none';

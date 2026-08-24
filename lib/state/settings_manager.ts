@@ -149,6 +149,11 @@ export class SettingsManager {
 
   static set(path: string, value: ConfigSetting | undefined, group: ConfigGroup, create = false) {
     const segs = path.split('.');
+    // If caller passed a single segment, treat it as a key relative to the provided group.
+    if (segs.length === 1) {
+      group[segs[0]] = value;
+      return;
+    }
     const ConfigGroup = SettingsManager.getGroupForSetting(path, group, create);
     ConfigGroup[segs.at(-1)!] = value;
   }
@@ -219,6 +224,139 @@ export class SettingsManager {
         SettingsManager.cloneProp(settings, using, key);
       }
     }
+  }
+
+  // new in SettingsManager (static members/methods)
+
+  private static _instanceOverrides: Record<string, Partial<Config>> = {};
+  private static _mergedCache: Map<string, ConfigGroup> = new Map();
+
+  /** Register or replace overrides for an instance. */
+  static setInstanceOverrides(instanceId: string, overrides: Partial<Config>) {
+    SettingsManager._instanceOverrides[instanceId] = overrides;
+    // invalidate cache entries for this instance
+    for (const key of SettingsManager._mergedCache.keys()) {
+      if (key.startsWith(instanceId + '::')) SettingsManager._mergedCache.delete(key);
+    }
+  }
+
+  /** Clear overrides for an instance (or all if no id). */
+  static clearInstanceOverrides(instanceId?: string) {
+    if (instanceId) {
+      delete SettingsManager._instanceOverrides[instanceId];
+      for (const key of SettingsManager._mergedCache.keys()) {
+        if (key.startsWith(instanceId + '::')) SettingsManager._mergedCache.delete(key);
+      }
+    } else {
+      SettingsManager._instanceOverrides = {};
+      SettingsManager._mergedCache.clear();
+    }
+  }
+
+  /** Internal: get override subtree for an instance and group path (e.g., 'legend'). */
+  private static _getOverrideGroup(path: string, instanceId?: string): Partial<ConfigGroup> | undefined {
+    if (!instanceId) return undefined;
+    const inst = SettingsManager._instanceOverrides[instanceId];
+    if (!inst) return undefined;
+    // path may be like 'legend' or 'axis.horiz'
+    const segs = path.split('.');
+    let cursor: any = inst;
+    for (const s of segs) {
+      if (cursor === undefined) return undefined;
+      cursor = cursor[s];
+    }
+    return cursor as Partial<ConfigGroup> | undefined;
+  }
+
+  /**
+   * Merge the canonical group at `path` with instance overrides (if any).
+   * Returns a cloned, merged group suitable for read-only use.
+   */
+  static mergeGroupForInstance<T extends ConfigGroup>(path: string, rootGroup: ConfigGroup, instanceId?: string): T {
+    const cacheKey = (instanceId ?? '__global__') + '::' + path;
+    const cached = SettingsManager._mergedCache.get(cacheKey);
+    if (cached) return cached as unknown as T;
+
+    // get canonical group (clone to avoid mutation)
+    const canonicalGroup = SettingsManager.getGroup(path, rootGroup, false);
+    const clone = SettingsManager.cloneSettings(canonicalGroup) as ConfigGroup;
+
+    // obtain override subtree for this path; if not present, try to build it
+    // from flat (dotted) override keys stored at the instance top-level.
+    let override = SettingsManager._getOverrideGroup(path, instanceId);
+
+    if (!override && instanceId) {
+      const instTop = SettingsManager._instanceOverrides[instanceId];
+      if (instTop) {
+        const prefix = path + '.';
+        const temp: any = {};
+
+        const setNested = (obj: any, dotted: string, val: any) => {
+          const segs = dotted.split('.');
+          let cur = obj;
+          for (let i = 0; i < segs.length - 1; i++) {
+            const s = segs[i];
+            if (cur[s] === undefined) cur[s] = {};
+            cur = cur[s];
+          }
+          cur[segs[segs.length - 1]] = val;
+        };
+
+        // If there's an exact top-level key equal to `path`, prefer it.
+        if (Object.prototype.hasOwnProperty.call(instTop, path)) {
+          const v = (instTop as any)[path];
+          if (v !== undefined) {
+            // If it's already an object, use it directly; otherwise wrap it.
+            override = (typeof v === 'object' && v !== null) ? v as Partial<ConfigGroup> : { [path]: v } as Partial<ConfigGroup>;
+          }
+        }
+
+        // Convert any flat keys that begin with `${path}.` into a nested object
+        for (const k of Object.keys(instTop)) {
+          if (k.startsWith(prefix)) {
+            const sub = k.slice(prefix.length);
+            setNested(temp, sub, (instTop as any)[k]);
+          }
+        }
+
+        // If we built any entries, use them as the override
+        if (Object.keys(temp).length > 0) {
+          override = temp as Partial<ConfigGroup>;
+        }
+      }
+    }
+
+    if (override) {
+      SettingsManager.applySettings(override as Partial<ConfigGroup>, clone);
+    }
+
+    SettingsManager._mergedCache.set(cacheKey, clone);
+    return clone as unknown as T;
+  }
+
+  /** Convenience: give a readonly link for components to consume. */
+  static getGroupLinkForInstance<T extends ConfigGroup>(path: string, rootGroup: ConfigGroup, instanceId?: string): DeepReadonly<T> {
+    return SettingsManager.mergeGroupForInstance<T>(path, rootGroup, instanceId) as DeepReadonly<T>;
+  }
+
+  /** Get single setting value with instance override applied. */
+  static getForInstance(path: string, rootGroup: ConfigGroup, instanceId?: string) {
+    if (!instanceId) return SettingsManager.get(path, rootGroup);
+    const group = SettingsManager.getGroupForSetting(path, rootGroup, false);
+    // try override value first
+    const segs = path.split('.');
+    const key = segs.at(-1)!;
+    const overrideGroup = SettingsManager._getOverrideGroup(segs.slice(0, -1).join('.'), instanceId);
+    if (overrideGroup && Object.prototype.hasOwnProperty.call(overrideGroup, key)) {
+      const val = (overrideGroup as any)[key];
+      if (typeof val === 'object') {
+        throw new Error('can only get settings, not groups');
+      } else if (val === undefined) {
+        throw new Error(`no such setting '${path}'`);
+      }
+      return val;
+    }
+    return SettingsManager.get(path, rootGroup);
   }
 
 }

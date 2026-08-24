@@ -23,11 +23,11 @@ import { interpolate } from '@fizz/templum';
 import { Interval } from '@fizz/chart-classifier-utils';
 import { PlaneChartInfo, computeAxisRange, AxisRangeInfo } from './plane_chart';
 import { datapointIdToCursor, type ParaState, queryMessages, describeAdjacentDatapoints, describeSelections, getDatapointMinMax } from '../state';
-import { ConfigSetting, DeepReadonly, TypeBarConfig } from '../config/config_types';
+import { CardinalDirection, ConfigSetting, DeepReadonly, TypeBarConfig } from '../config/config_types';
 import { type Label } from '../view/label';
 import { LegendItem } from '../view/legend';
 
-type BarClusterMap = {[key: string]: BarCluster};
+type BarClusterMap = { [key: string]: BarCluster };
 
 export interface BarStackItem {
   series: string;
@@ -38,7 +38,7 @@ export interface BarStackItem {
  * Contains clustered bar stack data.
  */
 export class BarCluster {
-  stacks: {[key: string]: BarStack} = {};
+  stacks: { [key: string]: BarStack } = {};
   readonly id: string;
   readonly labelId: string;
   protected log: Logger = getLogger("BarCluster");
@@ -56,7 +56,7 @@ export class BarCluster {
  * Contains data for bars contained in a stack.
  */
 export class BarStack {
-  bars: {[key: string]: BarStackItem} = {};
+  bars: { [key: string]: BarStackItem } = {};
 
   readonly id: string;
   readonly labelId: string;
@@ -101,7 +101,7 @@ export class BarChartInfo extends PlaneChartInfo {
     const yValues = Object.values(this._clusteredData).flatMap(c =>
       Object.values(c.stacks).map(s =>
         Object.values(s.bars).map(item => item.value.value).reduce((a, b) => a + b, 0)
-//        + Object.values(s.bars).length*this.settings.stackInsideGap
+        //        + Object.values(s.bars).length*this.settings.stackInsideGap
       ));
     //const idxMax = yValues.indexOf(Math.max(...yValues));
     //const numBars = Object.values(Object.values(Object.values(this._clusteredData)[0].stacks)[0].bars).length;
@@ -123,7 +123,7 @@ export class BarChartInfo extends PlaneChartInfo {
       this._stacksPerCluster = 1;
     } else if (this.config.stacking === 'none') {
       const seriesPerStack = 1;
-      this._stacksPerCluster = Math.ceil(numSeries/seriesPerStack);
+      this._stacksPerCluster = Math.ceil(numSeries / seriesPerStack);
     } else {
       this._stacksPerCluster = this._normalizeStackCountsInput().split(/\s/).length;
     }
@@ -164,7 +164,7 @@ export class BarChartInfo extends PlaneChartInfo {
       const yValues = Object.values(this._clusteredData).flatMap(c =>
         Object.values(c.stacks).map(s =>
           Object.values(s.bars).map(item => item.value.value).reduce((a, b) => a + b, 0)
-      ));
+        ));
       return [...yValues.map(ct => ct.toString())];
     } else {
       throw new Error("facet key must be 'x' or 'y'");
@@ -178,10 +178,10 @@ export class BarChartInfo extends PlaneChartInfo {
       const yValues = Object.values(this._clusteredData).flatMap(c =>
         Object.values(c.stacks).map(s =>
           Object.values(s.bars).map(item => item.value.value).reduce((a, b) => a + b, 0)
-      ));
+        ));
       const minY = Math.min(0, ...yValues);
       const maxY = Math.max(...yValues);
-      this._yExtremes = {start: minY, end: maxY};
+      this._yExtremes = { start: minY, end: maxY };
       return computeAxisRange(minY, maxY);
     } else {
       throw new Error("facet key must be 'x' or 'y'");
@@ -319,7 +319,7 @@ export class BarChartInfo extends PlaneChartInfo {
     this._createSequenceNavNodes();
   }
 
-  legend(): LegendItem[] {
+  legend(): Array<{ position: CardinalDirection, items: LegendItem[] }> {
     const model = this._paraState.model!;
     const seriesKeys = enumerate([...model.seriesKeys]);
     if (this._paraState.config.legend.itemOrder === 'alphabetical') {
@@ -328,11 +328,12 @@ export class BarChartInfo extends PlaneChartInfo {
     else if (this._paraState.config.legend.itemOrder === 'reverseAlphabetical') {
       seriesKeys.sort((a, b) => -1 * a[0].localeCompare(b[0]));
     }
-    return seriesKeys.map(key => ({
+    const items = seriesKeys.map(key => ({
       label: model.atKey(key[0])!.getLabel(),
       seriesKey: key[0],
       colorIndex: this._paraState.seriesProperties!.properties(key[0]).colorIndex,
     }));
+    return [{ position: this._paraState.config.legend.position, items: items }]
   }
 
   // TODO: localize this text output

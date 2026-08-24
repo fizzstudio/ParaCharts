@@ -204,7 +204,7 @@ export abstract class BaseChartInfo {
     root.cursor = chartLandingNode;
   }
 
-  legend(position?: CardinalDirection): LegendItem[] {
+  legend(): Array<{ position: CardinalDirection, items: LegendItem[] }> {
     return [];
   }
 

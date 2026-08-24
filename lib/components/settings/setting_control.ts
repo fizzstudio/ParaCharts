@@ -34,7 +34,7 @@ export abstract class SettingControl<T extends SettingControlType> extends ParaC
     return this._value;
   }
 
-  @property({type: Boolean}) hidden = false;
+  @property({ type: Boolean }) hidden = false;
 
   info!: SettingControlInfo<T>;
 
@@ -46,8 +46,9 @@ export abstract class SettingControl<T extends SettingControlType> extends ParaC
     `
   ];
 
-  protected _updateSetting(key: string, value: SettingControlValueType<SettingControlType>) {
-    this._paraState.updateConfig(draft => SettingsManager.set(key, value, draft));
+  protected _updateSetting(key: string, value: SettingControlValueType<SettingControlType>, instanceID?: string) {
+    const inst = instanceID ?? this.info?.instanceId;
+    this._paraState.updateConfig(draft => SettingsManager.set(key, value, draft), false, inst);
     if (this.info.refresh === 'chart') {
       this._paraState.refreshParaView();
     } else if (this.info.refresh === 'description') {
@@ -62,7 +63,7 @@ export abstract class SettingControl<T extends SettingControlType> extends ParaC
       if (result.err) {
         control.dispatchEvent(
           new CustomEvent(
-            'invalidvalue', {bubbles: true, composed: true, detail: result.err}));
+            'invalidvalue', { bubbles: true, composed: true, detail: result.err }));
         return false;
       }
     }
