@@ -2,9 +2,6 @@ import { BaseState } from './base_state';
 import { ParaState } from './parastate';
 import { SettingsInput } from '../config/config_types';
 
-import { AiSeriesPairMetadataAnalyzer } from '@fizz/paramodel';
-import { SeriesAnalyzer } from '@fizz/series-analyzer';
-
 import { property } from '@lit-app/state';
 
 // import { Localization } from '@elemental/localization';
@@ -45,9 +42,7 @@ export class GlobalState extends BaseState {
     this._paraStates.push(
       new ParaState(
         this,
-        this._inputSettings,
-        SeriesAnalyzer,
-        AiSeriesPairMetadataAnalyzer));
+        this._inputSettings));
     this._currentParaState = this._paraStates.at(-1)!;
   }
 
