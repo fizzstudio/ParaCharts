@@ -713,7 +713,7 @@ export class ParaAPI {
 //
 // @public (undocumented)
 export class ParaChart extends ParaComponent {
-    constructor(seriesAnalyzerConstructor?: SeriesAnalyzerConstructor, pairAnalyzerConstructor?: PairAnalyzerConstructor);
+    constructor();
     // (undocumented)
     get api(): ParaAPI;
     // Warning: (ae-forgotten-export) The symbol "ParaCaptionBox" needs to be exported by the entry point index.d.ts
