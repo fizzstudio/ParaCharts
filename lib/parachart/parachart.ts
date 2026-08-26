@@ -21,8 +21,6 @@ import { classMap } from 'lit/directives/class-map.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { Logger, getLogger } from '@fizz/logger';
 import { type ChartType } from '@fizz/chartsignal-internal'
-import { AiSeriesPairMetadataAnalyzer } from '@fizz/paramodel';
-import { SeriesAnalyzer } from '@fizz/series-analyzer';
 import { ParaComponent } from '../components';
 import { ConfigSetting, SettingsInput } from '../config/config_types';
 import { SettingsManager, GlobalState } from '../state';
@@ -96,9 +94,7 @@ export class ParaChart extends ParaComponent {
     const globalState = new GlobalState(
       // XXX config won't get set until connectedCallback()
       Object.assign(cssProps, this.config),
-      // this._suppleteSettingsWith,
-      SeriesAnalyzer,
-      AiSeriesPairMetadataAnalyzer
+      // this._suppleteSettingsWith
     );
     // Create 2 ParaStates: one for the main chart, one for the explainer
     globalState.createParaState();
