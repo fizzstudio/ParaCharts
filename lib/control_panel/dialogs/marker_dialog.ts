@@ -30,9 +30,22 @@ export class MarkerSettingsDialog extends SettingControlContainer {
 
     connectedCallback() {
         super.connectedCallback();
-        this._paraState.settingControls.insert('marker.highlightStyle');
-        this._paraState.settingControls.insert('marker.isChangeThresholdHighlightColor');
-        this._paraState.settingControls.insert('marker.isMakeThresholdHighlightDashed');
+        document.addEventListener('paranotice', (e: CustomEvent<any>) => {
+            if (e.detail.key === 'docView created') {
+                if (!this._paraState.thresholds.length) {
+                    return/*
+                    this._paraState.settingControls.insert('marker.highlightStyle');
+                    this._paraState.settingControls.insert('marker.isChangeThresholdHighlightColor');
+                    this._paraState.settingControls.insert('marker.isMakeThresholdHighlightDashed');
+                    */
+                }
+                for (let threshold of this._paraState.thresholds) {
+                    this._paraState.settingControls.insert('marker.highlightStyle', { instanceID: threshold.id }, undefined, undefined, threshold.id);
+                    this._paraState.settingControls.insert('marker.isChangeThresholdHighlightColor', { instanceID: threshold.id }, undefined, undefined, threshold.id);
+                    this._paraState.settingControls.insert('marker.isMakeThresholdHighlightDashed', { instanceID: threshold.id }, undefined, undefined, threshold.id);
+                }
+            }
+        });
     }
 
     render() {

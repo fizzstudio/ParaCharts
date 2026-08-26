@@ -253,6 +253,11 @@ export class SettingsManager {
     }
   }
 
+  /** Clear only the merged cache (keeps instance overrides if desired). */
+  static clearMergedCache() {
+    SettingsManager._mergedCache.clear();
+  }
+
   /** Internal: get override subtree for an instance and group path (e.g., 'legend'). */
   private static _getOverrideGroup(path: string, instanceId?: string): Partial<ConfigGroup> | undefined {
     if (!instanceId) return undefined;

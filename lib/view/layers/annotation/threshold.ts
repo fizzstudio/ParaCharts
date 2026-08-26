@@ -1,6 +1,8 @@
 import { PlaneChartInfo } from "../../../chart_types";
 import { Vec2 } from "../../../common";
+import { LegendConfig } from "../../../common_exports";
 import { ParaView } from "../../../paraview";
+import { SettingsManager } from "../../../state";
 import { View } from "../../base_view";
 import { Label } from "../../label";
 import { ArcShape, PathShape } from "../../shape";
@@ -12,6 +14,7 @@ export class Threshold extends View {
     clipWidth = 0;
     constructor(paraview: ViewContext, protected type: 'horiz' | 'vert', public align: number, public label?: string) {
         super(paraview);
+        this.id = `threshold-${this.paraview.paraState.nextMarkerID()}`;
         this._createShapes(type, align);
         this._createLabel();
     }
@@ -98,13 +101,14 @@ export class Threshold extends View {
     }
 
     highlightPoints() {
-        this.paraview.paraState.clearAllDatapointContrast();
+        const config = SettingsManager.getGroupLinkForInstance<LegendConfig>('marker', this.paraview.paraState.config, this.id)
+       
         if (this.type == 'horiz') {
             let int = this.chartInfo.yRangeInfo!.interval;
             if (this.align < int.start || this.align > int.end) {
                 return;
             }
-            if (this.paraview.paraState.config.marker.highlightStyle == 'Highlight above') {
+            if (config.highlightStyle == 'Highlight above') {
                 const start = this.clipHeight / this.dataLayer.height;
                 (this.paraview as ParaView).markerClipBox = [{ start: 0, end: 1 }, { start: start, end: 1 }]
                 for (let datapoint of this.paraview.paraState.model!.allPoints) {
@@ -112,18 +116,18 @@ export class Threshold extends View {
                         this.paraview.paraState.contrastDatapoint(datapoint.seriesKey, datapoint.datapointIndex)
                     }
                     else {
-                        this.paraview.paraState.clearDatapointContrasted(datapoint.seriesKey, datapoint.datapointIndex)
+                        //this.paraview.paraState.clearDatapointContrasted(datapoint.seriesKey, datapoint.datapointIndex)
                     }
                 }
             }
-            else if (this.paraview.paraState.config.marker.highlightStyle == 'Highlight below') {
+            else if (config.highlightStyle == 'Highlight below') {
                 (this.paraview as ParaView).markerClipBox = [{ start: 0, end: 1 }, { start: 0, end: this.clipHeight / this.dataLayer.height }]
                 for (let datapoint of this.paraview.paraState.model!.allPoints) {
                     if (datapoint.facetValueAsNumber('y')! < this.align) {
                         this.paraview.paraState.contrastDatapoint(datapoint.seriesKey, datapoint.datapointIndex)
                     }
                     else {
-                        this.paraview.paraState.clearDatapointContrasted(datapoint.seriesKey, datapoint.datapointIndex)
+                        //this.paraview.paraState.clearDatapointContrasted(datapoint.seriesKey, datapoint.datapointIndex)
                     }
                 }
             }
