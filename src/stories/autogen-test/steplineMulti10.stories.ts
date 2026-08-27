@@ -8,7 +8,7 @@ import Runner from '../tests/steplineTests';
 type Story = StoryObj<ChartProps>;
 
 const meta = {
-  title: "Basic Charts/Line Charts/Multi Stepline Charts",
+  title: "Charts/Line Charts/Multi Stepline Charts",
   render: (args) => Chart(args),
 } satisfies Meta<ChartProps>;
 

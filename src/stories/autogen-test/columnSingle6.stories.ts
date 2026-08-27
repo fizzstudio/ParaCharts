@@ -8,7 +8,7 @@ import Runner from '../tests/columnTests';
 type Story = StoryObj<ChartProps>;
 
 const meta = {
-  title: "Basic Charts/Bar Charts/Single Column Charts",
+  title: "Charts/Bar Charts/Single Column Charts",
   render: (args) => Chart(args),
 } satisfies Meta<ChartProps>;
 

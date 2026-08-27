@@ -72,7 +72,7 @@
     "storybook": "storybook dev -p 5180",
     "build": "rimraf dist && rimraf types && tsc && vite build && api-extractor run --local --verbose",
     "build:stories": "node src/stories/storiesBuilder.ts",
-    "build-storybook": "storybook build",
+    "build:storybook-static": "storybook build",
     "prepack": "npm run build",
     "config:generate": "python3 lib/config/build_settings.py lib/config",
     "docs:api-model": "tsx ./docs/scripts/stageApiModel.ts ./temp/paracharts.api.json ./docs/.api-model",
@@ -131,6 +131,7 @@
   "dependencies": {
     "@elemental/localization": "^1.10.0",
     "@fizz/chart-classifier-utils": "^0.17.0",
+    "@fizz/chartsignal-internal": "^0.0.9-alpha.0",
     "@fizz/clustering": "^0.16.0",
     "@fizz/dataframe": "^0.27.2",
     "@fizz/jimerator": "^0.20.2",

@@ -5,7 +5,7 @@ import type { Meta, StoryObj } from '@storybook/web-components-vite';
 type Story = StoryObj<ChartProps>;
 
 const meta = {
-  title: "Basic Charts/Line Charts/Single Line Charts",
+  title: "Charts/Line Charts/Single Line Charts",
   render: (args) => Chart(args),
 } satisfies Meta<ChartProps>;
 

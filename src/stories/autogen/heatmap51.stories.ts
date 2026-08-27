@@ -5,16 +5,16 @@ import type { Meta, StoryObj } from '@storybook/web-components-vite';
 type Story = StoryObj<ChartProps>;
 
 const meta = {
-  title: "Basic Charts/Heat Maps",
+  title: "Charts/Heat Maps",
   render: (args) => Chart(args),
 } satisfies Meta<ChartProps>;
 
 export default meta;
 
 export const Chart51: Story = {
-  name: "d3 (51)",
+  name: "Pokemon dataset from CSV (51)",
   args: {
-    filename: "manifests/scatter-manifest-d3.json",
+    filename: "manifests/pokemon-multi-facet-manifest.json",
     forcecharttype: "heatmap",
   }
 }

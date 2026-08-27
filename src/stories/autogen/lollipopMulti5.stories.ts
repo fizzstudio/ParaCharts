@@ -5,7 +5,7 @@ import type { Meta, StoryObj } from '@storybook/web-components-vite';
 type Story = StoryObj<ChartProps>;
 
 const meta = {
-  title: "Basic Charts/Bar Charts/Multi Lollipop Charts",
+  title: "Charts/Bar Charts/Multi Lollipop Charts",
   render: (args) => Chart(args),
 } satisfies Meta<ChartProps>;
 

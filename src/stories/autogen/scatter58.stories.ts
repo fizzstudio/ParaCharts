@@ -5,16 +5,16 @@ import type { Meta, StoryObj } from '@storybook/web-components-vite';
 type Story = StoryObj<ChartProps>;
 
 const meta = {
-  title: "Basic Charts/Scatter Charts",
+  title: "Charts/Scatter Charts",
   render: (args) => Chart(args),
 } satisfies Meta<ChartProps>;
 
 export default meta;
 
 export const Chart58: Story = {
-  name: "s1 (58)",
+  name: "Iris Flower Data Set (58)",
   args: {
-    filename: "manifests/scatter-manifest-s1.json",
+    filename: "manifests/scatter-manifest-iris-petal.json",
     forcecharttype: "scatter",
   }
 }
