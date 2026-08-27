@@ -8,20 +8,20 @@ import Runner from '../tests/scatterTests';
 type Story = StoryObj<ChartProps>;
 
 const meta = {
-  title: "Charts/Scatter Charts",
+  title: 'Charts/Scatter Charts',
   render: (args) => Chart(args),
 } satisfies Meta<ChartProps>;
 
 export default meta;
 
 export const Chart46: Story = {
-  name: "World Happiness Report 2019 (46)",
+  name: 'World Happiness Report 2019 (46)',
   args: {
-    filename: "manifests/DataPanelWHR2019-multi-facet-manifest.json",
-    forcecharttype: "scatter",
+    filename: 'manifests/DataPanelWHR2019-multi-facet-manifest.json',
+    forcecharttype: 'scatter',
   },
   play: async ({canvas, userEvent}) => {
-    const runner = await (new Runner(canvas, userEvent, expect)).loadManifest("manifests/DataPanelWHR2019-multi-facet-manifest.json");
+    const runner = await (new Runner(canvas, userEvent, expect)).loadManifest('manifests/DataPanelWHR2019-multi-facet-manifest.json');
     await runner.run();
   }
 }

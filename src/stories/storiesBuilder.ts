@@ -64,10 +64,9 @@ function generateCode(
   index: number,
   templateToUse: string
 ): string {
-  const topFolder = 'Charts';
   const chartElement = 'Chart';
   return printf(templateToUse, 
-    { manifestTitle, typeFolder, topFolder, manifestPath, index, chartType, chartElement }
+    { manifestTitle, typeFolder, manifestPath, index, chartType, chartElement }
   );
 }
 
@@ -157,13 +156,12 @@ function generateAllStory(
   chartType: ChartType, 
   family: ChartTypeFamily
 ): void {
-  const topFolder ='Charts';
   const chartElement = 'Chart';
   const typeFolder = `${capitalize(chartType)} Charts`
   const typePath = CHART_TYPE_FOLDERS_SINGLE[chartType];
   const storyName = `All${capitalize(chartType)}Charts`;
   const code = printf(allTemplate, 
-    { topFolder, typeFolder, typePath, storyName, family, multi: 'false', chartType, chartElement }
+    { typeFolder, typePath, storyName, family, multi: 'false', chartType, chartElement }
   );
   
   fs.writeFileSync(`${AUTOGEN_PATH}zall${chartType}.stories.ts`, code, 'utf8');
@@ -175,14 +173,13 @@ function generateAllStoryMulti(
   family: ChartTypeFamily,
   multi: boolean
 ): void {
-  const topFolder = 'Charts';
   const chartElement = 'Chart';
   const multiText = multi ? 'multi' : 'single';
   const typeFolder = `${capitalize(multiText)} ${capitalize(chartType)} Charts`
   const typePath = multi ? CHART_TYPE_FOLDERS_MULTI[chartType] : CHART_TYPE_FOLDERS_SINGLE[chartType];
   const storyName = `All${capitalize(multiText)}${capitalize(chartType)}Charts`;
   const code = printf(allTemplate, 
-    { topFolder, typeFolder, typePath, storyName, family, multi: 'true', chartType, chartElement }
+    { typeFolder, typePath, storyName, family, multi: 'true', chartType, chartElement }
   );
   
   fs.writeFileSync(`${AUTOGEN_PATH}zall${multiText}${chartType}.stories.ts`, code, 'utf8');

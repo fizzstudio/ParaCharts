@@ -8,20 +8,20 @@ import Runner from '../tests/scatterTests';
 type Story = StoryObj<ChartProps>;
 
 const meta = {
-  title: "Charts/Scatter Charts",
+  title: 'Charts/Scatter Charts',
   render: (args) => Chart(args),
 } satisfies Meta<ChartProps>;
 
 export default meta;
 
 export const Chart60: Story = {
-  name: "s1 (60)",
+  name: 's1 (60)',
   args: {
-    filename: "manifests/scatter-manifest-s1.json",
-    forcecharttype: "scatter",
+    filename: 'manifests/scatter-manifest-s1.json',
+    forcecharttype: 'scatter',
   },
   play: async ({canvas, userEvent}) => {
-    const runner = await (new Runner(canvas, userEvent, expect)).loadManifest("manifests/scatter-manifest-s1.json");
+    const runner = await (new Runner(canvas, userEvent, expect)).loadManifest('manifests/scatter-manifest-s1.json');
     await runner.run();
   }
 }

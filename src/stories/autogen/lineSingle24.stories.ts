@@ -5,7 +5,7 @@ import type { Meta, StoryObj } from '@storybook/web-components-vite';
 type Story = StoryObj<ChartProps>;
 
 const meta = {
-  title: "Charts/Line Charts/Single Line Charts",
+  title: 'Charts/Line Charts/Single Line Charts',
   render: (args) => Chart(args),
 } satisfies Meta<ChartProps>;
 
@@ -14,7 +14,7 @@ export default meta;
 export const Chart24: Story = {
   name: "328: General Motors - number of employees 2019 (24)",
   args: {
-    filename: "manifests/autogen/line-single/line-single-manifest-328.json",
-    forcecharttype: "line",
+    filename: 'manifests/autogen/line-single/line-single-manifest-328.json',
+    forcecharttype: 'line',
   }
 }

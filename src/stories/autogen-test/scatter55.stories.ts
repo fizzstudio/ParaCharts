@@ -8,20 +8,20 @@ import Runner from '../tests/scatterTests';
 type Story = StoryObj<ChartProps>;
 
 const meta = {
-  title: "Charts/Scatter Charts",
+  title: 'Charts/Scatter Charts',
   render: (args) => Chart(args),
 } satisfies Meta<ChartProps>;
 
 export default meta;
 
 export const Chart55: Story = {
-  name: "Old Faithful Geyser Eruptions (55)",
+  name: 'Old Faithful Geyser Eruptions (55)',
   args: {
-    filename: "manifests/scatter-manifest-geyser.json",
-    forcecharttype: "scatter",
+    filename: 'manifests/scatter-manifest-geyser.json',
+    forcecharttype: 'scatter',
   },
   play: async ({canvas, userEvent}) => {
-    const runner = await (new Runner(canvas, userEvent, expect)).loadManifest("manifests/scatter-manifest-geyser.json");
+    const runner = await (new Runner(canvas, userEvent, expect)).loadManifest('manifests/scatter-manifest-geyser.json');
     await runner.run();
   }
 }

@@ -8,20 +8,20 @@ import Runner from '../tests/steplineTests';
 type Story = StoryObj<ChartProps>;
 
 const meta = {
-  title: "Charts/Line Charts/Multi Stepline Charts",
+  title: 'Charts/Line Charts/Multi Stepline Charts',
   render: (args) => Chart(args),
 } satisfies Meta<ChartProps>;
 
 export default meta;
 
 export const Chart49: Story = {
-  name: "Expenses vs. Revenue (49)",
+  name: 'Expenses vs. Revenue (49)',
   args: {
-    filename: "manifests/line-two-manifest.json",
-    forcecharttype: "stepline",
+    filename: 'manifests/line-two-manifest.json',
+    forcecharttype: 'stepline',
   },
   play: async ({canvas, userEvent}) => {
-    const runner = await (new Runner(canvas, userEvent, expect)).loadManifest("manifests/line-two-manifest.json");
+    const runner = await (new Runner(canvas, userEvent, expect)).loadManifest('manifests/line-two-manifest.json');
     await runner.run();
   }
 }

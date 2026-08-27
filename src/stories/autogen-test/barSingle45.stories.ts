@@ -8,20 +8,20 @@ import Runner from '../tests/barTests';
 type Story = StoryObj<ChartProps>;
 
 const meta = {
-  title: "Charts/Bar Charts/Single Bar Charts",
+  title: 'Charts/Bar Charts/Single Bar Charts',
   render: (args) => Chart(args),
 } satisfies Meta<ChartProps>;
 
 export default meta;
 
 export const Chart45: Story = {
-  name: "Sales (45)",
+  name: 'Sales (45)',
   args: {
-    filename: "manifests/combo-manifest-ms.json",
-    forcecharttype: "bar",
+    filename: 'manifests/combo-manifest-ms.json',
+    forcecharttype: 'bar',
   },
   play: async ({canvas, userEvent}) => {
-    const runner = await (new Runner(canvas, userEvent, expect)).loadManifest("manifests/combo-manifest-ms.json");
+    const runner = await (new Runner(canvas, userEvent, expect)).loadManifest('manifests/combo-manifest-ms.json');
     await runner.run();
   }
 }

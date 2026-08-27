@@ -5,7 +5,7 @@ import type { Meta, StoryObj } from '@storybook/web-components-vite';
 type Story = StoryObj<ChartProps>;
 
 const meta = {
-  title: "Charts/Line Charts/Multi Stepline Charts",
+  title: 'Charts/Line Charts/Multi Stepline Charts',
   render: (args) => Chart(args),
 } satisfies Meta<ChartProps>;
 
@@ -14,7 +14,7 @@ export default meta;
 export const Chart16: Story = {
   name: "67: Gross domestic product of the BRIC countries from 2014 to 2024 (16)",
   args: {
-    filename: "manifests/autogen/line-multi/line-multi-manifest-67.json",
-    forcecharttype: "stepline",
+    filename: 'manifests/autogen/line-multi/line-multi-manifest-67.json',
+    forcecharttype: 'stepline',
   }
 }

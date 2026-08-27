@@ -8,20 +8,20 @@ import Runner from '../tests/lollipopTests';
 type Story = StoryObj<ChartProps>;
 
 const meta = {
-  title: "Charts/Bar Charts/Single Lollipop Charts",
+  title: 'Charts/Bar Charts/Single Lollipop Charts',
   render: (args) => Chart(args),
 } satisfies Meta<ChartProps>;
 
 export default meta;
 
 export const Chart8: Story = {
-  name: "27: Spotify's premium subscribers 2015 to 2019 (8)",
+  name: '27: Spotify's premium subscribers 2015 to 2019 (8)',
   args: {
-    filename: "manifests/autogen/bar-single/bar-single-manifest-27.json",
-    forcecharttype: "lollipop",
+    filename: 'manifests/autogen/bar-single/bar-single-manifest-27.json',
+    forcecharttype: 'lollipop',
   },
   play: async ({canvas, userEvent}) => {
-    const runner = await (new Runner(canvas, userEvent, expect)).loadManifest("manifests/autogen/bar-single/bar-single-manifest-27.json");
+    const runner = await (new Runner(canvas, userEvent, expect)).loadManifest('manifests/autogen/bar-single/bar-single-manifest-27.json');
     await runner.run();
   }
 }

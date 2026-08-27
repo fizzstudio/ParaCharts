@@ -5,7 +5,7 @@ import type { Meta, StoryObj } from '@storybook/web-components-vite';
 type Story = StoryObj<ChartProps>;
 
 const meta = {
-  title: "Charts/Line Charts/Multi Line Charts",
+  title: 'Charts/Line Charts/Multi Line Charts',
   render: (args) => Chart(args),
 } satisfies Meta<ChartProps>;
 
@@ -14,7 +14,7 @@ export default meta;
 export const Chart12: Story = {
   name: "233: Advertising spending in Vietnam 2004-2018, by medium (12)",
   args: {
-    filename: "manifests/autogen/line-multi/line-multi-manifest-233.json",
-    forcecharttype: "line",
+    filename: 'manifests/autogen/line-multi/line-multi-manifest-233.json',
+    forcecharttype: 'line',
   }
 }

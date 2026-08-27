@@ -8,20 +8,20 @@ import Runner from '../tests/lollipopTests';
 type Story = StoryObj<ChartProps>;
 
 const meta = {
-  title: "Charts/Bar Charts/Multi Lollipop Charts",
+  title: 'Charts/Bar Charts/Multi Lollipop Charts',
   render: (args) => Chart(args),
 } satisfies Meta<ChartProps>;
 
 export default meta;
 
 export const Chart3: Story = {
-  name: "178: Global construction machinery market size by region: outlook 2019 (3)",
+  name: '178: Global construction machinery market size by region: outlook 2019 (3)',
   args: {
-    filename: "manifests/autogen/bar-multi/bar-multi-manifest-178.json",
-    forcecharttype: "lollipop",
+    filename: 'manifests/autogen/bar-multi/bar-multi-manifest-178.json',
+    forcecharttype: 'lollipop',
   },
   play: async ({canvas, userEvent}) => {
-    const runner = await (new Runner(canvas, userEvent, expect)).loadManifest("manifests/autogen/bar-multi/bar-multi-manifest-178.json");
+    const runner = await (new Runner(canvas, userEvent, expect)).loadManifest('manifests/autogen/bar-multi/bar-multi-manifest-178.json');
     await runner.run();
   }
 }

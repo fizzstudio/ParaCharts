@@ -8,20 +8,20 @@ import Runner from '../tests/heatmapTests';
 type Story = StoryObj<ChartProps>;
 
 const meta = {
-  title: "Charts/Heat Maps",
+  title: 'Charts/Heat Maps',
   render: (args) => Chart(args),
 } satisfies Meta<ChartProps>;
 
 export default meta;
 
 export const Chart60: Story = {
-  name: "s1 (60)",
+  name: 's1 (60)',
   args: {
-    filename: "manifests/scatter-manifest-s1.json",
-    forcecharttype: "heatmap",
+    filename: 'manifests/scatter-manifest-s1.json',
+    forcecharttype: 'heatmap',
   },
   play: async ({canvas, userEvent}) => {
-    const runner = await (new Runner(canvas, userEvent, expect)).loadManifest("manifests/scatter-manifest-s1.json");
+    const runner = await (new Runner(canvas, userEvent, expect)).loadManifest('manifests/scatter-manifest-s1.json');
     await runner.run();
   }
 }

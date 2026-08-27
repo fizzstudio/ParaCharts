@@ -5,7 +5,7 @@ import type { Meta, StoryObj } from '@storybook/web-components-vite';
 type Story = StoryObj<ChartProps>;
 
 const meta = {
-  title: "Charts/Bar Charts/Multi Lollipop Charts",
+  title: 'Charts/Bar Charts/Multi Lollipop Charts',
   render: (args) => Chart(args),
 } satisfies Meta<ChartProps>;
 
@@ -14,7 +14,7 @@ export default meta;
 export const Chart0: Story = {
   name: "14: College enrollment in public and private institutions in the U.S. 1965 to 2028 (0)",
   args: {
-    filename: "manifests/autogen/bar-multi/bar-multi-manifest-14.json",
-    forcecharttype: "lollipop",
+    filename: 'manifests/autogen/bar-multi/bar-multi-manifest-14.json',
+    forcecharttype: 'lollipop',
   }
 }

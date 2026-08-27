@@ -23,11 +23,11 @@ const preview: Preview = {
         color: /(background|color)$/i,
         date: /Date$/i,
       },
+      disableSaveFromUI: true
     },
     options: {
       storySort: {
         order: [
-          'Chart', 
           'CSUN', 
           'Charts', [
             'Pastry Charts', 

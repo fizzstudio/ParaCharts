@@ -5,7 +5,7 @@ import type { Meta, StoryObj } from '@storybook/web-components-vite';
 type Story = StoryObj<ChartProps>;
 
 const meta = {
-  title: "%(topFolder)s/%(typeFolder)s",
+  title: 'Charts/%(typeFolder)s',
   render: (args) => %(chartElement)s(args),
 } satisfies Meta<ChartProps>;
 
@@ -14,8 +14,8 @@ export default meta;
 export const %(chartElement)s%(index)s: Story = {
   name: "%(manifestTitle)s",
   args: {
-    filename: "%(manifestPath)s",
-    forcecharttype: "%(chartType)s",
+    filename: '%(manifestPath)s',
+    forcecharttype: '%(chartType)s',
   }
 }
 `
