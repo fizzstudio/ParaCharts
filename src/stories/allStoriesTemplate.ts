@@ -1,4 +1,4 @@
-export const allTemplate = `import { %(chartElement)s, type ChartProps } from '../Chart';
+export const allTemplate = `import { Chart, type ChartProps } from '../Chart';
 import { familyManifestPathsMap } from '../chartSelectorHelper';
 import type { Meta, StoryObj } from "@storybook/web-components-vite";
 
@@ -8,7 +8,7 @@ const titleToFilenameMap = familyManifestPathsMap('%(family)s', %(multi)s);
 
 const meta = {
   title: 'Charts/%(typePath)s',
-  render: (args) => %(chartElement)s(args),
+  render: (args) => Chart(args),
   argTypes: {
     filename: {
       description: 'Chart Title',
