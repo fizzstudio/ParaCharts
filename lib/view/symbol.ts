@@ -35,6 +35,8 @@ import { svg, nothing } from 'lit';
 import { styleMap } from 'lit/directives/style-map.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { Datapoint } from '@fizz/paramodel';
+import { SettingsManager } from '../state';
+import { MarkerConfig } from '../common_exports';
 
 export type DataSymbolShape =
   'circle' | 'square' | 'triangle_up' | 'diamond' | 'plus' | 'star' | 'triangle_down' | 'x';
@@ -346,10 +348,10 @@ export class DataSymbol extends View {
 
   content() {
     if (this._options.datapoint) {
-      if (this.paraview.paraState.isDatapointContrasted(this._options.datapoint?.seriesKey, this._options.datapoint?.datapointIndex)) {
-        if (this.paraview.paraState.config.marker.isChangeThresholdHighlightColor) {
-          this._styleInfo.stroke = 'red';
-        }
+      const markerRegionIndex = this.paraview.paraState.thresholds.filter(t => t.type == 'horiz').filter(t => t.clipHeight < this.centerY).length;
+      const config = SettingsManager.getGroupLinkForInstance<MarkerConfig>('marker', this.paraview.paraState.config, `threshold-${markerRegionIndex}`);
+      if (config.isChangeThresholdHighlightColor) {
+        this._styleInfo.stroke = 'red';
       }
     }
     this._updateClassInfo();

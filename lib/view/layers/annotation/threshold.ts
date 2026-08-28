@@ -12,7 +12,7 @@ import { PlanePlotView } from "../data";
 export class Threshold extends View {
     clipHeight = 0;
     clipWidth = 0;
-    constructor(paraview: ViewContext, protected type: 'horiz' | 'vert', public align: number, public label?: string) {
+    constructor(paraview: ViewContext, public type: 'horiz' | 'vert', public align: number, public label?: string) {
         super(paraview);
         this.id = `threshold-${this.paraview.paraState.nextMarkerID()}`;
         this._createShapes(type, align);
@@ -101,16 +101,19 @@ export class Threshold extends View {
     }
 
     highlightPoints() {
-        const config = SettingsManager.getGroupLinkForInstance<LegendConfig>('marker', this.paraview.paraState.config, this.id)
-       
+        //const config = SettingsManager.getGroupLinkForInstance<LegendConfig>('marker', this.paraview.paraState.config, this.id)
         if (this.type == 'horiz') {
             let int = this.chartInfo.yRangeInfo!.interval;
             if (this.align < int.start || this.align > int.end) {
                 return;
             }
+            const start = this.clipHeight / this.dataLayer.height;
+            return  [{ start: 0, end: 1 }, { start: start, end: 1 }]
+            /*
             if (config.highlightStyle == 'Highlight above') {
                 const start = this.clipHeight / this.dataLayer.height;
-                (this.paraview as ParaView).markerClipBox = [{ start: 0, end: 1 }, { start: start, end: 1 }]
+                
+
                 for (let datapoint of this.paraview.paraState.model!.allPoints) {
                     if (datapoint.facetValueAsNumber('y')! > this.align) {
                         this.paraview.paraState.contrastDatapoint(datapoint.seriesKey, datapoint.datapointIndex)
@@ -119,9 +122,9 @@ export class Threshold extends View {
                         //this.paraview.paraState.clearDatapointContrasted(datapoint.seriesKey, datapoint.datapointIndex)
                     }
                 }
+                return  [{ start: 0, end: 1 }, { start: start, end: 1 }]
             }
             else if (config.highlightStyle == 'Highlight below') {
-                (this.paraview as ParaView).markerClipBox = [{ start: 0, end: 1 }, { start: 0, end: this.clipHeight / this.dataLayer.height }]
                 for (let datapoint of this.paraview.paraState.model!.allPoints) {
                     if (datapoint.facetValueAsNumber('y')! < this.align) {
                         this.paraview.paraState.contrastDatapoint(datapoint.seriesKey, datapoint.datapointIndex)
@@ -130,10 +133,12 @@ export class Threshold extends View {
                         //this.paraview.paraState.clearDatapointContrasted(datapoint.seriesKey, datapoint.datapointIndex)
                     }
                 }
+                return [{ start: 0, end: 1 }, { start: 0, end: this.clipHeight / this.dataLayer.height }]
             }
+                */
         }
         else if (this.type == 'vert') {
-            (this.paraview as ParaView).clipWidth = this.clipWidth / this.dataLayer.width
+            //(this.paraview as ParaView).clipWidth = this.clipWidth / this.dataLayer.width
             for (let datapoint of this.paraview.paraState.model!.allPoints) {
                 if (!isNaN(Number(datapoint.facetBox('x')!.raw))) {
                     if (Number(datapoint.facetBox('x')!.raw) >= this.align) {
@@ -144,7 +149,9 @@ export class Threshold extends View {
                     }
                 }
             }
+            return [{ start: 0, end: 1 }, { start: 0, end: 1}]
         }
+        return [{ start: 0, end: 1 }, { start: 0, end: 1}]
     }
 
 }

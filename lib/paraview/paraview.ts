@@ -75,7 +75,6 @@ export class ParaView extends ParaComponent implements ViewContext {
   protected _registeredPatternKeys: string[] = [];
   protected log: Logger = getLogger("ParaView");
   clipWidth: number = 1
-  markerClipBox: [Interval, Interval] = [{start: 0, end: 1}, {start: 0, end: 1}]
 
   @state() private loadingMessageStyles: { [key: string]: any } = {
     display: 'none'
@@ -575,7 +574,7 @@ export class ParaView extends ParaComponent implements ViewContext {
       this.log.error('dataUpdated error:', error);
       this._jimReadyRejector();
     }
-     this.paraState.postNotice('docView created', null)
+    this.paraState.postNotice('docView created', null)
   }
 
   protected willUpdate(changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {
@@ -1111,6 +1110,37 @@ export class ParaView extends ParaComponent implements ViewContext {
     });
   }
 
+  /** Remove a previously-registered def and its DOM node (no-op if missing). */
+  removeDef(key: string) {
+    // Remove from the reactive defs map so lit stops rendering it.
+    if (!this._defs[key]) return;
+    const remaining = { ...this._defs };
+    delete remaining[key];
+    this._defs = remaining;
+
+    // Remove from registered pattern keys if present.
+    const idx = this._registeredPatternKeys.indexOf(key);
+    if (idx !== -1) this._registeredPatternKeys.splice(idx, 1);
+
+    // Best-effort DOM cleanup for nodes rendered under the defs container.
+    try {
+      const defsEl = this._defsRef.value;
+      if (defsEl && defsEl.querySelector) {
+        // Remove any element with the id equal to the key.
+        const nodeById = defsEl.querySelector(`#${key}`);
+        if (nodeById && nodeById.parentNode) nodeById.parentNode.removeChild(nodeById);
+
+        // Also remove any remaining elements that reference the key (def templates vary).
+        const nodes = Array.from(defsEl.querySelectorAll(`[id="${key}"], [data-def-key="${key}"]`));
+        for (const n of nodes) {
+          if (n.parentNode) n.parentNode.removeChild(n);
+        }
+      }
+    } catch {
+      // ignore DOM removal failures; state map is already updated
+    }
+  }
+
   protected _registerPatternDefs() {
     const palette = this._paraState.colors.palette;
     if (!palette || !palette.isPattern || !palette.patterns) return;
@@ -1310,16 +1340,6 @@ export class ParaView extends ParaComponent implements ViewContext {
                 y=${0}
                 width=${this._documentView.chartLayers ? this.clipWidth * this._documentView.chartLayers.width : 0}
                 height=${this._documentView.chartLayers ? this._documentView.chartLayers.height : 0}>
-              </rect>
-            </clipPath>
-            <clipPath id="threshold-clip-path" >
-              <rect
-                x=${this._documentView.chartLayers ?  this.markerClipBox[0].start * this._documentView.chartLayers.width : 0}
-                y=${this._documentView.chartLayers ?  this.markerClipBox[1].start * this._documentView.chartLayers.height : 0}
-                width=${this._documentView.chartLayers ? 
-                  (this.markerClipBox[0].end - this.markerClipBox[0].start) * this._documentView.chartLayers.width 
-                  : 0}
-                height=${this._documentView.chartLayers ? (this.markerClipBox[1].end - this.markerClipBox[1].start) * this._documentView.chartLayers.height : 0}>
               </rect>
             </clipPath>
           ` : ''

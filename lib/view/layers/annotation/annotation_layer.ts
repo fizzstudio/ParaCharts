@@ -9,6 +9,8 @@ import { PlaneChartInfo } from '../../../chart_types';
 import { type ScatterPlotView } from '../data/chart_type/scatter_plot_view';
 import { TrendLineView } from '../data/chart_type/point_plot_view';
 import { ConfigSetting } from '../../../config/config_types';
+import { svg } from 'lit';
+import { ParaView } from '../../../paraview';
 
 export type AnnotationType = 'foreground' | 'background';
 
@@ -287,12 +289,43 @@ export class AnnotationLayer extends PlotLayer {
         this.addGroup('thresholds', true);
         this.group('thresholds')!.clearChildren();
         this.paraview.paraState.clearAllDatapointContrast();
+        let i = 0;
+        let runningY = 0;
+        let runningX = 0;
         for (const threshold of this.paraview.paraState.thresholds) {
           threshold.classInfo = { 'threshold': true };
-          threshold.highlightPoints();
-
+          const clipBox = threshold.highlightPoints();
+          if (clipBox) {
+            const clipKey = `marker-clip-${i}`;   // unique key for addDef
+            const clipId = `marker-clip-${i}`;    // id used in the clipPath element
+            (this.paraview as ParaView).removeDef(clipKey);
+            const x = clipBox[0].start * this.paraview.documentView!.chartLayers.width;
+            const newY = clipBox[1].start * this.paraview.documentView!.chartLayers.height;
+            const width = (clipBox[0].end - clipBox[0].start) * this.paraview.documentView!.chartLayers.width;
+            const height = (clipBox[1].start) * this.paraview.documentView!.chartLayers.height - runningY;
+            this.paraview.addDef(clipKey, svg`
+                <clipPath id=${clipId}>
+                  <rect x=${x} y=${runningY} width=${width} height=${height}></rect>
+                </clipPath>
+              `);
+            runningY = newY;
+          }
+          i++;
           this.group('thresholds')!.append(threshold);
         }
+        const clipKey = `marker-clip-${i}`;   // unique key for addDef
+        const clipId = `marker-clip-${i}`;    // id used in the clipPath element
+        (this.paraview as ParaView).removeDef(clipKey);
+        const x = 0;
+        const y = runningY;
+        const width = this.paraview.documentView!.chartLayers.width;
+        const height = this.paraview.documentView!.chartLayers.height - runningY;
+        this.paraview.addDef(clipKey, svg`
+                <clipPath id=${clipId}>
+                  <rect x=${x} y=${y} width=${width} height=${height}></rect>
+                </clipPath>
+              `);
+
       }
       else {
         if (this._groups.has('thresholds')) {

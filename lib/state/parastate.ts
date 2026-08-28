@@ -244,7 +244,7 @@ export class ParaState extends BaseState {
   @property() protected _userTrendLines: TrendLine[] = [];
   @property() protected _clusterShellViews: ClusterShellView[] = [];
 
-  @property()protected _thresholds: Threshold[] = [];
+  @property() protected _thresholds: Threshold[] = [];
   protected _data: AllSeriesData | null = null;
   protected _dataState: DataState = 'initial';
   protected _settingControls = new SettingControlManager(this);
@@ -433,6 +433,10 @@ export class ParaState extends BaseState {
 
   resetLegendID(): void {
     this._legendID = 0;
+  }
+
+  resetMarkerID(): void {
+    this._markerID = 0;
   }
 
   get index(): number {
@@ -1356,6 +1360,10 @@ export class ParaState extends BaseState {
 
   isClusterHidden(index: number): boolean {
     return this._hiddenCluster.includes(index);
+  }
+
+  clearThresholds() {
+    this._thresholds = [];
   }
 
   announce(

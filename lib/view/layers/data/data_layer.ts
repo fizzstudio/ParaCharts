@@ -185,6 +185,7 @@ export abstract class DataLayer extends PlotLayer {
     if (['legend.isAlwaysDrawLegend', 'legend.useDirectLegends', 'legend.itemOrder', 'legend.position'].includes(path)) {
       this.paraview.paraState.createChartInfo();
       this.paraview.paraState.resetLegendID();
+      this.paraview.paraState.resetMarkerID();
       this.paraview.paraState.chartInfo.setup().then(() => {
         this.paraview.createDocumentView();
         this.paraview.requestUpdate();
@@ -211,12 +212,12 @@ export abstract class DataLayer extends PlotLayer {
   protected abstract _createDatapoints(): void;
 
   protected _beginDatapointLayout() {
-    /*
-    this.paraview.paraState._thresholds = []
+    
+    this.paraview.paraState.clearThresholds();
     this.paraview.paraState.thresholds.push(new Threshold(this.paraview, 'horiz', 61000, 'High 61000'))  
     this.paraview.paraState.thresholds.push(new Threshold(this.paraview, 'horiz', 58476, 'Medium: 58476'))
-    this.paraview.paraState.thresholds.push(new Threshold(this.paraview, 'horiz', 55000, 'Low 55000'))
-    */
+    //this.paraview.paraState.thresholds.push(new Threshold(this.paraview, 'horiz', 55000, 'Low 55000'))
+    
     //this.paraview.paraState.thresholds.push(new Threshold(this.paraview, 'vert', 2008, 'Greate Recession'))
     this._createDatapoints();
     for (const datapointView of this.datapointViews) {

@@ -31,7 +31,7 @@
             "label": "cpanel.tabs.chart.marker_dialog.highlight_color",
             "description": "Make highlighted region dashed",
             "type": "boolean",
-            "default": true,
+            "default": false,
             "control": "checkbox",
             "parentView": "controlPanel.tabs.chart.marker.dialog"
         }

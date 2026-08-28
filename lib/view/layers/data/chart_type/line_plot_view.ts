@@ -14,14 +14,17 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { type StyleInfo } from 'lit/directives/style-map.js';
+import { styleMap, type StyleInfo } from 'lit/directives/style-map.js';
 import { PathShape } from '../../../shape/path';
 import { Vec2 } from '../../../../common/vector';
 import { bboxOfBboxes } from '../../../../common/utils';
 
-import { ConfigSetting } from '../../../../config/config_types';
+import { ConfigSetting, MarkerConfig } from '../../../../config/config_types';
 import { PointDatapointView, PointPlotView, PointSeriesView } from './point_plot_view';
-import { SeriesProperties } from '../../../../state';
+import { SeriesProperties, SettingsManager } from '../../../../state';
+import { svg, nothing } from 'lit';
+import { classMap } from 'lit/directives/class-map.js';
+import { ref } from 'lit/directives/ref.js';
 
 /**
  * Class for drawing line charts.
@@ -176,7 +179,7 @@ export class LineSection extends PointDatapointView {
 
   computeX() {
     return this.paraview.paraState.comboModel
-      ? (this.width * this.index + this.width/2)
+      ? (this.width * this.index + this.width / 2)
       : (this.width * this.index);
   }
 
@@ -313,13 +316,13 @@ export class LineSection extends PointDatapointView {
       //   }
       // }
       this._shapes.push(
-        new PathShape(this.paraview, {
+        new LinePath(this.paraview, {
           x: this._x,
           y: this._y,
           points: slices[0],
           isClip: true
         }),
-        new PathShape(this.paraview, {
+        new LinePath(this.paraview, {
           x: this._x,
           y: this._y,
           points: slices[1],
@@ -330,7 +333,7 @@ export class LineSection extends PointDatapointView {
       this._shapes[1].classInfo = { 'leg-right': true };
     } else if (points.length === 2) {
       this._shapes.push(
-        new PathShape(this.paraview, {
+        new LinePath(this.paraview, {
           x: this._x,
           y: this._y,
           points: points,
@@ -342,9 +345,40 @@ export class LineSection extends PointDatapointView {
         : { 'leg-right': true };
     }
     this._shapes.forEach(shape => {
-      (shape as PathShape).isClip = this.shouldClip;
+      (shape as LinePath).isClip = this.shouldClip;
     })
     super._createShapes();
   }
 }
 
+
+export class LinePath extends PathShape {
+  render() {
+    if (this.paraview.paraState.thresholds.length == 0) {
+      return super.render();
+    }
+    const group = [] as ReturnType<typeof svg>[];
+    for (let i = 0; i < this.paraview.paraState.thresholds.length + 1; i++) {
+      const altStyleInfo: Record<string, string> = {};
+      const config = SettingsManager.getGroupLinkForInstance<MarkerConfig>('marker', this.paraview.paraState.config, `threshold-${i}`);
+      if (config.isChangeThresholdHighlightColor) {
+        altStyleInfo["stroke"] = "red";
+      }
+      if (config.isMakeThresholdHighlightDashed) {
+        altStyleInfo["stroke-dasharray"] = "9, 9";
+      }
+      group.push(svg`<path
+        ${this._ref ? ref(this._ref) : undefined}
+        id=${this._id || nothing}
+        style=${styleMap(altStyleInfo)}
+        class=${Object.keys(this._classInfo).length ? classMap(this._classInfo) : nothing}
+        role=${this._role || nothing}
+        d=${this._pathD}
+        clip-path=${this._options.isClip ? `url(#marker-clip-${i})` : nothing}
+      ></path>`);
+    }
+    return svg`<g>
+      ${group}
+    </g>`;
+  }
+}
