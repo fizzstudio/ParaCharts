@@ -139,7 +139,7 @@ export class Threshold extends View {
         if (this.orientation == 'horiz') {
             let int = this.chartInfo.yRangeInfo!.interval;
             if (this.align < int.start || this.align > int.end) {
-                return;
+                return [{ start: 0, end: 1 }, { start: 0, end: 1 }]; 
             }
             const start = this.clipHeight / this.dataLayer.height;
             return [{ start: 0, end: 1 }, { start: start, end: 1 }]

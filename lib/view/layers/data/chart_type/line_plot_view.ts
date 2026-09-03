@@ -374,10 +374,11 @@ export class LinePath extends PathShape {
         class=${Object.keys(this._classInfo).length ? classMap(this._classInfo) : nothing}
         role=${this._role || nothing}
         d=${this._pathD}
-        clip-path=${this._options.isClip ? `url(#marker-clip-${i})` : nothing}
+        clip-path=${`url(#marker-clip-${i})`}
       ></path>`);
     }
-    return svg`<g>
+    return svg`<g
+    clip-path=${`clip-path`}>
       ${group}
     </g>`;
   }

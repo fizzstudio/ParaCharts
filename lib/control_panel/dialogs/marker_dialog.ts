@@ -19,6 +19,7 @@ export class MarkerSettingsDialog extends SettingControlContainer {
     protected _dialogRef = createRef<ui.Dialog>();
     protected settingGroupLabels: TemplateResult[] = []
     protected hasMadeDialog = false;
+    protected numSettings = 1;
     /**
      * Close button text.
      */
@@ -38,6 +39,9 @@ export class MarkerSettingsDialog extends SettingControlContainer {
                     return;
                 }
                 this.settingGroupLabels = [];
+                if (['line', 'stepline'].includes(this._paraState.type)) {
+                    this.numSettings = 2;
+                }
                 if (!this._paraState.thresholds.length) {
                     return;
                 }
@@ -157,21 +161,91 @@ export class MarkerSettingsDialog extends SettingControlContainer {
     }
 
     render() {
+        const vertLength = this._paraState.thresholds.filter(t => t.orientation == 'horiz').length + 1;
+        const horizLength = this._paraState.thresholds.filter(t => t.orientation == 'vert').length + 1;
         const content = this._paraState.settingControls.getContent('controlPanel.tabs.chart.marker.dialog');
         for (let i = 0; i < this.settingGroupLabels.length; i++) {
             const label = this.settingGroupLabels[i];
             const index = i * ((content.length - i) / this.settingGroupLabels.length) + i;
             content.splice(index, 0, label);
         }
+        // If either dimension is zero, fall back to the original linear layout.
+        const rows = Math.max(1, vertLength);
+        const cols = Math.max(1, horizLength);
+        if (vertLength === 0 || horizLength === 0) {
+            return html`
+            <fizz-dialog
+                ${ref(this._dialogRef)}
+                title="Marker Settings"
+                .buttons=${[{ tag: 'cancel', text: this.btnText }]}
+            >
+                ${content}
+            </fizz-dialog>
+        `;
+        }
+
+        // Build cells where each cell contains a label followed by `numSettings` controls.
+        const cells: TemplateResult[][] = [];
+        const snapshot = content.slice();
+        const labelSet = new Set(this.settingGroupLabels);
+        const totalCells = rows * cols;
+        let cursor = 0;
+        for (let i = 0; i < totalCells; i++) {
+            // Find next label in the snapshot starting from cursor
+            let labelIndex = -1;
+            for (let k = cursor; k < snapshot.length; k++) {
+                if (labelSet.has(snapshot[k])) {
+                    labelIndex = k;
+                    break;
+                }
+            }
+            if (labelIndex === -1) {
+                // No more labeled groups; push an empty cell
+                cells.push([html``]);
+                continue;
+            }
+            const cellItems: TemplateResult[] = [];
+            const label = snapshot[labelIndex];
+            cellItems.push(label);
+            // collect up to numSettings controls after the label
+            let collected = 0;
+            let scanIndex = labelIndex + 1;
+            while (collected < this.numSettings && scanIndex < snapshot.length) {
+                const item = snapshot[scanIndex];
+                // stop if we hit the next label
+                if (labelSet.has(item)) break;
+                cellItems.push(item);
+                collected++;
+                scanIndex++;
+            }
+            // advance cursor to scanIndex for next search
+            cursor = scanIndex;
+            cells.push(cellItems);
+        }
+
         return html`
-      <fizz-dialog
-        ${ref(this._dialogRef)}
-        title="Marker Settings"
-        .buttons=${[{ tag: 'cancel', text: this.btnText }]}
-      >
-        ${content}
-      </fizz-dialog>
-    `;
+            <fizz-dialog
+                ${ref(this._dialogRef)}
+                title="Marker Settings"
+                .buttons=${[{ tag: 'cancel', text: this.btnText }]}
+            >
+                <table style="width:100%; border-collapse:collapse;">
+                    ${Array.from({ length: rows }).map((_, r) => {
+                        const rowCells = cells.slice(r * cols, r * cols + cols);
+                        return html`<tr>
+                        ${rowCells.map(cellItems =>
+                            html`<td style="padding:8px;border:1px solid var(--fizz-border,#e6e6e6);vertical-align:top">
+                            ${cellItems.length ? html`<div>
+                                <div style="text-align:center;margin-bottom:6px">
+                                ${cellItems[0]}
+                                </div>
+                                ${cellItems.slice(1).map(i => html`<div style="margin-top:6px">${i}</div>`)}
+                                </div>` : html``}</td>`)}
+                            </tr>`;
+        })}
+                </table>
+            </fizz-dialog>
+        `;
     }
 
     /**
