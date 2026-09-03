@@ -1090,11 +1090,6 @@ export class ParaState extends BaseState {
     if (xFacetKey == undefined || yFacetKey == undefined || bubbleFacetKey == undefined) {
       throw new Error("Bubble chart manifest must have at least three numeric facets.");
     }
-    /*
-    let xFacetKey = facetKeys[0];
-    let yFacetKey = facetKeys[1];
-    let bubbleFacetKey = facetKeys[2];
-    */
     if (config.xFacet) {
       xFacetKey = Object.entries(manifest.jim.datasets[0].facets).filter(f =>
         f[1].label == config.xFacet)![0][0];

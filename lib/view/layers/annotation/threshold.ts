@@ -10,12 +10,13 @@ import { ViewContext } from "../../view_context";
 import { PlanePlotView } from "../data";
 
 export class Threshold extends View {
-    clipHeight = 0;
-    clipWidth = 0;
-    constructor(paraview: ViewContext, public type: 'horiz' | 'vert', public align: number, public label?: string) {
+    clipHeight = -1;
+    clipWidth = -1;
+    protected label?: Label;
+    constructor(paraview: ViewContext, public orientation: 'horiz' | 'vert', public align: number, public text?: string) {
         super(paraview);
         this.id = `threshold-${this.paraview.paraState.nextMarkerID()}`;
-        this._createShapes(type, align);
+        this._createShapes(orientation, align);
         this._createLabel();
     }
 
@@ -63,7 +64,9 @@ export class Threshold extends View {
                     : (tier.children.length) / (tier.options.content.labels.length + 1)
                 width = tier._tickLabelX(index) * regFactor
             }
-
+            else {
+                return;
+            }
             let points = []
             points.push(new Vec2(width, 0))
             points.push(new Vec2(width, this.dataLayer.height))
@@ -79,79 +82,74 @@ export class Threshold extends View {
     }
 
     _createLabel() {
-        if (!this.label) {
+        if (!this.text) {
             return;
         }
-        if (this.type == 'horiz') {
-            const label = new Label(this.paraview, {
-                text: this.label,
-                x: this.dataLayer.width,
-                y: this.clipHeight - 5
-            })
-            this.append(label)
+        this.label?.remove();
+        const checkIntersect = (label: Label) => {
+            const dpViews = this.paraview.documentView!.chartLayers.dataLayer.datapointViews;
+            if (dpViews.map(dp => dp.shapes.map(s => s.intersects(label))).flat().some(a => a !== null)) {
+                return true;
+            }
+            else if (dpViews.map(dp => dp.symbol?.intersects(label)).some(a => a !== null)) {
+                return true;
+            }
+            else return false;
         }
-        else if (this.type == 'vert') {
+        if (this.orientation == 'horiz') {
+            if (this.clipHeight < 0) {
+                return;
+            }
             const label = new Label(this.paraview, {
-                text: this.label,
+                text: this.text,
+                x: this.dataLayer.width,
+                y: this.clipHeight - 7,
+                //wrapWidth: 150
+            })
+
+            label.x -= (label.width / 2);
+            this.append(label);
+            this.label = label;
+            if (checkIntersect(label)) {
+                label.x = 5 + (label.width / 2);
+            }
+            if (checkIntersect(label)) {
+                label.y += (label.height + 14);
+            }
+            if (checkIntersect(label)) {
+                label.x = this.dataLayer.width - (label.width / 2);
+            }
+        }
+        else if (this.orientation == 'vert') {
+            if (this.clipWidth < 0) {
+                return;
+            }
+            const label = new Label(this.paraview, {
+                text: this.text,
                 x: this.clipWidth,
                 y: 0 - 5
             })
             this.append(label)
+            this.label = label;
         }
     }
 
     highlightPoints() {
         //const config = SettingsManager.getGroupLinkForInstance<LegendConfig>('marker', this.paraview.paraState.config, this.id)
-        if (this.type == 'horiz') {
+        if (this.orientation == 'horiz') {
             let int = this.chartInfo.yRangeInfo!.interval;
             if (this.align < int.start || this.align > int.end) {
                 return;
             }
             const start = this.clipHeight / this.dataLayer.height;
-            return  [{ start: 0, end: 1 }, { start: start, end: 1 }]
-            /*
-            if (config.highlightStyle == 'Highlight above') {
-                const start = this.clipHeight / this.dataLayer.height;
-                
-
-                for (let datapoint of this.paraview.paraState.model!.allPoints) {
-                    if (datapoint.facetValueAsNumber('y')! > this.align) {
-                        this.paraview.paraState.contrastDatapoint(datapoint.seriesKey, datapoint.datapointIndex)
-                    }
-                    else {
-                        //this.paraview.paraState.clearDatapointContrasted(datapoint.seriesKey, datapoint.datapointIndex)
-                    }
-                }
-                return  [{ start: 0, end: 1 }, { start: start, end: 1 }]
-            }
-            else if (config.highlightStyle == 'Highlight below') {
-                for (let datapoint of this.paraview.paraState.model!.allPoints) {
-                    if (datapoint.facetValueAsNumber('y')! < this.align) {
-                        this.paraview.paraState.contrastDatapoint(datapoint.seriesKey, datapoint.datapointIndex)
-                    }
-                    else {
-                        //this.paraview.paraState.clearDatapointContrasted(datapoint.seriesKey, datapoint.datapointIndex)
-                    }
-                }
-                return [{ start: 0, end: 1 }, { start: 0, end: this.clipHeight / this.dataLayer.height }]
-            }
-                */
+            return [{ start: 0, end: 1 }, { start: start, end: 1 }]
         }
-        else if (this.type == 'vert') {
-            //(this.paraview as ParaView).clipWidth = this.clipWidth / this.dataLayer.width
-            for (let datapoint of this.paraview.paraState.model!.allPoints) {
-                if (!isNaN(Number(datapoint.facetBox('x')!.raw))) {
-                    if (Number(datapoint.facetBox('x')!.raw) >= this.align) {
-                        this.paraview.paraState.contrastDatapoint(datapoint.seriesKey, datapoint.datapointIndex)
-                    }
-                    else {
-                        this.paraview.paraState.clearDatapointContrasted(datapoint.seriesKey, datapoint.datapointIndex)
-                    }
-                }
-            }
-            return [{ start: 0, end: 1 }, { start: 0, end: 1}]
+        else if (this.orientation == 'vert') {
+            //console.log("this.chartInfo.xRangeInfo", this.chartInfo.xRangeInfo)
+            const start = this.clipWidth / this.dataLayer.width;
+            return [{ start: start, end: 1 }, { start: 0, end: 1 }]
         }
-        return [{ start: 0, end: 1 }, { start: 0, end: 1}]
+        return [{ start: 0, end: 1 }, { start: 0, end: 1 }]
     }
 
 }

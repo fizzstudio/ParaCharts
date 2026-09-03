@@ -139,7 +139,7 @@
                     "marker_dialog": {
                         "highlight_style": "Highlight style",
                         "highlight_dashed": "Make line dashed",
-                        "highlight_color": "Change line's color"
+                        "highlight_color": "Change datapoint's color"
                     }
                 },
                 "annotations": {

@@ -348,7 +348,10 @@ export class DataSymbol extends View {
 
   content() {
     if (this._options.datapoint) {
-      const markerRegionIndex = this.paraview.paraState.thresholds.filter(t => t.type == 'horiz').filter(t => t.clipHeight < this.centerY).length;
+      const thresholds = this.paraview.paraState.thresholds;
+      const i = thresholds.filter(t => t.orientation == 'horiz' && t.clipHeight < this.centerY).length;
+      const j = thresholds.filter(t => t.orientation == 'vert' && t.clipWidth < this.centerX).length;
+      const markerRegionIndex = j + i * (thresholds.filter(t => t.orientation == 'vert').length + 1);
       const config = SettingsManager.getGroupLinkForInstance<MarkerConfig>('marker', this.paraview.paraState.config, `threshold-${markerRegionIndex}`);
       if (config.isChangeThresholdHighlightColor) {
         this._styleInfo.stroke = 'red';

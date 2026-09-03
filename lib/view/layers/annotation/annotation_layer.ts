@@ -289,13 +289,16 @@ export class AnnotationLayer extends PlotLayer {
         this.addGroup('thresholds', true);
         this.group('thresholds')!.clearChildren();
         this.paraview.paraState.clearAllDatapointContrast();
-        let i = 0;
+        const sortedHorizThresholds = this.paraview.paraState.thresholds.filter(t => t.orientation == 'horiz').sort((a, b) => b.align - a.align);
+        const sortedVertThresholds = this.paraview.paraState.thresholds.filter(t => t.orientation == 'vert').sort((a, b) => a.align - b.align);
         let runningY = 0;
-        let runningX = 0;
-        for (const threshold of this.paraview.paraState.thresholds) {
-          threshold.classInfo = { 'threshold': true };
-          const clipBox = threshold.highlightPoints();
-          if (clipBox) {
+        const clWidth = this.paraview.documentView!.chartLayers.width;
+        const clHeight = this.paraview.documentView!.chartLayers.height;
+        if (sortedHorizThresholds.length > 0 && sortedVertThresholds.length == 0) {
+          for (let i = 0; i < sortedHorizThresholds.length; i++) {
+            const threshold = sortedHorizThresholds[i]
+            threshold.classInfo = { 'threshold': true };
+            const clipBox = threshold.highlightPoints()!;
             const clipKey = `marker-clip-${i}`;   // unique key for addDef
             const clipId = `marker-clip-${i}`;    // id used in the clipPath element
             (this.paraview as ParaView).removeDef(clipKey);
@@ -310,33 +313,131 @@ export class AnnotationLayer extends PlotLayer {
               `);
             runningY = newY;
           }
-          i++;
-          this.group('thresholds')!.append(threshold);
-        }
-        const clipKey = `marker-clip-${i}`;   // unique key for addDef
-        const clipId = `marker-clip-${i}`;    // id used in the clipPath element
-        (this.paraview as ParaView).removeDef(clipKey);
-        const x = 0;
-        const y = runningY;
-        const width = this.paraview.documentView!.chartLayers.width;
-        const height = this.paraview.documentView!.chartLayers.height - runningY;
-        this.paraview.addDef(clipKey, svg`
+
+          const clipKey = `marker-clip-${sortedHorizThresholds.length}`;   // unique key for addDef
+          const clipId = `marker-clip-${sortedHorizThresholds.length}`;    // id used in the clipPath element
+          (this.paraview as ParaView).removeDef(clipKey);
+          const width = this.paraview.documentView!.chartLayers.width;
+          const height = this.paraview.documentView!.chartLayers.height - runningY;
+          this.paraview.addDef(clipKey, svg`
                 <clipPath id=${clipId}>
-                  <rect x=${x} y=${y} width=${width} height=${height}></rect>
+                  <rect x=${0} y=${runningY} width=${width} height=${height}></rect>
                 </clipPath>
               `);
+        }
+        else if (sortedHorizThresholds.length == 0 && sortedVertThresholds.length > 0) {
+          for (let i = 0; i < sortedVertThresholds.length; i++) {
+            const threshold = sortedVertThresholds[i]
+            threshold.classInfo = { 'threshold': true };
+            const clipBox = threshold.highlightPoints()!;
+            const clipKey = `marker-clip-${i}`;   // unique key for addDef
+            const clipId = `marker-clip-${i}`;    // id used in the clipPath element
+            (this.paraview as ParaView).removeDef(clipKey);
+            const x = clipBox[0].start * this.paraview.documentView!.chartLayers.width;
+            //const newY = clipBox[1].start * this.paraview.documentView!.chartLayers.height;
+            const width = (clipBox[0].end - clipBox[0].start) * this.paraview.documentView!.chartLayers.width;
+            const height =  this.paraview.documentView!.chartLayers.height;
+            this.paraview.addDef(clipKey, svg`
+                <clipPath id=${clipId}>
+                  <rect x=${x} y=${runningY} width=${width} height=${height}></rect>
+                </clipPath>
+              `);
+            //runningY = newY;
+          }
 
+          const clipKey = `marker-clip-${sortedVertThresholds.length}`;   // unique key for addDef
+          const clipId = `marker-clip-${sortedVertThresholds.length}`;    // id used in the clipPath element
+          (this.paraview as ParaView).removeDef(clipKey);
+          const width = this.paraview.documentView!.chartLayers.width;
+          const height = this.paraview.documentView!.chartLayers.height;
+          this.paraview.addDef(clipKey, svg`
+                <clipPath id=${clipId}>
+                  <rect x=${0} y=${runningY} width=${width} height=${height}></rect>
+                </clipPath>
+              `);
+        }
+        else {
+          for (let i = 0; i < sortedHorizThresholds.length + 1; i++) {
+            let runningX = 0;
+            let newY = 0;
+            for (let j = 0; j < sortedVertThresholds.length + 1; j++) {
+              const id = j + i * (sortedVertThresholds.length + 1);
+              const clipKey = `marker-clip-${id}`;   // unique key for addDef
+              const clipId = `marker-clip-${id}`;    // id used in the clipPath element
+              (this.paraview as ParaView).removeDef(clipKey);
+              if (i < sortedHorizThresholds.length && j < sortedVertThresholds.length) {
+                const horizThreshold = sortedHorizThresholds[i];
+                const vertThreshold = sortedVertThresholds[j];
+                const horizClipBox = horizThreshold.highlightPoints()!;
+                const vertClipBox = vertThreshold.highlightPoints()!;
+                const newX = vertClipBox[0].start * clWidth;
+                newY = horizClipBox[1].start * clHeight;
+                const width = (vertClipBox[0].start) * clWidth - runningX;
+                const height = (horizClipBox[1].start) * clHeight - runningY;
+                this.paraview.addDef(clipKey, svg`
+                  <clipPath id=${clipId}>
+                    <rect x=${runningX} y=${runningY} width=${width} height=${height}></rect>
+                  </clipPath>
+                  `);
+                runningX = newX;
+              }
+              else if (i == sortedHorizThresholds.length && j == sortedVertThresholds.length) {
+                const newX = runningX;
+                newY = runningY;
+                const width = clWidth - runningX;
+                const height = clHeight - runningY;
+                this.paraview.addDef(clipKey, svg`
+                  <clipPath id=${clipId}>
+                    <rect x=${runningX} y=${runningY} width=${width} height=${height}></rect>
+                  </clipPath>
+                  `);
+                runningX = newX;
+              }
+              else if (i == sortedHorizThresholds.length) {
+                const vertThreshold = sortedVertThresholds[j];
+                const vertClipBox = vertThreshold.highlightPoints()!;
+                const newX = vertClipBox[0].start * clWidth;
+                newY = runningY;
+                const width = (vertClipBox[0].start) * clWidth - runningX;
+                const height = clHeight - runningY;
+                this.paraview.addDef(clipKey, svg`
+                  <clipPath id=${clipId}>
+                    <rect x=${runningX} y=${runningY} width=${width} height=${height}></rect>
+                  </clipPath>
+                  `);
+                runningX = newX;
+              }
+              else if (j == sortedVertThresholds.length) {
+                const horizThreshold = sortedHorizThresholds[i];
+                const horizClipBox = horizThreshold.highlightPoints()!;
+                const newX = runningX;
+                newY = horizClipBox[1].start * clHeight;
+                const width = clWidth - runningX;
+                const height = (horizClipBox[1].start) * clHeight - runningY;
+                this.paraview.addDef(clipKey, svg`
+                  <clipPath id=${clipId}>
+                    <rect x=${runningX} y=${runningY} width=${width} height=${height}></rect>
+                  </clipPath>
+                  `);
+                runningX = newX;
+              }
+            }
+            runningY = newY;
+          }
+        }
+        for (let threshold of this.paraview.paraState.thresholds) {
+          threshold.classInfo = { 'threshold': true };
+          this.group('thresholds')!.append(threshold);
+        }
       }
       else {
         if (this._groups.has('thresholds')) {
           this.removeGroup('thresholds', true);
         }
       }
-
     }
     return super.renderChildren();
   }
-
 }
 
 class DecorationGroup extends Container(View) {

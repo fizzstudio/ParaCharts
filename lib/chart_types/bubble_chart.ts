@@ -104,8 +104,8 @@ export class BubbleChartInfo extends PointChartInfo {
         sizeItems.push(maxSizeSymbolItem);
         const sizeConfig = SettingsManager.getGroupLinkForInstance<LegendConfig>('legend', this._paraState.config, `legend-${0}`)
         const seriesConfig = SettingsManager.getGroupLinkForInstance<LegendConfig>('legend', this._paraState.config, `legend-${1}`)
-        const seriesPosition = sizeConfig.position;
-        const sizePosition = seriesConfig.position;
+        const seriesPosition = seriesConfig.position;
+        const sizePosition = sizeConfig.position;
         const legendItems = [];
         if (seriesConfig.isAlwaysDrawLegend) {
             legendItems.push({ position: seriesPosition ?? "north", items: seriesItems })
