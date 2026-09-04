@@ -645,11 +645,9 @@ export interface LegendBoxstyleConfig extends ConfigGroup {
  * @public
  */
 export interface MarkerConfig extends ConfigGroup {
-  /** Highlight points */
-  highlightStyle: string;
   /** Make highlighted region dashed */
   isMakeThresholdHighlightDashed: boolean;
-  /** Make highlighted region dashed */
+  /** Highlight points */
   isChangeThresholdHighlightColor: boolean;
 }
 /**

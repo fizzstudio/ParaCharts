@@ -217,7 +217,6 @@ export const defaultConfig: Config = {
       useDirectLegends: false,
     },
     marker: {
-      highlightStyle: "Highlight above",
       isMakeThresholdHighlightDashed: false,
       isChangeThresholdHighlightColor: false,
     },

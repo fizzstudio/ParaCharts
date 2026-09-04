@@ -585,7 +585,6 @@ export interface ManifestBuilderInput {
 
 // @public
 export interface MarkerConfig extends ConfigGroup {
-    highlightStyle: string;
     isChangeThresholdHighlightColor: boolean;
     isMakeThresholdHighlightDashed: boolean;
 }

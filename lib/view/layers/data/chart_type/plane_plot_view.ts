@@ -69,11 +69,6 @@ export abstract class PlanePlotView extends DataLayer {
         this.paraview.requestUpdate();
       })
     }
-    if (['marker.highlightStyle'].includes(path)) {
-      setTimeout(() => {
-        this.paraview.requestUpdate();
-      }, 100);
-    }
     super.settingDidChange(path, oldValue, newValue);
   }
 

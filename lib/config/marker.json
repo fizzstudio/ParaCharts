@@ -2,22 +2,6 @@
     "description": "Marker/threshold styling.",
     "family": "marker",
     "settings": {
-        "highlightStyle": {
-            "label": "cpanel.tabs.chart.marker_dialog.highlight_style",
-            "description": "Highlight points",
-            "type": "string",
-            "default": "Highlight above",
-            "control": "dropdown",
-            "controlOptions": {
-                "options": [
-                    "No highlight",
-                    "Highlight above",
-                    "Highlight below"
-                ]
-            },
-            "panel": "chart",
-            "parentView": "controlPanel.tabs.chart.marker.dialog"
-        },
         "isMakeThresholdHighlightDashed": {
             "label": "cpanel.tabs.chart.marker_dialog.highlight_dashed",
             "description": "Make highlighted region dashed",
@@ -29,7 +13,7 @@
         ,
         "isChangeThresholdHighlightColor": {
             "label": "cpanel.tabs.chart.marker_dialog.highlight_color",
-            "description": "Make highlighted region dashed",
+            "description": "Highlight points",
             "type": "boolean",
             "default": false,
             "control": "checkbox",
