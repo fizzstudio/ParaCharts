@@ -135,17 +135,19 @@ export class Threshold extends View {
     }
 
     highlightPoints() {
-        //const config = SettingsManager.getGroupLinkForInstance<LegendConfig>('marker', this.paraview.paraState.config, this.id)
         if (this.orientation == 'horiz') {
             let int = this.chartInfo.yRangeInfo!.interval;
             if (this.align < int.start || this.align > int.end) {
-                return [{ start: 0, end: 1 }, { start: 0, end: 1 }]; 
+                return [{ start: 0, end: 1 }, { start: 0, end: 1 }];
             }
             const start = this.clipHeight / this.dataLayer.height;
             return [{ start: 0, end: 1 }, { start: start, end: 1 }]
         }
         else if (this.orientation == 'vert') {
-            //console.log("this.chartInfo.xRangeInfo", this.chartInfo.xRangeInfo)
+            const xValues = this.paraview.paraState.model!.allFacetValues("x")!.map(box => box.raw);
+            if (!this.chartInfo.xRangeInfo && !xValues.includes(String(this.align))) {
+                return;
+            }
             const start = this.clipWidth / this.dataLayer.width;
             return [{ start: start, end: 1 }, { start: 0, end: 1 }]
         }

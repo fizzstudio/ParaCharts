@@ -162,11 +162,9 @@ export class DocumentView extends Container(View) {
     // along the shorter dimension
     if (this._paraState.config.axis.horiz.isDrawAxis && horizFacet) {
       this._createHorizAxis(horizFacet, this.paraview.paraState.chartInfo as PlaneChartInfo, this._width);
-      // console.log('H-AXIS HEIGHT', this._horizAxis!.height);
     }
     if (this._paraState.config.axis.vert.isDrawAxis && vertFacet) {
       this._createVertAxis(vertFacet, this.paraview.paraState.chartInfo as PlaneChartInfo, this._height);
-      // console.log('V-AXIS WIDTH', this._vertAxis!.width);
     }
     if (comboFacet) {
       this._createSecondaryVertAxis(comboFacet, this.paraview.paraState.comboChartInfo as PlaneChartInfo, this._height);

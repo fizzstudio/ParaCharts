@@ -314,6 +314,7 @@ export class AnnotationLayer extends PlotLayer {
         const clWidth = this.paraview.documentView!.chartLayers.width;
         const clHeight = this.paraview.documentView!.chartLayers.height;
         if (sortedHorizThresholds.length > 0 && sortedVertThresholds.length == 0) {
+          //Only horizontal thresholds
           for (let i = 0; i < sortedHorizThresholds.length; i++) {
             const threshold = sortedHorizThresholds[i]
             threshold.classInfo = { 'threshold': true };
@@ -332,6 +333,7 @@ export class AnnotationLayer extends PlotLayer {
           addDef(clipId, 0, runningY, clWidth, height);
         }
         else if (sortedHorizThresholds.length == 0 && sortedVertThresholds.length > 0) {
+          //Only vertical thresholds
           for (let i = 0; i < sortedVertThresholds.length; i++) {
             const threshold = sortedVertThresholds[i]
             threshold.classInfo = { 'threshold': true };
@@ -349,6 +351,7 @@ export class AnnotationLayer extends PlotLayer {
           addDef(clipId, runningX, 0, width, clHeight);
         }
         else {
+          //Horizontal and vertical thresholds
           for (let i = 0; i < sortedHorizThresholds.length + 1; i++) {
             let runningX = 0;
             let newY = 0;

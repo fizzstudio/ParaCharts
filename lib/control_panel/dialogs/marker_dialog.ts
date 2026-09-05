@@ -35,68 +35,65 @@ export class MarkerSettingsDialog extends SettingControlContainer {
         super.connectedCallback();
         document.addEventListener('paranotice', (e: CustomEvent<any>) => {
             if (e.detail.key === 'docView created') {
-                if (this.hasMadeDialog) {
+                if (this.hasMadeDialog || !this._paraState.thresholds.length) {
                     return;
                 }
                 this.settingGroupLabels = [];
                 if (['line', 'stepline'].includes(this._paraState.type)) {
                     this.numSettings = 2;
                 }
-                if (!this._paraState.thresholds.length) {
-                    return;
-                }
                 const sortedHorizThresholds = this._paraState.thresholds.filter(t => t.orientation == 'horiz').sort((a, b) => b.align - a.align);
                 const sortedVertThresholds = this._paraState.thresholds.filter(t => t.orientation == 'vert').sort((a, b) => a.align - b.align);
                 const getLabel = (t: Threshold) => {
                     return t.text ?? t.align;
                 }
-                if (sortedHorizThresholds.length > 0 && sortedVertThresholds.length == 0) {
-                    for (let i = 0; i < sortedHorizThresholds.length; i++) {
-                        const threshold = sortedHorizThresholds[i];
-                        const id = `threshold-${i}`
-                        if (i == 0) {
-                            this.settingGroupLabels.push(svg`Above ${getLabel(threshold)}`)
-                        }
-                        else {
-                            const prevThreshold = sortedHorizThresholds[i - 1]
-                            this.settingGroupLabels.push(svg`Above ${getLabel(threshold)} but below ${getLabel(prevThreshold)}`)
-                        }
-                        this._paraState.settingControls.insert('marker.isChangeThresholdHighlightColor', { instanceID: id }, undefined, undefined, id);
-                        if (['line', 'stepline'].includes(this._paraState.type)) {
-                            this._paraState.settingControls.insert('marker.isMakeThresholdHighlightDashed', { instanceID: id }, undefined, undefined, id);
-                        }
-                    }
-                    const nextId = `threshold-${this._paraState.thresholds.length}`;
-                    this.settingGroupLabels.push(svg`Below ${getLabel(sortedHorizThresholds.at(-1)!)}`)
-                    this._paraState.settingControls.insert('marker.isChangeThresholdHighlightColor', { instanceID: nextId }, undefined, undefined, nextId);
+                const addGroupLabel = (labelText: string) => {
+                    this.settingGroupLabels.push(html`<div style="font-weight: bold">${labelText}</div>`);
+                }
+                const addSettingControls = (id: string) => {
+                    this._paraState.settingControls.insert('marker.isChangeThresholdHighlightColor', { instanceID: id }, undefined, undefined, id);
                     if (['line', 'stepline'].includes(this._paraState.type)) {
-                        this._paraState.settingControls.insert('marker.isMakeThresholdHighlightDashed', { instanceID: nextId }, undefined, undefined, nextId);
+                        this._paraState.settingControls.insert('marker.isMakeThresholdHighlightDashed', { instanceID: id }, undefined, undefined, id);
                     }
                 }
+                if (sortedHorizThresholds.length > 0 && sortedVertThresholds.length == 0) {
+                    //Only horizontal thresholds
+                    for (let i = 0; i < sortedHorizThresholds.length; i++) {
+                        const threshold = sortedHorizThresholds[i];
+                        const id = `threshold-${i}`;
+                        if (i == 0) {
+                            addGroupLabel(`Above ${getLabel(threshold)}`);
+                        }
+                        else {
+                            const prevThreshold = sortedHorizThresholds[i - 1];
+                            addGroupLabel(`Above ${getLabel(threshold)} but below ${getLabel(prevThreshold)}`);
+                        }
+                        addSettingControls(id);
+                    }
+                    const nextId = `threshold-${this._paraState.thresholds.length}`;
+                    addGroupLabel(`Below ${getLabel(sortedHorizThresholds.at(-1)!)}`);
+                    addSettingControls(nextId);
+                }
                 else if (sortedHorizThresholds.length == 0 && sortedVertThresholds.length > 0) {
+                    //Only vertical thresholds
                     for (let i = 0; i < sortedVertThresholds.length; i++) {
                         const threshold = sortedVertThresholds[i];
                         const id = `threshold-${i}`;
                         if (i == 0) {
-                            this.settingGroupLabels.push(svg`Left of ${getLabel(threshold)}`);
+                            addGroupLabel(`Left of ${getLabel(threshold)}`);
                         }
                         else {
                             const prevThreshold = sortedVertThresholds[i - 1];
-                            this.settingGroupLabels.push(svg`Left of ${getLabel(threshold)} but right of ${getLabel(prevThreshold)}`)
+                            addGroupLabel(`Left of ${getLabel(threshold)} but right of ${getLabel(prevThreshold)}`);
                         }
-                        this._paraState.settingControls.insert('marker.isChangeThresholdHighlightColor', { instanceID: id }, undefined, undefined, id);
-                        if (['line', 'stepline'].includes(this._paraState.type)) {
-                            this._paraState.settingControls.insert('marker.isMakeThresholdHighlightDashed', { instanceID: id }, undefined, undefined, id);
-                        }
+                        addSettingControls(id);
                     }
                     const nextId = `threshold-${this._paraState.thresholds.length}`;
-                    this.settingGroupLabels.push(svg`Right of ${getLabel(sortedVertThresholds.at(-1)!)}`)
-                    this._paraState.settingControls.insert('marker.isChangeThresholdHighlightColor', { instanceID: nextId }, undefined, undefined, nextId);
-                    if (['line', 'stepline'].includes(this._paraState.type)) {
-                        this._paraState.settingControls.insert('marker.isMakeThresholdHighlightDashed', { instanceID: nextId }, undefined, undefined, nextId);
-                    }
+                    addGroupLabel(`Right of ${getLabel(sortedVertThresholds.at(-1)!)}`);
+                    addSettingControls(nextId);
                 }
                 else {
+                    //Horizontal and vertical thresholds
                     for (let i = 0; i < sortedHorizThresholds.length + 1; i++) {
                         for (let j = 0; j < sortedVertThresholds.length + 1; j++) {
                             const id = `threshold-${j + i * (sortedVertThresholds.length + 1)}`
@@ -104,53 +101,50 @@ export class MarkerSettingsDialog extends SettingControlContainer {
                                 const horizThreshold = sortedHorizThresholds[i];
                                 const vertThreshold = sortedVertThresholds[j];
                                 if (i == 0 && j == 0) {
-                                    this.settingGroupLabels.push(html`<div style="font-weight: bold">Above ${getLabel(horizThreshold)}. Left of ${getLabel(vertThreshold)} </div>`)
+                                    addGroupLabel(`Above ${getLabel(horizThreshold)}. Left of ${getLabel(vertThreshold)}`);
                                 }
                                 else if (i == 0) {
                                     const prevVertThreshold = sortedVertThresholds[j - 1];
-                                    this.settingGroupLabels.push(html`<div style="font-weight: bold">Above ${getLabel(horizThreshold)}. Left of ${getLabel(vertThreshold)} but right of ${getLabel(prevVertThreshold)} </div>`)
+                                    addGroupLabel(`Above ${getLabel(horizThreshold)}. Left of ${getLabel(vertThreshold)} but right of ${getLabel(prevVertThreshold)}`);
                                 }
                                 else if (j == 0) {
                                     const prevHorizThreshold = sortedHorizThresholds[i - 1];
-                                    this.settingGroupLabels.push(html`<div style="font-weight: bold">Above ${getLabel(horizThreshold)} but below ${getLabel(prevHorizThreshold)}. Left of ${getLabel(vertThreshold)} </div>`)
+                                    addGroupLabel(`Above ${getLabel(horizThreshold)} but below ${getLabel(prevHorizThreshold)}. Left of ${getLabel(vertThreshold)}`);
                                 }
                                 else {
                                     const prevVertThreshold = sortedVertThresholds[j - 1];
                                     const prevHorizThreshold = sortedHorizThresholds[i - 1];
-                                    this.settingGroupLabels.push(html`<div style="font-weight: bold">Above ${getLabel(horizThreshold)} but below ${getLabel(prevHorizThreshold)}. Left of ${getLabel(vertThreshold)} but right of ${getLabel(prevVertThreshold)} </div>`)
+                                    addGroupLabel(`Above ${getLabel(horizThreshold)} but below ${getLabel(prevHorizThreshold)}. Left of ${getLabel(vertThreshold)} but right of ${getLabel(prevVertThreshold)}`);
                                 }
                             }
                             else if (i == sortedHorizThresholds.length && j == sortedVertThresholds.length) {
                                 const horizThreshold = sortedHorizThresholds[i - 1];
                                 const vertThreshold = sortedVertThresholds[j - 1];
-                                this.settingGroupLabels.push(html`<div style="font-weight: bold">Below ${getLabel(horizThreshold)}. Right of ${getLabel(vertThreshold)}</div>`)
+                                addGroupLabel(`Below ${getLabel(horizThreshold)}. Right of ${getLabel(vertThreshold)}`);
                             }
                             else if (i == sortedHorizThresholds.length) {
                                 const horizThreshold = sortedHorizThresholds[i - 1];
                                 const vertThreshold = sortedVertThresholds[j];
                                 if (j == 0) {
-                                    this.settingGroupLabels.push(html`<div style="font-weight: bold">Below ${getLabel(horizThreshold)}. Left of ${getLabel(vertThreshold)}</div>`)
+                                    addGroupLabel(`Below ${getLabel(horizThreshold)}. Left of ${getLabel(vertThreshold)}`);
                                 }
                                 else {
                                     const prevVertThreshold = sortedVertThresholds[j - 1];
-                                    this.settingGroupLabels.push(html`<div style="font-weight: bold">Below ${getLabel(horizThreshold)}. Left of ${getLabel(vertThreshold)} but right of ${getLabel(prevVertThreshold)}</div>`)
+                                    addGroupLabel(`Below ${getLabel(horizThreshold)}. Left of ${getLabel(vertThreshold)} but right of ${getLabel(prevVertThreshold)}`);
                                 }
                             }
                             else if (j == sortedVertThresholds.length) {
                                 const horizThreshold = sortedHorizThresholds[i];
                                 const vertThreshold = sortedVertThresholds[j - 1];
                                 if (i == 0) {
-                                    this.settingGroupLabels.push(html`<div style="font-weight: bold">Above ${getLabel(horizThreshold)}. Right of ${getLabel(vertThreshold)}</div>`)
+                                    addGroupLabel(`Above ${getLabel(horizThreshold)}. Right of ${getLabel(vertThreshold)}`);
                                 }
                                 else {
                                     const prevHorizThreshold = sortedHorizThresholds[i - 1];
-                                    this.settingGroupLabels.push(html`<div style="font-weight: bold">Above ${getLabel(horizThreshold)} but below ${getLabel(prevHorizThreshold)}. Right of ${getLabel(vertThreshold)}</div>`)
+                                    addGroupLabel(`Above ${getLabel(horizThreshold)} but below ${getLabel(prevHorizThreshold)}. Right of ${getLabel(vertThreshold)}`);
                                 }
                             }
-                            this._paraState.settingControls.insert('marker.isChangeThresholdHighlightColor', { instanceID: id }, undefined, undefined, id);
-                            if (['line', 'stepline'].includes(this._paraState.type)) {
-                                this._paraState.settingControls.insert('marker.isMakeThresholdHighlightDashed', { instanceID: id }, undefined, undefined, id);
-                            }
+                            addSettingControls(id)
                         }
                     }
                 }
