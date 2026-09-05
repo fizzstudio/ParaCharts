@@ -9,6 +9,7 @@ export interface TextfieldSettingControlOptions {
   min?: number;
   max?: number;
   size?: number;
+  instanceID?: string;
 }
 
 @customElement('para-textfield-setting-control')

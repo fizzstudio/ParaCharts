@@ -55,9 +55,9 @@ export class MarkerSettingsDialog extends SettingControlContainer {
                     this.settingGroupLabels.push(html`<div style="font-weight: bold">${labelText}</div>`);
                 }
                 const addSettingControls = (id: string) => {
-                    this._paraState.settingControls.insert('marker.isChangeThresholdHighlightColor', { instanceID: id }, undefined, undefined, id);
+                    this._paraState.settingControls.insert('marker.isChangeThresholdHighlightColor', { instanceID: id });
                     if (['line', 'stepline'].includes(this._paraState.type)) {
-                        this._paraState.settingControls.insert('marker.isMakeThresholdHighlightDashed', { instanceID: id }, undefined, undefined, id);
+                        this._paraState.settingControls.insert('marker.isMakeThresholdHighlightDashed', { instanceID: id });
                     }
                 }
                 if (sortedHorizThresholds.length > 0 && sortedVertThresholds.length == 0) {

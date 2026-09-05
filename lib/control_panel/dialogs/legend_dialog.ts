@@ -34,19 +34,19 @@ export class LegendSettingsDialog extends SettingControlContainer {
             if (e.detail.key === 'docView created') {
                 if (!this._paraState._legends.length) {
                     const id = `legend-${0}`;
-                    this._paraState.settingControls.insert('legend.isAlwaysDrawLegend', { instanceID: id }, undefined, undefined, id);
-                    this._paraState.settingControls.insert('legend.itemOrder', { instanceID: id }, undefined, undefined, id);
-                    this._paraState.settingControls.insert('legend.position', { instanceID: id }, undefined, undefined, id);
+                    this._paraState.settingControls.insert('legend.isAlwaysDrawLegend', { instanceID: id });
+                    this._paraState.settingControls.insert('legend.itemOrder', { instanceID: id });
+                    this._paraState.settingControls.insert('legend.position', { instanceID: id });
                     if (['bar', 'column', 'line'].includes(this._paraState.type)) {
-                        this._paraState.settingControls.insert('legend.useDirectLegends', { instanceID: id }, undefined, undefined, id);
+                        this._paraState.settingControls.insert('legend.useDirectLegends', { instanceID: id });
                     }
                 }
                 for (let legend of this._paraState._legends) {
-                    this._paraState.settingControls.insert('legend.isAlwaysDrawLegend', { instanceID: legend.id }, undefined, undefined, legend.id);
-                    this._paraState.settingControls.insert('legend.itemOrder', { instanceID: legend.id }, undefined, undefined, legend.id);
-                    this._paraState.settingControls.insert('legend.position', { instanceID: legend.id }, undefined, undefined, legend.id);
+                    this._paraState.settingControls.insert('legend.isAlwaysDrawLegend', { instanceID: legend.id });
+                    this._paraState.settingControls.insert('legend.itemOrder', { instanceID: legend.id });
+                    this._paraState.settingControls.insert('legend.position', { instanceID: legend.id });
                     if (['bar', 'column', 'line'].includes(this._paraState.type)) {
-                        this._paraState.settingControls.insert('legend.useDirectLegends', { instanceID: legend.id }, undefined, undefined, legend.id);
+                        this._paraState.settingControls.insert('legend.useDirectLegends', { instanceID: legend.id });
                     }
                 }
             }

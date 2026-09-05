@@ -4,7 +4,7 @@ import { customElement } from 'lit/decorators.js';
 import { html, css } from 'lit';
 
 export interface CheckboxSettingControlOptions {
-
+  instanceID?: string;
 }
 
 @customElement('para-checkbox-setting-control')

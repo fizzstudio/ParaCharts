@@ -11,6 +11,7 @@ export interface DropdownSettingControlOptions {
   options: string[];
   /** Optional setting values. */
   values?: Array<string | number>;
+  instanceID?: string;
 }
 
 @customElement('para-dropdown-setting-control')

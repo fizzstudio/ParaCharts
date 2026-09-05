@@ -18,6 +18,7 @@ export interface SliderSettingControlOptions {
   showValue?: boolean;
   compact?: boolean;
   width?: string;
+  instanceID?: string;
 }
 
 @customElement('para-slider-setting-control')

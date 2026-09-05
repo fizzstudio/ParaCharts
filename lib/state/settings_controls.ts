@@ -106,8 +106,7 @@ export class SettingControlManager extends State {
     key: string,
     controlOptions?: SettingControlOptionsType<T>,
     valueTransformer?: (value: any) => any,
-    validator?: Validator,
-    instanceId?: string
+    validator?: Validator
   ) {
     const parts = key.split('.');
     const path = parts.slice(0, -1).join('.');
@@ -115,6 +114,7 @@ export class SettingControlManager extends State {
     if (!groupMetadata) throw new Error(`no such config group '${path}'`);
     const metadata = groupMetadata.settings[parts.at(-1)!] as ConfigSettingMetadata<T> | undefined;
     if (!metadata) throw new Error(`no such config setting '${key}'`);
+    const instanceId = controlOptions?.instanceID;
     this._settingControlInfo = produce(this._settingControlInfo, draft => {
       const controlInfo: Partial<SettingControlInfo<T>> = {};
       const tag = inputTypeTags[metadata.control!];
