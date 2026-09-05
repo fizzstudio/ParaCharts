@@ -550,8 +550,8 @@ export class ParaState extends BaseState {
   //   return patches;
   // }
 
-  updateConfig(updater: (draft: Config) => void, ignoreObservers = false, instanceId?: string) {
-    if (!instanceId) {
+  updateConfig(updater: (draft: Config) => void, ignoreObservers = false, instanceID?: string) {
+    if (!instanceID) {
       const [newConfig, patches, inversePatches] = produceWithPatches(this.config, updater);
       this.config = newConfig;
       const filtered = patches.filter(p => synchronizedSettings.includes(p.path.join('.')));
@@ -605,7 +605,7 @@ export class ParaState extends BaseState {
       cur[segs[segs.length - 1]] = value;
     };
     for (const path of allPaths) {
-      const instVal = SettingsManager.getForInstance(path, this.config, instanceId);
+      const instVal = SettingsManager.getForInstance(path, this.config, instanceID);
       const canonVal = SettingsManager.get(path, this.config);
       if (instVal !== canonVal) {
         setNested(overrideBefore, path, instVal);
@@ -630,7 +630,7 @@ export class ParaState extends BaseState {
     }
 
     // Persist instance overrides
-    SettingsManager.setInstanceOverrides(instanceId, overrideAfter);
+    SettingsManager.setInstanceOverrides(instanceID, overrideAfter);
 
     // Notify observers using patches from the merged produce
     if (ignoreObservers) {
@@ -661,9 +661,9 @@ export class ParaState extends BaseState {
       );
       this.settingDidChange(path, values.oldValue, values.newValue);
     }
-
     return patches;
   }
+
   observeSetting(path: string, observer: (oldValue: ConfigSetting, newValue: ConfigSetting) => void) {
     if (!this._settingObservers[path]) {
       this._settingObservers[path] = [];

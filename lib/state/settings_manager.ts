@@ -232,20 +232,20 @@ export class SettingsManager {
   private static _mergedCache: Map<string, ConfigGroup> = new Map();
 
   /** Register or replace overrides for an instance. */
-  static setInstanceOverrides(instanceId: string, overrides: Partial<Config>) {
-    SettingsManager._instanceOverrides[instanceId] = overrides;
+  static setInstanceOverrides(instanceID: string, overrides: Partial<Config>) {
+    SettingsManager._instanceOverrides[instanceID] = overrides;
     // invalidate cache entries for this instance
     for (const key of SettingsManager._mergedCache.keys()) {
-      if (key.startsWith(instanceId + '::')) SettingsManager._mergedCache.delete(key);
+      if (key.startsWith(instanceID + '::')) SettingsManager._mergedCache.delete(key);
     }
   }
 
   /** Clear overrides for an instance (or all if no id). */
-  static clearInstanceOverrides(instanceId?: string) {
-    if (instanceId) {
-      delete SettingsManager._instanceOverrides[instanceId];
+  static clearInstanceOverrides(instanceID?: string) {
+    if (instanceID) {
+      delete SettingsManager._instanceOverrides[instanceID];
       for (const key of SettingsManager._mergedCache.keys()) {
-        if (key.startsWith(instanceId + '::')) SettingsManager._mergedCache.delete(key);
+        if (key.startsWith(instanceID + '::')) SettingsManager._mergedCache.delete(key);
       }
     } else {
       SettingsManager._instanceOverrides = {};
@@ -259,9 +259,9 @@ export class SettingsManager {
   }
 
   /** Internal: get override subtree for an instance and group path (e.g., 'legend'). */
-  private static _getOverrideGroup(path: string, instanceId?: string): Partial<ConfigGroup> | undefined {
-    if (!instanceId) return undefined;
-    const inst = SettingsManager._instanceOverrides[instanceId];
+  private static _getOverrideGroup(path: string, instanceID?: string): Partial<ConfigGroup> | undefined {
+    if (!instanceID) return undefined;
+    const inst = SettingsManager._instanceOverrides[instanceID];
     if (!inst) return undefined;
     // path may be like 'legend' or 'axis.horiz'
     const segs = path.split('.');
@@ -277,8 +277,8 @@ export class SettingsManager {
    * Merge the canonical group at `path` with instance overrides (if any).
    * Returns a cloned, merged group suitable for read-only use.
    */
-  static mergeGroupForInstance<T extends ConfigGroup>(path: string, rootGroup: ConfigGroup, instanceId?: string): T {
-    const cacheKey = (instanceId ?? '__global__') + '::' + path;
+  static mergeGroupForInstance<T extends ConfigGroup>(path: string, rootGroup: ConfigGroup, instanceID?: string): T {
+    const cacheKey = (instanceID ?? '__global__') + '::' + path;
     const cached = SettingsManager._mergedCache.get(cacheKey);
     if (cached) return cached as unknown as T;
 
@@ -288,10 +288,10 @@ export class SettingsManager {
 
     // obtain override subtree for this path; if not present, try to build it
     // from flat (dotted) override keys stored at the instance top-level.
-    let override = SettingsManager._getOverrideGroup(path, instanceId);
+    let override = SettingsManager._getOverrideGroup(path, instanceID);
 
-    if (!override && instanceId) {
-      const instTop = SettingsManager._instanceOverrides[instanceId];
+    if (!override && instanceID) {
+      const instTop = SettingsManager._instanceOverrides[instanceID];
       if (instTop) {
         const prefix = path + '.';
         const temp: any = {};
@@ -340,18 +340,18 @@ export class SettingsManager {
   }
 
   /** Convenience: give a readonly link for components to consume. */
-  static getGroupLinkForInstance<T extends ConfigGroup>(path: string, rootGroup: ConfigGroup, instanceId?: string): DeepReadonly<T> {
-    return SettingsManager.mergeGroupForInstance<T>(path, rootGroup, instanceId) as DeepReadonly<T>;
+  static getGroupLinkForInstance<T extends ConfigGroup>(path: string, rootGroup: ConfigGroup, instanceID?: string): DeepReadonly<T> {
+    return SettingsManager.mergeGroupForInstance<T>(path, rootGroup, instanceID) as DeepReadonly<T>;
   }
 
   /** Get single setting value with instance override applied. */
-  static getForInstance(path: string, rootGroup: ConfigGroup, instanceId?: string) {
-    if (!instanceId) return SettingsManager.get(path, rootGroup);
+  static getForInstance(path: string, rootGroup: ConfigGroup, instanceID?: string) {
+    if (!instanceID) return SettingsManager.get(path, rootGroup);
     const group = SettingsManager.getGroupForSetting(path, rootGroup, false);
     // try override value first
     const segs = path.split('.');
     const key = segs.at(-1)!;
-    const overrideGroup = SettingsManager._getOverrideGroup(segs.slice(0, -1).join('.'), instanceId);
+    const overrideGroup = SettingsManager._getOverrideGroup(segs.slice(0, -1).join('.'), instanceID);
     if (overrideGroup && Object.prototype.hasOwnProperty.call(overrideGroup, key)) {
       const val = (overrideGroup as any)[key];
       if (typeof val === 'object') {

@@ -26,7 +26,7 @@ export class ButtonSettingControl extends SettingControl<'button'> {
           type="button"
           @click=${(e: Event) => {
             this._value = !this._value;
-            this._updateSetting(this.info.key, this._value, this.info.instanceId);
+            this._updateSetting(this.info.key, this._value, this.info.instanceID);
           }}
         >
           ${this.label}

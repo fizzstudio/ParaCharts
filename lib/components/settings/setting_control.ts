@@ -47,7 +47,7 @@ export abstract class SettingControl<T extends SettingControlType> extends ParaC
   ];
 
   protected _updateSetting(key: string, value: SettingControlValueType<SettingControlType>, instanceID?: string) {
-    const inst = instanceID ?? this.info?.instanceId;
+    const inst = instanceID ?? this.info?.instanceID;
     this._paraState.updateConfig(draft => SettingsManager.set(key, value, draft), false, inst);
     if (this.info.refresh === 'chart') {
       this._paraState.refreshParaView();

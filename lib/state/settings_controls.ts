@@ -78,7 +78,7 @@ export interface SettingControlInfo<T extends SettingControlType = SettingContro
   /** Optional function for validating input. */
   validator?: Validator;
   refresh: RefreshTarget;
-  instanceId?: string;
+  instanceID?: string;
 }
 
 const inputTypeTags = {
@@ -114,14 +114,14 @@ export class SettingControlManager extends State {
     if (!groupMetadata) throw new Error(`no such config group '${path}'`);
     const metadata = groupMetadata.settings[parts.at(-1)!] as ConfigSettingMetadata<T> | undefined;
     if (!metadata) throw new Error(`no such config setting '${key}'`);
-    const instanceId = controlOptions?.instanceID;
+    const instanceID = controlOptions?.instanceID;
     this._settingControlInfo = produce(this._settingControlInfo, draft => {
       const controlInfo: Partial<SettingControlInfo<T>> = {};
       const tag = inputTypeTags[metadata.control!];
       // controlInfo.isConfig = true;
       controlInfo.key = key;
       controlInfo.parentView = metadata.parentView;
-      controlInfo.instanceId = instanceId;
+      controlInfo.instanceID = instanceID;
       // controlInfo.options = metadata.controlOptions ?? controlOptions;
       if (metadata.controlOptions) {
         // We can't mutate metadata.controlOptions, so we make a new object that we can
@@ -136,10 +136,10 @@ export class SettingControlManager extends State {
       controlInfo.refresh = metadata.refresh;
       controlInfo.render = () => {
         // use instance-aware getter
-        let value = SettingsManager.getForInstance(key, this._paraState.config, instanceId);
+        let value = SettingsManager.getForInstance(key, this._paraState.config, instanceID);
         if (valueTransformer) value = valueTransformer(value);
-        // include instanceId in element id to avoid collisions
-        const idSuffix = instanceId ? `.${instanceId}` : '';
+        // include instanceID in element id to avoid collisions
+        const idSuffix = instanceID ? `.${instanceID}` : '';
         return html`
           <${tag}
             .value=${value}
@@ -151,7 +151,7 @@ export class SettingControlManager extends State {
           ></${tag}>
       `;
       };
-      draft[key + (instanceId ? `::${instanceId}` : '')] = controlInfo as SettingControlInfo;
+      draft[key + (instanceID ? `::${instanceID}` : '')] = controlInfo as SettingControlInfo;
     });
   }
 
