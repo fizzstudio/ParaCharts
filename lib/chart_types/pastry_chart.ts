@@ -21,9 +21,9 @@ import { formatBox, formatXYDatapointX } from '@fizz/parasummary';
 import { interpolate } from '@fizz/templum';
 import { BaseChartInfo, RiffOrder } from './base_chart';
 import { type ParaState, datapointIdToCursor, queryMessages, describeSelections, getDatapointMinMax, SettingsManager } from '../state';
-import { CardinalDirection, directions, HorizDirection, LegendConfig } from '../config/config_types';
+import { directions, HorizDirection, LegendConfig } from '../config/config_types';
 import { NavLayer, NavNode } from '../view/layers/data/navigation'
-import { LegendItem } from '../view/legend';
+import { LegendItemsWithPosition } from '../view/legend';
 
 
 export type ArcType = 'circle' | 'semicircle';
@@ -66,7 +66,7 @@ export class PastryChartInfo extends BaseChartInfo {
     nodes.at(-1)!.connect('right', nodes[0]);
   }
 
-  legend(): Array<{ position: CardinalDirection, items: LegendItem[] }> {
+  legend(): LegendItemsWithPosition[] {
     const series = this._paraState.model!.series[0];
     const config = SettingsManager.getGroupLinkForInstance<LegendConfig>('legend', this._paraState.config, `legend-${0}`) ?? this._paraState.config.legend;
     const xs = series.datapoints.map(dp =>

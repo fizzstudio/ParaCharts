@@ -18,10 +18,10 @@ import { Logger, getLogger } from '@fizz/logger';
 import { Datapoint } from '@fizz/paramodel';
 import { ChartType, Facet } from '@fizz/chartsignal-internal';
 import { Summarizer, formatBox, Highlight, summarizerFromModel, HighlightedSummary } from '@fizz/parasummary';
-import { CardinalDirection, ConfigSetting, DeepReadonly } from '../config/config_types';
+import { ConfigSetting, DeepReadonly } from '../config/config_types';
 import { ConfigGroup, Direction, HorizDirection } from '../config/config_types';
 import { ParaView } from '../paraview/paraview';
-import { type LegendItem } from '../view/legend';
+import { LegendItemsWithPosition, type LegendItem } from '../view/legend';
 import { AxisOrientation } from '../view/axis';
 import { NavMap, NavNode, NavNodeType, DatapointNavNodeType } from '../view/layers/data/navigation';
 import { type ParaState, PointAnnotation, type SparkBrailleInfo, datapointIdToCursor, SettingsManager } from '../state';
@@ -204,7 +204,7 @@ export abstract class BaseChartInfo {
     root.cursor = chartLandingNode;
   }
 
-  legend(): Array<{ position: CardinalDirection, items: LegendItem[] }> {
+  legend(): LegendItemsWithPosition[] {
     return [];
   }
 

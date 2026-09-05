@@ -28,6 +28,11 @@ export interface LegendItem {
   bubbleSize?: "small" | "medium" | "large"
 }
 
+export interface LegendItemsWithPosition {
+  items: LegendItem[];
+  position: CardinalDirection;
+}
+
 export type LegendOrientation = 'horiz' | 'vert';
 
 export interface LegendOptions {

@@ -5,8 +5,8 @@ import { type ParaState } from '../state/parastate';
 import { DatapointNavNodeType, NavNode, NavNodeOptionsType, ScatterPointNavNodeOptions, SeriesNavNodeOptions } from '../view/layers/data/navigation';
 import { Datapoint, PlaneModel } from '@fizz/paramodel';
 import { DataSymbols } from '../view/symbol';
-import { LegendItem } from '../view/legend';
-import { CardinalDirection, LegendConfig } from '../common_exports';
+import { LegendItemsWithPosition } from '../view/legend';
+import { LegendConfig } from '../common_exports';
 import { SettingsManager } from '../state';
 
 
@@ -163,7 +163,7 @@ export class ScatterChartInfo extends PointChartInfo {
     super.navRunDidEnd(cursor, quiet)
   }
 
-  legend(): Array<{ position: CardinalDirection, items: LegendItem[] }> {
+  legend(): LegendItemsWithPosition[] {
     const model = this._paraState.model!;
     const config = SettingsManager.getGroupLinkForInstance<LegendConfig>('legend', this._paraState.config, `legend-${0}`) ?? this._paraState.config.legend;
     const types = new DataSymbols().types;

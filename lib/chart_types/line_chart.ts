@@ -23,9 +23,9 @@ import { PointChartInfo } from './point_chart';
 import { datapointIdToCursor, type ParaState, queryMessages, describeSelections, describeAdjacentDatapoints, getDatapointMinMax, SettingsManager } from '../state';
 import { NavNode } from '../view/layers';
 import { DataSymbols } from '../view/symbol';
-import { CardinalDirection, ConfigSetting, LegendConfig } from '../config/config_types';
+import { ConfigSetting, LegendConfig } from '../config/config_types';
 import { AxisRangeInfo } from './plane_chart';
-import { LegendItem } from '../view/legend';
+import { LegendItemsWithPosition } from '../view/legend';
 
 /**
  * Business logic for line charts.
@@ -131,7 +131,7 @@ export class LineChartInfo extends PointChartInfo {
     }
   }
 
-  legend(): Array<{ position: CardinalDirection, items: LegendItem[] }> {
+  legend(): LegendItemsWithPosition[] {
     const model = this.model!;
     const config = SettingsManager.getGroupLinkForInstance<LegendConfig>('legend', this._paraState.config, `legend-${0}`) ?? this._paraState.config.legend;
     const seriesKeys = enumerate([...model.seriesKeys]);

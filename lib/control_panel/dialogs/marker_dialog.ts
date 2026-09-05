@@ -35,7 +35,11 @@ export class MarkerSettingsDialog extends SettingControlContainer {
         super.connectedCallback();
         document.addEventListener('paranotice', (e: CustomEvent<any>) => {
             if (e.detail.key === 'docView created') {
-                if (this.hasMadeDialog || !this._paraState.thresholds.length) {
+                if (this.hasMadeDialog) {
+                    return;
+                }
+                if (!this._paraState.thresholds.length) {
+                    this.settingGroupLabels.push(html`No current markers on this chart.`)
                     return;
                 }
                 this.settingGroupLabels = [];
@@ -253,5 +257,4 @@ declare global {
     interface HTMLElementTagNameMap {
         'para-marker-settings-dialog': MarkerSettingsDialog;
     }
-
 }

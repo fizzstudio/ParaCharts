@@ -22,9 +22,9 @@ import { formatBox, formatXYDatapoint, formatXYDatapointX } from '@fizz/parasumm
 import { interpolate } from '@fizz/templum';
 import { PlaneChartInfo, computeAxisRange, AxisRangeInfo } from './plane_chart';
 import { datapointIdToCursor, type ParaState, queryMessages, describeAdjacentDatapoints, describeSelections, getDatapointMinMax, SettingsManager } from '../state';
-import { CardinalDirection, ConfigSetting, DeepReadonly, LegendConfig, TypeBarConfig } from '../config/config_types';
+import { ConfigSetting, DeepReadonly, LegendConfig, TypeBarConfig } from '../config/config_types';
 import { type Label } from '../view/label';
-import { LegendItem } from '../view/legend';
+import { LegendItemsWithPosition } from '../view/legend';
 
 type BarClusterMap = { [key: string]: BarCluster };
 
@@ -318,7 +318,7 @@ export class BarChartInfo extends PlaneChartInfo {
     this._createSequenceNavNodes();
   }
 
-  legend(): Array<{ position: CardinalDirection, items: LegendItem[] }> {
+  legend(): LegendItemsWithPosition[] {
     const model = this._paraState.model!;
     const config = SettingsManager.getGroupLinkForInstance<LegendConfig>('legend', this._paraState.config, `legend-${0}`) ?? this._paraState.config.legend;
     const seriesKeys = enumerate([...model.seriesKeys]);

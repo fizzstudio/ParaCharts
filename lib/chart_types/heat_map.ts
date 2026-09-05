@@ -1,7 +1,9 @@
-import { type Datapoint } from '@fizz/paramodel';
+import { enumerate, type Datapoint } from '@fizz/paramodel';
 import { type ChartType } from "@fizz/chartsignal-internal";
 import { PlaneChartInfo } from './plane_chart';
-import { type ParaState } from '../state';
+import { SettingsManager, type ParaState } from '../state';
+import { LegendConfig } from '../common_exports';
+import { LegendItemsWithPosition } from '../view/legend';
 
 export class HeatMapInfo extends PlaneChartInfo {
   protected _resolution!: number;
@@ -85,28 +87,6 @@ export class HeatMapInfo extends PlaneChartInfo {
   protected _createChordNavNodes() {
 
   }
-  /*
-    async _generateClustering(): Promise<clusterObject[] | null> {
-      return await (this._paraState.model as PlaneModel).getClusteringAnalysis();
-    }
-  */
-  /*
-    protected _datapointSummary(xIndex: number, yIndex: number) {
-      const index = yIndex * this.resolution + xIndex;
-      const count = this._grid[index % this._resolution][Math.floor(index / this._resolution)];
-      const xInterval = this.xInterval!;
-      const yInterval = this.yInterval!;
-      const xRange = xInterval.end - xInterval.start;
-      const yRange = yInterval.end - yInterval.start;
-      const xSpan = xRange / this._resolution;
-      const ySpan = yRange / this._resolution;
-      const up = (yInterval.end - ySpan * (Math.floor((index) / this._resolution))).toFixed(2);
-      const down = (yInterval.end - ySpan * (Math.floor((index) / this._resolution) + 1)).toFixed(2);
-      const left = (xInterval.start + xSpan * ((index) % this._resolution)).toFixed(2);
-      const right = (xInterval.start + xSpan * ((index) % this._resolution + 1)).toFixed(2);
-      return `This block contains ${count} datapoints. It spans x values from ${left} to ${right}, and y values from ${down} to ${up}`
-    }
-    */
 
   goSeriesMinMax(isMin: boolean): void {
 
@@ -114,5 +94,28 @@ export class HeatMapInfo extends PlaneChartInfo {
 
   goChartMinMax(isMin: boolean): void {
 
+  }
+
+  legend(): LegendItemsWithPosition[] {
+    const model = this._paraState.model!;
+    const config = SettingsManager.getGroupLinkForInstance<LegendConfig>('legend', this._paraState.config, `legend-${0}`) ?? this._paraState.config.legend;
+    const seriesKeys = enumerate([...model.seriesKeys]);
+    if (config.itemOrder === 'alphabetical') {
+      seriesKeys.sort((a, b) => a[0].localeCompare(b[0]));
+    }
+    else if (config.itemOrder === 'reverseAlphabetical') {
+      seriesKeys.sort((a, b) => -1 * a[0].localeCompare(b[0]));
+    }
+    const items = seriesKeys.map(key => ({
+      label: model.atKey(key[0])!.getLabel(),
+      seriesKey: key[0],
+      colorIndex: this._paraState.seriesProperties!.properties(key[0]).colorIndex,
+    }));
+    const legendItems = [];
+    const position = config.position;
+    if (config.isAlwaysDrawLegend) {
+      legendItems.push({ position: position, items: items });
+    }
+    return legendItems;
   }
 }

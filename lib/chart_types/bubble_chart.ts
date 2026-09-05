@@ -1,9 +1,9 @@
 import { formatBox } from "@fizz/parasummary";
 import { datapointIdToCursor, SettingsManager } from "../state";
 import { PointChartInfo } from "./point_chart";
-import { LegendItem } from "../view/legend";
+import { LegendItem, LegendItemsWithPosition } from "../view/legend";
 import { DataSymbols } from "../view/symbol";
-import { CardinalDirection, LegendConfig } from "../config/config_types";
+import { LegendConfig } from "../config/config_types";
 
 export class BubbleChartInfo extends PointChartInfo {
 
@@ -43,7 +43,7 @@ export class BubbleChartInfo extends PointChartInfo {
         return `${series.label} (${formatBox(dp.facetBox('x')!, 'raw')}, ${formatBox(dp.facetBox('y')!, 'raw')}, ${formatBox(dp.facetBox('z')!, 'raw')})`;
     };
 
-    legend(): Array<{ position: CardinalDirection, items: LegendItem[] }> {
+    legend(): LegendItemsWithPosition[] {
         const model = this._paraState.model!;
         //let symbolType = series.symbol;
         const types = new DataSymbols().types;
@@ -102,8 +102,8 @@ export class BubbleChartInfo extends PointChartInfo {
         sizeItems.push(minSizeSymbolItem);
         sizeItems.push(medSizeSymbolItem);
         sizeItems.push(maxSizeSymbolItem);
-        const sizeConfig = SettingsManager.getGroupLinkForInstance<LegendConfig>('legend', this._paraState.config, `legend-${0}`)
-        const seriesConfig = SettingsManager.getGroupLinkForInstance<LegendConfig>('legend', this._paraState.config, `legend-${1}`)
+        const seriesConfig = SettingsManager.getGroupLinkForInstance<LegendConfig>('legend', this._paraState.config, `legend-${0}`)
+        const sizeConfig = SettingsManager.getGroupLinkForInstance<LegendConfig>('legend', this._paraState.config, `legend-${1}`)
         const seriesPosition = seriesConfig.position;
         const sizePosition = sizeConfig.position;
         const legendItems = [];

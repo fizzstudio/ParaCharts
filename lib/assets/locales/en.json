@@ -137,7 +137,6 @@
                         "direct": "use direct legend"
                     },
                     "marker_dialog": {
-                        "highlight_style": "Highlight style",
                         "highlight_dashed": "Make line dashed",
                         "highlight_color": "Change datapoint's color"
                     }
