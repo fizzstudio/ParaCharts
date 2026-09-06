@@ -105,7 +105,7 @@ export class PathShape extends Shape {
         class=${Object.keys(this._classInfo).length ? classMap(this._classInfo) : nothing}
         role=${this._role || nothing}
         d=${this._pathD}
-        clip-path=${this._options.isClip ? 'url(#threshold-clip-path)' : nothing}
+        clip-path=${this._options.isClip ? 'url(#clip-path)' : nothing}
       ></path>
     `;
   }

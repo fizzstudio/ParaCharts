@@ -289,7 +289,6 @@ export class AnnotationLayer extends PlotLayer {
       if (this.paraview.paraState.thresholds) {
         this.addGroup('thresholds', true);
         this.group('thresholds')!.clearChildren();
-        this.paraview.paraState.clearAllDatapointContrast();
         const backgroundHighlights: RectShape[] = [];
         const addDef = (key: string, x: number, y: number, width: number, height: number) => {
           this.paraview.addDef(key, svg`

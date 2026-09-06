@@ -397,26 +397,51 @@ export class DatapointView extends DataView {
       datapointText = `${this.series.getLabel()} ${datapointText}`
     }
     if (this.paraview.paraState.thresholds.length > 0) {
-      const allTs = this.paraview.paraState.thresholds;
-      const yVal = this.datapoint.facetValueAsNumber('y')!;
-      const aboveT = allTs.filter(t => t.align > yVal);
-      const belowT = allTs.filter(t => t.align < yVal);
-      const onT = allTs.filter(t => t.align == yVal);
-      if (onT.length > 0) {
-        datapointText = datapointText.concat(` On threshold ${onT[0].text ?? onT[0].align}.`)
+      const horizTs = this.paraview.paraState.thresholds.filter(t => t.orientation == 'horiz');
+      const vertTs = this.paraview.paraState.thresholds.filter(t => t.orientation == 'vert');
+      if (horizTs.length > 0) {
+        const yVal = this.datapoint.facetValueAsNumber('y')!;
+        const aboveT = horizTs.filter(t => t.align > yVal);
+        const belowT = horizTs.filter(t => t.align < yVal);
+        const onT = horizTs.filter(t => t.align == yVal);
+        if (onT.length > 0) {
+          datapointText = datapointText.concat(` On threshold ${onT[0].text ?? onT[0].align}.`)
+        }
+        else if (aboveT.length > 0 && belowT.length > 0) {
+          const highestBelowT = belowT.sort((a, b) => b.align - a.align)[0]!;
+          const lowestAboveT = aboveT.sort((a, b) => a.align - b.align)[0]!;
+          datapointText = datapointText.concat(` Above threshold ${highestBelowT.text ?? highestBelowT.align} but below threshold ${lowestAboveT.text ?? lowestAboveT.align}.`)
+        }
+        else if (aboveT.length > 0) {
+          const lowestAboveT = aboveT.sort((a, b) => a.align - b.align)[0]!;
+          datapointText = datapointText.concat(` Below threshold ${lowestAboveT.text ?? lowestAboveT.align}.`)
+        }
+        else if (belowT.length > 0) {
+          const highestBelowT = belowT.sort((a, b) => b.align - a.align)[0]!;
+          datapointText = datapointText.concat(` Above threshold ${highestBelowT.text ?? highestBelowT.align}.`)
+        }
       }
-      else if (aboveT.length > 0 && belowT.length > 0) {
-        const highestBelowT = belowT.sort((a, b) => b.align - a.align)[0]!;
-        const lowestAboveT = aboveT.sort((a, b) => a.align - b.align)[0]!;
-        datapointText = datapointText.concat(` Above threshold ${highestBelowT.text ?? highestBelowT.align} but below threshold ${lowestAboveT.text ?? lowestAboveT.align}.`)
-      }
-      else if (aboveT.length > 0) {
-        const lowestAboveT = aboveT.sort((a, b) => a.align - b.align)[0]!;
-        datapointText = datapointText.concat(` Below threshold ${lowestAboveT.text ?? lowestAboveT.align}.`)
-      }
-      else if (belowT.length > 0) {
-        const highestBelowT = belowT.sort((a, b) => b.align - a.align)[0]!;
-        datapointText = datapointText.concat(` Above threshold ${highestBelowT.text ?? highestBelowT.align}.`)
+      if (vertTs.length > 0) {
+        const xVal = this.x;
+        const aboveT = vertTs.filter(t => t.clipWidth > xVal);
+        const belowT = vertTs.filter(t => t.clipWidth < xVal);
+        const onT = vertTs.filter(t => t.clipWidth == xVal);
+        if (onT.length > 0) {
+          datapointText = datapointText.concat(` On threshold ${onT[0].text ?? onT[0].align}.`)
+        }
+        else if (aboveT.length > 0 && belowT.length > 0) {
+          const highestBelowT = belowT.sort((a, b) => b.align - a.align)[0]!;
+          const lowestAboveT = aboveT.sort((a, b) => a.align - b.align)[0]!;
+          datapointText = datapointText.concat(` Right of threshold ${highestBelowT.text ?? highestBelowT.align} but left of threshold ${lowestAboveT.text ?? lowestAboveT.align}.`)
+        }
+        else if (aboveT.length > 0) {
+          const lowestAboveT = aboveT.sort((a, b) => a.align - b.align)[0]!;
+          datapointText = datapointText.concat(` Left of threshold ${lowestAboveT.text ?? lowestAboveT.align}.`)
+        }
+        else if (belowT.length > 0) {
+          const highestBelowT = belowT.sort((a, b) => b.align - a.align)[0]!;
+          datapointText = datapointText.concat(` Right of threshold ${highestBelowT.text ?? highestBelowT.align}.`)
+        }
       }
     }
 
