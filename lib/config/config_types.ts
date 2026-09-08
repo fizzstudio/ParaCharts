@@ -105,7 +105,7 @@ export type ColorPrefSource =
   | 'modeDefault'  // set by an active mode (e.g. low-vision mode)
   | 'profile'      // saved in manifest extensions
   | 'system'       // derived from current media-query state
-  | 'user';        // explicit user choice — wins until explicitly reset
+  | 'user';        // explicit user choice - wins until explicitly reset
 
 /** @public */
 export type DeepReadonly<T> = {
