@@ -83,7 +83,6 @@ export default defineConfig({
       '@fizz/jimerator',
       '@fizz/paramodel',
       '@fizz/sparkbraille-component',
-      '@fizz/clustering',
       '@fizz/templum',
       'decimal.js',
       'papaparse'

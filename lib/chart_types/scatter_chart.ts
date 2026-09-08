@@ -1,6 +1,5 @@
 import { PointChartInfo } from './point_chart';
-import { type clusterObject } from '@fizz/clustering';
-import { type ChartType } from '@fizz/chartsignal-internal';
+import { type ChartType, type clusterObject } from '@fizz/chartsignal-internal';
 import { type ParaState } from '../state/parastate';
 import { DatapointNavNodeType, NavNode, NavNodeOptionsType, ScatterPointNavNodeOptions, SeriesNavNodeOptions } from '../view/layers/data/navigation';
 import { Datapoint, PlaneModel } from '@fizz/paramodel';

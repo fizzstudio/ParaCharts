@@ -22,7 +22,7 @@ enablePatches();
 import { Logger, getLogger } from '@fizz/logger';
 import {
   dataFromManifest, type AllSeriesData, type ChartType, isPastryType, isVennType, type Point,
-  numberToScaledNumberRounded
+  numberToScaledNumberRounded, SequenceInfo, SeriesAnalysis, clusterObject
 } from '@fizz/chartsignal-internal';
 import { Jimerator } from '@fizz/jimerator';
 import {
@@ -39,8 +39,6 @@ import {
   HighlightedSummary, type Highlight,
   formatBox
 } from '@fizz/parasummary';
-import { clusterObject } from '@fizz/clustering';
-import { SequenceInfo, SeriesAnalysis } from '@fizz/series-analyzer';
 
 import { BaseState, SettingObserver } from './base_state';
 import {

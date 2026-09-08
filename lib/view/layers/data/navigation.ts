@@ -1,4 +1,4 @@
-import { type clusterObject } from '@fizz/clustering';
+import { type clusterObject } from '@fizz/chartsignal-internal';
 import { type Datapoint } from '@fizz/paramodel';
 import { type ParaState } from '../../../state';
 import { type Direction } from '../../../config/config_types';
