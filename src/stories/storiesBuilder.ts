@@ -136,9 +136,6 @@ function generateFamilyStories(family: ChartTypeFamily, multi?: boolean): void {
     : familyCatalogMapMulti(family, multi);
   const familyMembers = CHART_FAMILY_MEMBERS[family];
   for (const chartType of familyMembers) {
-    if (chartType === 'heatmap') {
-      //continue;
-    }
     if (multi === undefined) {
       generateTypeStories(chartType, familyManifests);
     } else {
