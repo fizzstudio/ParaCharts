@@ -190,6 +190,9 @@ export abstract class DataLayer extends PlotLayer {
         this.paraview.requestUpdate();
       })
     }
+    if (['marker.isChangeThresholdHighlightColor', 'marker.highlightColor', 'marker.isMakeThresholdHighlightDashed'].includes(path)) {
+      this.paraview.requestUpdate();
+    }
     super.settingDidChange(path, oldValue, newValue);
   }
 
