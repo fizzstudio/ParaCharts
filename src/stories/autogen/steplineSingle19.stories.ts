@@ -5,7 +5,7 @@ import type { Meta, StoryObj } from '@storybook/web-components-vite';
 type Story = StoryObj<ChartProps>;
 
 const meta = {
-  title: "Basic Charts/Line Charts/Single Stepline Charts",
+  title: 'Charts/Line Charts/Single Stepline Charts',
   render: (args) => Chart(args),
 } satisfies Meta<ChartProps>;
 
@@ -14,7 +14,7 @@ export default meta;
 export const Chart19: Story = {
   name: "1047: Number of Xbox Live MAU Q1 2016 - Q4 2019 (19)",
   args: {
-    filename: "manifests/autogen/line-single/line-single-manifest-1047.json",
-    forcecharttype: "stepline",
+    filename: 'manifests/autogen/line-single/line-single-manifest-1047.json',
+    forcecharttype: 'stepline',
   }
 }

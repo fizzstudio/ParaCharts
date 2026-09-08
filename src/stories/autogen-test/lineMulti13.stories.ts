@@ -8,20 +8,20 @@ import Runner from '../tests/lineTests';
 type Story = StoryObj<ChartProps>;
 
 const meta = {
-  title: "Basic Charts/Line Charts/Multi Line Charts",
+  title: 'Charts/Line Charts/Multi Line Charts',
   render: (args) => Chart(args),
 } satisfies Meta<ChartProps>;
 
 export default meta;
 
 export const Chart13: Story = {
-  name: "261: Passenger cars - sales in selected countries worldwide 2005 to 2018 (13)",
+  name: '261: Passenger cars - sales in selected countries worldwide 2005 to 2018 (13)',
   args: {
-    filename: "manifests/autogen/line-multi/line-multi-manifest-261.json",
-    forcecharttype: "line",
+    filename: 'manifests/autogen/line-multi/line-multi-manifest-261.json',
+    forcecharttype: 'line',
   },
   play: async ({canvas, userEvent}) => {
-    const runner = await (new Runner(canvas, userEvent, expect)).loadManifest("manifests/autogen/line-multi/line-multi-manifest-261.json");
+    const runner = await (new Runner(canvas, userEvent, expect)).loadManifest('manifests/autogen/line-multi/line-multi-manifest-261.json');
     await runner.run();
   }
 }

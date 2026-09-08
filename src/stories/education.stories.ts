@@ -1,4 +1,4 @@
-import { AiChart, type ChartProps } from './Chart';
+import { Chart, type ChartProps } from './Chart';
 
 import type { Meta, StoryObj } from '@storybook/web-components';
 
@@ -6,7 +6,7 @@ type Story = StoryObj<ChartProps>;
 
 const meta = {
   title: "Education",
-  render: (args) => AiChart(args),
+  render: (args) => Chart(args),
 } satisfies Meta<ChartProps>;
 
 export default meta;

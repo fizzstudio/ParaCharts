@@ -16,10 +16,6 @@ docs/.vitepress/cache/
 types/
 # api-extractor
 temp/
-## This is the AI-enhanced build process will output code.
-dist-ai/
-# TS types for the AI-enhanced build process
-types-ai/
 # Artifacts from docs generation script
 docs/.generated-pages.json
 docs/.api-model/

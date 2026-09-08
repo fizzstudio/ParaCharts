@@ -15,13 +15,12 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { html, css, PropertyValues, TemplateResult, nothing } from 'lit';
-import { property, state, queryAssignedElements } from 'lit/decorators.js';
+import { property, state, queryAssignedElements, customElement } from 'lit/decorators.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { Logger, getLogger } from '@fizz/logger';
 import { type ChartType } from '@fizz/chartsignal-internal'
-import { PairAnalyzerConstructor, SeriesAnalyzerConstructor } from '@fizz/paramodel';
 import { ParaComponent } from '../components';
 import { ConfigSetting, SettingsInput } from '../config/config_types';
 import { SettingsManager, GlobalState } from '../state';
@@ -48,8 +47,8 @@ import cpanelIconAlt from '../assets/info-icon-alt.svg';
 import { type BrailleGrade, type BrailleTranslationProvider } from '../braille/braille_translation_provider';
 import { BrailleTranslationService } from '../braille/braille_translation_service';
 
-// NOTE: We cannot use the `customElement` decorator here as that would clash with `ParaChartsAi`
 /** @public */
+@customElement('para-chart')
 export class ParaChart extends ParaComponent {
   @property({ type: Boolean }) headless = false;
   @property({ type: Boolean }) scalable = false;
@@ -88,19 +87,14 @@ export class ParaChart extends ParaComponent {
   private _activeBrailleProvider?: BrailleTranslationProvider;
   private _pollTimer: ReturnType<typeof setInterval> | undefined;
 
-  constructor(
-    seriesAnalyzerConstructor?: SeriesAnalyzerConstructor,
-    pairAnalyzerConstructor?: PairAnalyzerConstructor
-  ) {
+  constructor() {
     super();
     const customPropLoader = new CustomPropertyLoader();
     const cssProps = customPropLoader.processProperties();
     const globalState = new GlobalState(
       // XXX config won't get set until connectedCallback()
       Object.assign(cssProps, this.config),
-      // this._suppleteSettingsWith,
-      seriesAnalyzerConstructor,
-      pairAnalyzerConstructor
+      // this._suppleteSettingsWith
     );
     // Create 2 ParaStates: one for the main chart, one for the explainer
     globalState.createParaState();
@@ -639,5 +633,11 @@ export class ParaChart extends ParaComponent {
     return this.paraState.shortDescription().then((summary) => {
       return summary.text;
     });
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'para-chart': ParaChart;
   }
 }

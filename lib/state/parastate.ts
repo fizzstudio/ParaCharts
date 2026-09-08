@@ -18,6 +18,7 @@ import { property } from '@lit-app/state';
 import papa from 'papaparse';
 import { produceWithPatches, enablePatches, applyPatches, type Patch } from 'immer';
 enablePatches();
+
 import { Logger, getLogger } from '@fizz/logger';
 import {
   dataFromManifest, type AllSeriesData, type ChartType, isPastryType, isVennType
@@ -26,11 +27,8 @@ import { Jimerator } from '@fizz/jimerator';
 import {
   facetsFromDataset, Model, modelFromExternalData, modelFromInlineData,
   FacetSignature, SeriesAnalyzerConstructor, PairAnalyzerConstructor,
-  PlaneDatapoint,
-  planeModelFromInlineData,
-  planeModelFromExternalData,
-  PlaneModel,
-  type Datapoint
+  PlaneDatapoint, planeModelFromInlineData, planeModelFromExternalData,
+  PlaneModel, type Datapoint, AiSeriesPairMetadataAnalyzer
 } from '@fizz/paramodel';
 import {
   FormatType, formatXYDatapointX, formatXYDatapointY,
@@ -38,6 +36,9 @@ import {
   formatBox
 } from '@fizz/parasummary';
 import { clusterObject } from '@fizz/clustering';
+import {  } from '@fizz/paramodel';
+import { SeriesAnalyzer } from '@fizz/series-analyzer';
+
 import { BaseState, SettingObserver } from './base_state';
 import {
   FORMAT_CONTEXT_SETTINGS, FormatContext,
@@ -276,17 +277,15 @@ export class ParaState extends BaseState {
   constructor(
     protected _globalState: GlobalState,
     protected _inputSettings: SettingsInput,
-    // suppleteSettingsWith?: DeepReadonly<Settings>,
-    seriesAnalyzerConstructor?: SeriesAnalyzerConstructor,
-    pairAnalyzerConstructor?: PairAnalyzerConstructor
+    // suppleteSettingsWith?: DeepReadonly<Settings>
   ) {
     super();
     this._createSettings(_inputSettings);
     this._colors = new Colors(this);
     this._seriesProperties = new SeriesPropertyManager(this);
     this._comboSeriesProperties = new SeriesPropertyManager(this, true);
-    this._seriesAnalyzerConstructor = seriesAnalyzerConstructor;
-    this._pairAnalyzerConstructor = pairAnalyzerConstructor;
+    this._seriesAnalyzerConstructor = SeriesAnalyzer;
+    this._pairAnalyzerConstructor = AiSeriesPairMetadataAnalyzer;
     //this._getUrlAnnotations();
   }
 

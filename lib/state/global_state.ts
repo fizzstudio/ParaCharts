@@ -2,8 +2,6 @@ import { BaseState } from './base_state';
 import { ParaState } from './parastate';
 import { SettingsInput } from '../config/config_types';
 
-import { SeriesAnalyzerConstructor, PairAnalyzerConstructor } from '@fizz/paramodel';
-
 import { property } from '@lit-app/state';
 
 // import { Localization } from '@elemental/localization';
@@ -16,9 +14,7 @@ export class GlobalState extends BaseState {
 
   constructor(
     protected _inputSettings: SettingsInput,
-    // suppleteSettingsWith?: DeepReadonly<Settings>,
-    protected _seriesAnalyzerConstructor?: SeriesAnalyzerConstructor,
-    protected _pairAnalyzerConstructor?: PairAnalyzerConstructor
+    // suppleteSettingsWith?: DeepReadonly<Settings>
   ) {
     super();
     // this._createSettings(_inputSettings);
@@ -46,9 +42,7 @@ export class GlobalState extends BaseState {
     this._paraStates.push(
       new ParaState(
         this,
-        this._inputSettings,
-        this._seriesAnalyzerConstructor,
-        this._pairAnalyzerConstructor));
+        this._inputSettings));
     this._currentParaState = this._paraStates.at(-1)!;
   }
 

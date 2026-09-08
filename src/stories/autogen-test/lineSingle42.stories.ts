@@ -8,20 +8,20 @@ import Runner from '../tests/lineTests';
 type Story = StoryObj<ChartProps>;
 
 const meta = {
-  title: "Basic Charts/Line Charts/Single Line Charts",
+  title: 'Charts/Line Charts/Single Line Charts',
   render: (args) => Chart(args),
 } satisfies Meta<ChartProps>;
 
 export default meta;
 
 export const Chart42: Story = {
-  name: "Charizard: Holographic Charizard Card Price (42)",
+  name: 'Charizard: Holographic Charizard Card Price (42)',
   args: {
-    filename: "manifests/autogen/line-single/line-single-manifest-Charizard.json",
-    forcecharttype: "line",
+    filename: 'manifests/autogen/line-single/line-single-manifest-Charizard.json',
+    forcecharttype: 'line',
   },
   play: async ({canvas, userEvent}) => {
-    const runner = await (new Runner(canvas, userEvent, expect)).loadManifest("manifests/autogen/line-single/line-single-manifest-Charizard.json");
+    const runner = await (new Runner(canvas, userEvent, expect)).loadManifest('manifests/autogen/line-single/line-single-manifest-Charizard.json');
     await runner.run();
   }
 }

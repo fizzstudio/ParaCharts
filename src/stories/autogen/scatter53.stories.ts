@@ -5,16 +5,16 @@ import type { Meta, StoryObj } from '@storybook/web-components-vite';
 type Story = StoryObj<ChartProps>;
 
 const meta = {
-  title: "Basic Charts/Scatter Charts",
+  title: 'Charts/Scatter Charts',
   render: (args) => Chart(args),
 } satisfies Meta<ChartProps>;
 
 export default meta;
 
 export const Chart53: Story = {
-  name: "Old Faithful Geyser Eruptions (53)",
+  name: "d3 (53)",
   args: {
-    filename: "manifests/scatter-manifest-geyser.json",
-    forcecharttype: "scatter",
+    filename: 'manifests/scatter-manifest-d3.json',
+    forcecharttype: 'scatter',
   }
 }
