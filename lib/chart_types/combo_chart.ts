@@ -4,6 +4,7 @@ import { PlaneModel } from '@fizz/paramodel';
 import { NavMap } from '../view/layers';
 import { ParaState } from '../state';
 import { ConfigSetting, Direction } from '../config/config_types';
+import { LegendItemsWithPosition } from '../view/legend';
 
 export class ComboChartInfo extends BarChartInfo {
   protected _otherNavMap!: NavMap;
@@ -105,7 +106,7 @@ export class ComboChartInfo extends BarChartInfo {
     }
   }
 
-  legend() {
+  legend(): LegendItemsWithPosition[] {
     return [...super.legend(), ...this._paraState.comboChartInfo!.legend()];
   }
 }

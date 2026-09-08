@@ -34,6 +34,9 @@ import {
 import { svg, nothing } from 'lit';
 import { styleMap } from 'lit/directives/style-map.js';
 import { classMap } from 'lit/directives/class-map.js';
+import { Datapoint } from '@fizz/paramodel';
+import { SettingsManager } from '../state';
+import { MarkerConfig } from '../common_exports';
 
 export type DataSymbolShape =
   'circle' | 'square' | 'triangle_up' | 'diamond' | 'plus' | 'star' | 'triangle_down' | 'x';
@@ -102,6 +105,7 @@ export interface DataSymbolOptions {
   isClip?: boolean;
   blackBorder?: boolean;
   borderStrokeWidth: number;
+  datapoint?: Datapoint;
   pointerEnter?: (e: PointerEvent) => void;
   pointerLeave?: (e: PointerEvent) => void;
   click?: (e: MouseEvent) => void;
@@ -157,6 +161,7 @@ export class DataSymbol extends View {
       isClip: options?.isClip ?? false,
       blackBorder: options?.blackBorder ?? false,
       borderStrokeWidth: options?.borderStrokeWidth ?? 1,
+      datapoint: options?.datapoint ?? undefined,
       pointerEnter: options?.pointerEnter,
       pointerLeave: options?.pointerLeave,
       click: options?.click
@@ -342,6 +347,18 @@ export class DataSymbol extends View {
   }
 
   content() {
+    if (this._options.datapoint) {
+      const thresholds = this.paraview.paraState.thresholds;
+      if (thresholds.length) {
+        const i = thresholds.filter(t => t.orientation == 'horiz' && t.clipHeight < this.centerY).length;
+        const j = thresholds.filter(t => t.orientation == 'vert' && t.clipWidth < this.centerX).length;
+        const markerRegionIndex = j + i * (thresholds.filter(t => t.orientation == 'vert').length + 1);
+        const config = SettingsManager.getGroupLinkForInstance<MarkerConfig>('marker', this.paraview.paraState.config, `threshold-${markerRegionIndex}`);
+        if (config.isChangeThresholdHighlightColor) {
+          this._styleInfo.stroke = 'red';
+        }
+      }
+    }
     this._updateClassInfo();
     let transform;
     let shouldTransform = false;

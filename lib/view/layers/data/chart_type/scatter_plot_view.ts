@@ -219,6 +219,7 @@ export class ScatterPointView extends PointDatapointView {
       pointerLeave: (e) => {
         this.paraview.paraState.removePopup(this.id);
       },
+      datapoint: this.datapoint
     });
     this._symbol.role = 'datapoint'
     this._symbol.id = `${this._id}-sym`;

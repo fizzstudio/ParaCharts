@@ -81,6 +81,16 @@
             },
             "advanced": true,
             "panel": "chart"
+        },
+        "sliceLabelFormat": {
+            "description": "Format for slice labels",
+            "type": "LabelFormat",
+            "default": "raw"
+        },
+        "sliceValueFormat": {
+            "description": "Format for slice values",
+            "type": "LabelFormat",
+            "default": "raw"
         }
     }
 }

@@ -5,7 +5,9 @@ import { type ParaState } from '../state/parastate';
 import { DatapointNavNodeType, NavNode, NavNodeOptionsType, ScatterPointNavNodeOptions, SeriesNavNodeOptions } from '../view/layers/data/navigation';
 import { Datapoint, PlaneModel } from '@fizz/paramodel';
 import { DataSymbols } from '../view/symbol';
-import { LegendItem } from '../view/legend';
+import { LegendItemsWithPosition } from '../view/legend';
+import { LegendConfig } from '../common_exports';
+import { SettingsManager } from '../state';
 
 
 export class ScatterChartInfo extends PointChartInfo {
@@ -161,24 +163,31 @@ export class ScatterChartInfo extends PointChartInfo {
     super.navRunDidEnd(cursor, quiet)
   }
 
-  legend(): LegendItem[] {
+  legend(): LegendItemsWithPosition[] {
     const model = this._paraState.model!;
+    const config = SettingsManager.getGroupLinkForInstance<LegendConfig>('legend', this._paraState.config, `legend-${0}`) ?? this._paraState.config.legend;
     const types = new DataSymbols().types;
     if (model.multi || !this.clustering) {
       const seriesKeys = [...model.seriesKeys];
-      if (this._paraState.config.legend.itemOrder === 'alphabetical') {
+      if (config.itemOrder === 'alphabetical') {
         seriesKeys.sort();
       }
-      return seriesKeys.map((key, i) => ({
+      const items = seriesKeys.map((key, i) => ({
         label: model.atKey(key)!.getLabel(),
         seriesKey: key,
         colorIndex: this._paraState.seriesProperties!.properties(key).colorIndex,
         symbol: types[i],
         symbolOptions: { lighten: true }
       }));
+      const legendItems = [];
+      const position = config.position;
+      if (config.isAlwaysDrawLegend) {
+        legendItems.push({ position: position, items: items });
+      }
+      return legendItems;
     }
     else {
-      return this.clustering.map((c, i) => ({
+      const items = this.clustering.map((c, i) => ({
         label: `cluster ${i + 1} (${c.regionDesc})`,
         seriesKey: model.seriesKeys[0],
         colorIndex: i,
@@ -186,6 +195,12 @@ export class ScatterChartInfo extends PointChartInfo {
         symbolOptions: { lighten: true },
         clusterIndex: i
       }))
+      const legendItems = [];
+      const position = config.position;
+      if (config.isAlwaysDrawLegend) {
+        legendItems.push({ position: position, items: items });
+      }
+      return legendItems;
     }
   }
 }

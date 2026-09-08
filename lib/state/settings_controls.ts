@@ -33,7 +33,7 @@ export type SettingControlOptionsType<T extends SettingControlType> =
   never;
 
 type Validator = (value: ConfigSetting) => SettingValidationResult;
-type SettingValidationResult = {err?: string};
+type SettingValidationResult = { err?: string };
 
 /**
  * Options supplied when creating a setting control.
@@ -78,6 +78,7 @@ export interface SettingControlInfo<T extends SettingControlType = SettingContro
   /** Optional function for validating input. */
   validator?: Validator;
   refresh: RefreshTarget;
+  instanceID?: string;
 }
 
 const inputTypeTags = {
@@ -95,7 +96,7 @@ const inputTypeTags = {
 export class SettingControlManager extends State {
   protected log: Logger = getLogger("SettingControlManager");
 
-  @property() protected _settingControlInfo: {[key: string]: SettingControlInfo} = {};
+  @property() protected _settingControlInfo: { [key: string]: SettingControlInfo } = {};
 
   constructor(protected _paraState: ParaState) {
     super();
@@ -113,12 +114,14 @@ export class SettingControlManager extends State {
     if (!groupMetadata) throw new Error(`no such config group '${path}'`);
     const metadata = groupMetadata.settings[parts.at(-1)!] as ConfigSettingMetadata<T> | undefined;
     if (!metadata) throw new Error(`no such config setting '${key}'`);
+    const instanceID = controlOptions?.instanceID;
     this._settingControlInfo = produce(this._settingControlInfo, draft => {
       const controlInfo: Partial<SettingControlInfo<T>> = {};
       const tag = inputTypeTags[metadata.control!];
       // controlInfo.isConfig = true;
       controlInfo.key = key;
       controlInfo.parentView = metadata.parentView;
+      controlInfo.instanceID = instanceID;
       // controlInfo.options = metadata.controlOptions ?? controlOptions;
       if (metadata.controlOptions) {
         // We can't mutate metadata.controlOptions, so we make a new object that we can
@@ -132,10 +135,11 @@ export class SettingControlManager extends State {
       controlInfo.validator = validator;
       controlInfo.refresh = metadata.refresh;
       controlInfo.render = () => {
-        let value = SettingsManager.get(key, this._paraState.config);
-        if (valueTransformer) {
-          value = valueTransformer(value);
-        }
+        // use instance-aware getter
+        let value = SettingsManager.getForInstance(key, this._paraState.config, instanceID);
+        if (valueTransformer) value = valueTransformer(value);
+        // include instanceID in element id to avoid collisions
+        const idSuffix = instanceID ? `.${instanceID}` : '';
         return html`
           <${tag}
             .value=${value}
@@ -143,11 +147,11 @@ export class SettingControlManager extends State {
             .info=${controlInfo}
             .globalState=${this._paraState.globalState}
             ?hidden=${metadata.hidden}
-            id="setting-${strToId(key)}"
+            id="setting-${strToId(key + idSuffix)}"
           ></${tag}>
-        `;
+      `;
       };
-      draft[key] = controlInfo as SettingControlInfo;
+      draft[key + (instanceID ? `::${instanceID}` : '')] = controlInfo as SettingControlInfo;
     });
   }
 

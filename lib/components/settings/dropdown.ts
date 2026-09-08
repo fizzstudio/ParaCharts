@@ -11,6 +11,7 @@ export interface DropdownSettingControlOptions {
   options: string[];
   /** Optional setting values. */
   values?: Array<string | number>;
+  instanceID?: string;
 }
 
 @customElement('para-dropdown-setting-control')
@@ -40,7 +41,7 @@ export class DropdownSettingControl extends SettingControl<'dropdown'> {
         selected=${this.values.indexOf(this._value)}
         @select=${(e: CustomEvent) => {
           const idx = (e.target as Dropdown).selectedIndex;
-          this._updateSetting(this.info.key, this.values[idx]);
+          this._updateSetting(this.info.key, this.values[idx], this.info.instanceID);
         }}
       ></fizz-dropdown>
     `;

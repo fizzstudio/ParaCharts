@@ -71,7 +71,7 @@ export function diamondMetrics(area?: number): DiamondMetrics {
 }
 
 function starMetrics() {
-  const pentArea = 25;
+  const pentArea = 35;
   const t = Math.sqrt(pentArea / 1.72);
   const triArea = (100 - pentArea) / 5;
   const h = triArea * 2 / t;

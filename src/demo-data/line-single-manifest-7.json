@@ -82,5 +82,18 @@
         ]
       }
     ]
+    ,
+    "annotations": [
+      {
+        "id": "anno:5-horiz-threshold",
+        "motivation": "labelling",
+        "target": {
+          "dom": "#vert-axis"
+        },
+        "body": {
+          "en": "5"
+        }
+      }
+    ]
   }
 }

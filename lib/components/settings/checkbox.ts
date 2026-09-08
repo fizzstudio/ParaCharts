@@ -4,7 +4,7 @@ import { customElement } from 'lit/decorators.js';
 import { html, css } from 'lit';
 
 export interface CheckboxSettingControlOptions {
-
+  instanceID?: string;
 }
 
 @customElement('para-checkbox-setting-control')
@@ -32,7 +32,7 @@ export class CheckboxSettingControl extends SettingControl<'checkbox'> {
           .checked=${!!this._value}
           @change=${(e: Event) => {
             this._updateSetting(
-              this.info.key, (e.target as HTMLInputElement).checked)
+              this.info.key, (e.target as HTMLInputElement).checked), this.info.instanceID
           }}
         >
         <span>${this.label}</span>

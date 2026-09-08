@@ -60,9 +60,10 @@ export abstract class PlanePlotView extends DataLayer {
   }
 
   settingDidChange(path: string, oldValue?: ConfigSetting, newValue?: ConfigSetting): void {
-    if ([`type.${this.paraview.paraState.type}.minYValue`, `type.${this.paraview.paraState.type}.maxYValue`, 'legend.isAlwaysDrawLegend',
-      'legend.useDirectLegends', 'legend.itemOrder', 'legend.position'].includes(path)) {
+    if ([`type.${this.paraview.paraState.type}.minYValue`, `type.${this.paraview.paraState.type}.maxYValue`].includes(path)) {
       this.paraview.paraState.createChartInfo();
+      this.paraview.paraState.resetLegendID();
+      this.paraview.paraState.resetMarkerID();
       this.paraview.paraState.chartInfo.setup().then(() => {
         this.paraview.createDocumentView();
         this.paraview.requestUpdate();
@@ -91,7 +92,7 @@ export abstract class PlanePlotView extends DataLayer {
           distances = points.map((dp, i) => Number(Math.abs((dp.x - coords.y) ** 2)));
         }
         else if (['heatmap'].includes(type)) {
-          distances = points.map((dp, i) => Number(Math.abs((dp.x + dp.width / 2- coords.x) ** 2 + (dp.y + dp.height / 2 - coords.y) ** 2)));
+          distances = points.map((dp, i) => Number(Math.abs((dp.x + dp.width / 2 - coords.x) ** 2 + (dp.y + dp.height / 2 - coords.y) ** 2)));
         }
         else {
           distances = points.map((dp, i) => Number(Math.abs((dp.x - coords.x) ** 2 + (dp.y - coords.y) ** 2)));
