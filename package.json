@@ -100,7 +100,7 @@
   },
   "types": "./dist/paracharts.d.ts",
   "devDependencies": {
-    "@fizz/chart-data": "^2.5.10",
+    "@fizz/chart-data": "^2.5.11",
     "@fizz/test-utils": "^0.4.7",
     "@microsoft/api-documenter": "^7.25.11",
     "@microsoft/api-extractor": "^7.47.6",
