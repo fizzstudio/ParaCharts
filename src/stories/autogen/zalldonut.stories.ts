@@ -7,7 +7,7 @@ type Story = StoryObj<ChartProps>;
 const titleToFilenameMap = familyManifestPathsMap('pastry', false);
 
 const meta = {
-  title: "Basic Charts/Pastry Charts/Donut Charts",
+  title: 'Charts/Pastry Charts/Donut Charts',
   render: (args) => Chart(args),
   argTypes: {
     filename: {

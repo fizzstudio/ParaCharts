@@ -1,10 +1,10 @@
-import '../../../lib-ai/index-ai';
+import '../../../lib';
 
-import { ParaChartAi } from '../../../lib-ai/index-ai';
+import { ParaChart } from '../../../lib';
 
 async function displayShortDesc(pElementId: string, chartElementId: string): Promise<void> {
   const pElement = document.getElementById(pElementId) as HTMLParagraphElement;
-  const chartElement = document.getElementById(chartElementId) as ParaChartAi;
+  const chartElement = document.getElementById(chartElementId) as ParaChart;
   const shortDesc = await chartElement.shortDescription();
   pElement.innerText = shortDesc;
 }

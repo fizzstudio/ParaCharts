@@ -28,11 +28,8 @@ import { Jimerator } from '@fizz/jimerator';
 import {
   facetsFromDataset, Model, modelFromExternalData, modelFromInlineData,
   FacetSignature, SeriesAnalyzerConstructor, PairAnalyzerConstructor,
-  PlaneDatapoint,
-  planeModelFromInlineData,
-  planeModelFromExternalData,
-  PlaneModel,
-  type Datapoint
+  PlaneDatapoint, planeModelFromInlineData, planeModelFromExternalData,
+  PlaneModel, type Datapoint, AiSeriesPairMetadataAnalyzer
 } from '@fizz/paramodel';
 import {
   FormatType, formatXYDatapointX, formatXYDatapointY,
@@ -275,17 +272,15 @@ export class ParaState extends BaseState {
   constructor(
     protected _globalState: GlobalState,
     protected _inputSettings: SettingsInput,
-    // suppleteSettingsWith?: DeepReadonly<Settings>,
-    seriesAnalyzerConstructor?: SeriesAnalyzerConstructor,
-    pairAnalyzerConstructor?: PairAnalyzerConstructor
+    // suppleteSettingsWith?: DeepReadonly<Settings>
   ) {
     super();
     this._createSettings(_inputSettings);
     this._colors = new Colors(this);
     this._seriesProperties = new SeriesPropertyManager(this);
     this._comboSeriesProperties = new SeriesPropertyManager(this, true);
-    this._seriesAnalyzerConstructor = seriesAnalyzerConstructor;
-    this._pairAnalyzerConstructor = pairAnalyzerConstructor;
+    this._seriesAnalyzerConstructor = SeriesAnalyzer;
+    this._pairAnalyzerConstructor = AiSeriesPairMetadataAnalyzer;
     //this._getUrlAnnotations();
   }
 
