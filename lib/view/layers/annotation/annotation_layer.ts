@@ -406,6 +406,9 @@ export class AnnotationLayer extends PlotLayer {
           const config = SettingsManager.getGroupLinkForInstance<MarkerConfig>('marker', this.paraview.paraState.config, `threshold-${i}`);
           if (config.isChangeThresholdHighlightColor) {
             this.group('thresholds')!.append(rect);
+            if (config.highlightColor !== ''){
+              rect.fill = config.highlightColor;
+            }
           }
         }
         for (let threshold of this.paraview.paraState.thresholds) {

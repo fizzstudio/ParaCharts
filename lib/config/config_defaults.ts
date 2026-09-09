@@ -219,6 +219,7 @@ export const defaultConfig: Config = {
     marker: {
       isMakeThresholdHighlightDashed: false,
       isChangeThresholdHighlightColor: false,
+      highlightColor: "",
     },
     popup: {
       opacity: 1,

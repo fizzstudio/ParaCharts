@@ -3,7 +3,7 @@ import { type ConfigSetting } from './config_types';
 /** Controls available for editing configuration settings.
  * @public
  */
-export type ConfigControlType = 'textfield' | 'dropdown' | 'checkbox' | 'radio' | 'slider' | 'button';
+export type ConfigControlType = 'textfield' | 'dropdown' | 'checkbox' | 'radio' | 'slider' | 'button' | 'colorPicker';
 
 /** Control-specific configuration options.
  * @public

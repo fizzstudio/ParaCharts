@@ -1,11 +1,8 @@
 import { PlaneChartInfo } from "../../../chart_types";
 import { Vec2 } from "../../../common";
-import { LegendConfig } from "../../../common_exports";
-import { ParaView } from "../../../paraview";
-import { SettingsManager } from "../../../state";
 import { View } from "../../base_view";
 import { Label } from "../../label";
-import { ArcShape, PathShape } from "../../shape";
+import { PathShape } from "../../shape";
 import { ViewContext } from "../../view_context";
 import { PlanePlotView } from "../data";
 

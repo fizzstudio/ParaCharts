@@ -649,6 +649,8 @@ export interface MarkerConfig extends ConfigGroup {
   isMakeThresholdHighlightDashed: boolean;
   /** Highlight points */
   isChangeThresholdHighlightColor: boolean;
+  /** Change highlight color */
+  highlightColor: string;
 }
 /**
  * Tooltip and popup styling.

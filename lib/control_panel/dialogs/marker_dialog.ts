@@ -19,7 +19,7 @@ export class MarkerSettingsDialog extends SettingControlContainer {
     protected _dialogRef = createRef<ui.Dialog>();
     protected settingGroupLabels: TemplateResult[] = []
     protected hasMadeDialog = false;
-    protected numSettings = 1;
+    protected numSettings = 2;
     /**
      * Close button text.
      */
@@ -44,7 +44,7 @@ export class MarkerSettingsDialog extends SettingControlContainer {
                 }
                 this.settingGroupLabels = [];
                 if (['line', 'stepline'].includes(this._paraState.type)) {
-                    this.numSettings = 2;
+                    this.numSettings = 3;
                 }
                 const sortedHorizThresholds = this._paraState.thresholds.filter(t => t.orientation == 'horiz').sort((a, b) => b.align - a.align);
                 const sortedVertThresholds = this._paraState.thresholds.filter(t => t.orientation == 'vert').sort((a, b) => a.align - b.align);
@@ -56,6 +56,7 @@ export class MarkerSettingsDialog extends SettingControlContainer {
                 }
                 const addSettingControls = (id: string) => {
                     this._paraState.settingControls.insert('marker.isChangeThresholdHighlightColor', { instanceID: id });
+                    this._paraState.settingControls.insert('marker.highlightColor', { instanceID: id });
                     if (['line', 'stepline'].includes(this._paraState.type)) {
                         this._paraState.settingControls.insert('marker.isMakeThresholdHighlightDashed', { instanceID: id });
                     }
@@ -158,8 +159,8 @@ export class MarkerSettingsDialog extends SettingControlContainer {
     }
 
     render() {
-        const vertLength = this._paraState.thresholds.filter(t => t.orientation == 'horiz').length + 1;
-        const horizLength = this._paraState.thresholds.filter(t => t.orientation == 'vert').length + 1;
+        const vertLength = this._paraState.thresholds.filter(t => t.orientation == 'horiz').length;
+        const horizLength = this._paraState.thresholds.filter(t => t.orientation == 'vert').length;
         const content = this._paraState.settingControls.getContent('controlPanel.tabs.chart.marker.dialog');
         for (let i = 0; i < this.settingGroupLabels.length; i++) {
             const label = this.settingGroupLabels[i];
@@ -167,8 +168,8 @@ export class MarkerSettingsDialog extends SettingControlContainer {
             content.splice(index, 0, label);
         }
         // If either dimension is zero, fall back to the original linear layout.
-        const rows = Math.max(1, vertLength);
-        const cols = Math.max(1, horizLength);
+        const rows = Math.max(0, vertLength) + 1;
+        const cols = Math.max(0, horizLength) + 1;
         if (vertLength === 0 || horizLength === 0) {
             return html`
             <fizz-dialog

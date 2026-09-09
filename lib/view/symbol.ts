@@ -356,6 +356,9 @@ export class DataSymbol extends View {
         const config = SettingsManager.getGroupLinkForInstance<MarkerConfig>('marker', this.paraview.paraState.config, `threshold-${markerRegionIndex}`);
         if (config.isChangeThresholdHighlightColor) {
           this._styleInfo.stroke = 'red';
+          if (config.highlightColor !== '') {
+            this._styleInfo.stroke = config.highlightColor;
+          }
         }
       }
     }
