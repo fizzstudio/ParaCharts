@@ -26,10 +26,8 @@ import {
 } from '@fizz/chartsignal-internal';
 import { Jimerator } from '@fizz/jimerator';
 import {
-  facetsFromDataset, Model, modelFromExternalData, modelFromInlineData,
-  FacetSignature, SeriesAnalyzerConstructor, PairAnalyzerConstructor,
-  PlaneDatapoint, planeModelFromInlineData, planeModelFromExternalData,
-  PlaneModel, type Datapoint, AiSeriesPairMetadataAnalyzer
+  facetsFromDataset, Model, modelFromExternalData, modelFromInlineData, FacetSignature, 
+  PlaneDatapoint, planeModelFromInlineData, planeModelFromExternalData, PlaneModel, type Datapoint
 } from '@fizz/paramodel';
 import {
   FormatType, formatXYDatapointX, formatXYDatapointY,
@@ -255,8 +253,6 @@ export class ParaState extends BaseState {
   protected _colors: Colors;
   protected _keymapManager = new KeymapManager(actionMap);
   //protected _summarizer!: Summarizer;
-  protected _seriesAnalyzerConstructor?: SeriesAnalyzerConstructor;
-  protected _pairAnalyzerConstructor?: PairAnalyzerConstructor;
   protected _annotID: number = 0;
   protected log: Logger = getLogger("ParaState");
   protected _chartInfo!: BaseChartInfo;
@@ -279,8 +275,6 @@ export class ParaState extends BaseState {
     this._colors = new Colors(this);
     this._seriesProperties = new SeriesPropertyManager(this);
     this._comboSeriesProperties = new SeriesPropertyManager(this, true);
-    this._seriesAnalyzerConstructor = SeriesAnalyzer;
-    this._pairAnalyzerConstructor = AiSeriesPairMetadataAnalyzer;
     //this._getUrlAnnotations();
   }
 
@@ -633,19 +627,9 @@ export class ParaState extends BaseState {
       if (isPastryType(this._type) || isVennType(this._type)) {
         this._model = modelFromInlineData(manifest);
       } else {
-        this._model = planeModelFromInlineData(
-          manifest,
-          this._seriesAnalyzerConstructor,
-          this._pairAnalyzerConstructor
-        );
+        this._model = planeModelFromInlineData(manifest);
         if (datasets.length > 1) {
-          this._comboModel = planeModelFromInlineData(
-            manifest,
-            this._seriesAnalyzerConstructor,
-            this._pairAnalyzerConstructor,
-            undefined,
-            1
-          );
+          this._comboModel = planeModelFromInlineData(manifest, true, 1);
         }
       }
       this.createChartInfo();
@@ -661,20 +645,13 @@ export class ParaState extends BaseState {
       if (isPastryType(this._type) || isVennType(this._type)) {
         this._model = modelFromExternalData(data, manifest);
       } else {
-        this._model = planeModelFromExternalData(
-          data,
-          manifest,
-          this._seriesAnalyzerConstructor,
-          this._pairAnalyzerConstructor
-        );
+        this._model = planeModelFromExternalData(data, manifest);
         if (datasets.length > 1) {
           this._comboModel = planeModelFromExternalData(
             // XXX should be datasets[1] data
             data,
             manifest,
-            this._seriesAnalyzerConstructor,
-            this._pairAnalyzerConstructor,
-            undefined,
+            true,
             1
           );
         }
