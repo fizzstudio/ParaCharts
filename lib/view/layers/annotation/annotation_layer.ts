@@ -1,6 +1,6 @@
 import { PlotLayer } from '../layer';
 import { View, Container } from '../../base_view';
-import { type ViewContext } from '../../view_context';
+import { DataLayerContext, type ViewContext } from '../../view_context';
 import { RectShape, PathShape } from '../../shape';
 import { Vec2 } from '../../../common/vector';
 import { type PointAnnotation, datapointIdToCursor } from '../../../state/parastate';
@@ -12,6 +12,9 @@ import { ConfigSetting, MarkerConfig } from '../../../config/config_types';
 import { svg } from 'lit';
 import { ParaView } from '../../../paraview';
 import { SettingsManager } from '../../../state';
+import { LinePlotView, LineSection } from '../data';
+import { Threshold } from './threshold';
+import { ParaChart } from '../../../parachart/parachart';
 
 export type AnnotationType = 'foreground' | 'background';
 
@@ -290,7 +293,9 @@ export class AnnotationLayer extends PlotLayer {
         this.addGroup('thresholds', true);
         this.group('thresholds')!.clearChildren();
         const backgroundHighlights: RectShape[] = [];
-        const addDef = (key: string, x: number, y: number, width: number, height: number) => {
+        const addDef = (keyIndex: number, x: number, y: number, width: number, height: number) => {
+          const key = `marker-clip-${keyIndex}`;
+          (this.paraview as ParaView).removeDef(key);
           this.paraview.addDef(key, svg`
                 <clipPath id=${key}>
                   <rect x=${x} y=${y} width=${width} height=${height}></rect>
@@ -302,8 +307,18 @@ export class AnnotationLayer extends PlotLayer {
             width: width,
             height: height,
             opacity: .15,
-            fill: 'red'
+            fill: 'red'/*,
+            pointerEnter: (e) => {
+            this.pointerEnterActions(item);
+          },
+          pointerLeave: (e) => {
+            this.pointerLeaveAction(item);
+          },*/
           })
+          rect.options.click = (e) => {
+            const paraview = this.paraview as DataLayerContext
+            (paraview.paraChart as ParaChart).controlPanel.chartPanel.markerDialogRef.value?.show(keyIndex).then(() => { (paraview.paraChart as ParaChart).controlPanel.chartPanel.markerDialogRef.value!.tempMarkerIndex = undefined })
+          }
           backgroundHighlights.push(rect);
         }
         const sortedHorizThresholds = this.paraview.paraState.thresholds.filter(t => t.orientation == 'horiz').sort((a, b) => b.align - a.align);
@@ -318,18 +333,14 @@ export class AnnotationLayer extends PlotLayer {
             const threshold = sortedHorizThresholds[i]
             threshold.classInfo = { 'threshold': true };
             const clipBox = threshold.highlightPoints()!;
-            const clipId = `marker-clip-${i}`;
-            (this.paraview as ParaView).removeDef(clipId);
             const newX = clipBox[0].start * clWidth;
             const newY = clipBox[1].start * clHeight;
             const height = (clipBox[1].start) * clHeight - runningY;
-            addDef(clipId, newX, runningY, clWidth, height);
+            addDef(i, newX, runningY, clWidth, height);
             runningY = newY;
           }
-          const clipId = `marker-clip-${sortedHorizThresholds.length}`;
-          (this.paraview as ParaView).removeDef(clipId);
           const height = clHeight - runningY;
-          addDef(clipId, 0, runningY, clWidth, height);
+          addDef(sortedHorizThresholds.length, 0, runningY, clWidth, height);
         }
         else if (sortedHorizThresholds.length == 0 && sortedVertThresholds.length > 0) {
           //Only vertical thresholds
@@ -337,17 +348,13 @@ export class AnnotationLayer extends PlotLayer {
             const threshold = sortedVertThresholds[i]
             threshold.classInfo = { 'threshold': true };
             const clipBox = threshold.highlightPoints()!;
-            const clipId = `marker-clip-${i}`;
-            (this.paraview as ParaView).removeDef(clipId);
             const newX = clipBox[0].start * clWidth;
             const width = (clipBox[0].start) * clWidth - runningX;
-            addDef(clipId, runningX, runningY, width, clHeight);
+            addDef(i, runningX, runningY, width, clHeight);
             runningX = newX
           }
-          const clipId = `marker-clip-${sortedVertThresholds.length}`;
-          (this.paraview as ParaView).removeDef(clipId);
           const width = clWidth - runningX;
-          addDef(clipId, runningX, 0, width, clHeight);
+          addDef(sortedVertThresholds.length, runningX, 0, width, clHeight);
         }
         else {
           //Horizontal and vertical thresholds
@@ -357,8 +364,6 @@ export class AnnotationLayer extends PlotLayer {
             let newX = 0;
             for (let j = 0; j < sortedVertThresholds.length + 1; j++) {
               const id = j + i * (sortedVertThresholds.length + 1);
-              const clipId = `marker-clip-${id}`;
-              (this.paraview as ParaView).removeDef(clipId);
               if (i < sortedHorizThresholds.length && j < sortedVertThresholds.length) {
                 const horizThreshold = sortedHorizThresholds[i];
                 const vertThreshold = sortedVertThresholds[j];
@@ -368,14 +373,14 @@ export class AnnotationLayer extends PlotLayer {
                 newY = horizClipBox[1].start * clHeight;
                 const width = (vertClipBox[0].start) * clWidth - runningX;
                 const height = (horizClipBox[1].start) * clHeight - runningY;
-                addDef(clipId, runningX, runningY, width, height);
+                addDef(id, runningX, runningY, width, height);
               }
               else if (i == sortedHorizThresholds.length && j == sortedVertThresholds.length) {
                 newX = runningX;
                 newY = runningY;
                 const width = clWidth - runningX;
                 const height = clHeight - runningY;
-                addDef(clipId, runningX, runningY, width, height);
+                addDef(id, runningX, runningY, width, height);
               }
               else if (i == sortedHorizThresholds.length) {
                 const vertThreshold = sortedVertThresholds[j];
@@ -384,7 +389,7 @@ export class AnnotationLayer extends PlotLayer {
                 newY = runningY;
                 const width = (vertClipBox[0].start) * clWidth - runningX;
                 const height = clHeight - runningY;
-                addDef(clipId, runningX, runningY, width, height);
+                addDef(id, runningX, runningY, width, height);
               }
               else if (j == sortedVertThresholds.length) {
                 const horizThreshold = sortedHorizThresholds[i];
@@ -393,21 +398,88 @@ export class AnnotationLayer extends PlotLayer {
                 newY = horizClipBox[1].start * clHeight;
                 const width = clWidth - runningX;
                 const height = (horizClipBox[1].start) * clHeight - runningY;
-                addDef(clipId, runningX, runningY, width, height);
-
+                addDef(id, runningX, runningY, width, height);
               }
               runningX = newX;
             }
             runningY = newY;
           }
         }
+        console.log('before')
         for (let i = 0; i < backgroundHighlights.length; i++) {
           const rect = backgroundHighlights[i]
           const config = SettingsManager.getGroupLinkForInstance<MarkerConfig>('marker', this.paraview.paraState.config, `threshold-${i}`);
-          if (config.isChangeThresholdHighlightColor) {
+          if (config.isChangeThresholdHighlightColor && !config.highlightUnderLine) {
             this.group('thresholds')!.append(rect);
-            if (config.highlightColor !== ''){
+            if (config.highlightColor !== '') {
+              console.log("config", config)
+              console.log("config.highlightColor", config.highlightColor)
               rect.fill = config.highlightColor;
+            }
+          }
+        }
+        if (this.paraview.paraState.type == 'line') {
+          let chart = this.paraview.documentView?.chartLayers.dataLayer as LinePlotView;
+          const points = chart.datapointViews;
+          const getIntersect = (point1: LineSection, point2: LineSection, threshold: Threshold) => {
+            const slope = (point2.y - point1.y) / (point2.x - point1.x);
+            const intercept = point2.y - slope * point2.x;
+            const y = threshold.clipHeight;
+            const x = (y - intercept) / slope;
+            return [x, y];
+          }
+          for (let tIndex = 0; tIndex < this.paraview.paraState.thresholds.length; tIndex++) {
+            const threshold = this.paraview.paraState.thresholds[tIndex];
+            const config = SettingsManager.getGroupLinkForInstance<MarkerConfig>('marker', this.paraview.paraState.config, `threshold-${tIndex}`);
+            if (!(config.isChangeThresholdHighlightColor && config.highlightUnderLine)) {
+              continue;
+            }
+            let above = false;
+            const vecs = [];
+            let currentVecs = [];
+            for (let i = 0; i < points.length; i++) {
+              const point = points[i];
+              if (point.y >= threshold.clipHeight && !above) {
+                continue;
+              }
+              else if (point.y <= threshold.clipHeight && !above) {
+                if (i == 0) {
+                  currentVecs.push(new Vec2(point.x, threshold.clipHeight));
+                  currentVecs.push(new Vec2(point.x, point.y));
+                }
+                else {
+                  const intersect = getIntersect(points[i - 1], point, threshold)
+                  currentVecs.push(new Vec2(intersect[0], intersect[1]));
+                  currentVecs.push(new Vec2(point.x, point.y));
+                }
+                above = true;
+              }
+              else if (point.y > threshold.clipHeight && above) {
+                const intersect = getIntersect(points[i - 1], point, threshold)
+                currentVecs.push(new Vec2(intersect[0], intersect[1]));
+                vecs.push(currentVecs);
+                currentVecs = [];
+                above = false;
+              }
+              else {
+                if (i == points.length - 1) {
+                  currentVecs.push(new Vec2(point.x, point.y));
+                  currentVecs.push(new Vec2(point.x, threshold.clipHeight));
+                  vecs.push(currentVecs);
+                }
+                else {
+                  currentVecs.push(new Vec2(point.x, point.y));
+                }
+              }
+            }
+            for (let pointGroup of vecs) {
+              const path = new PathShape(this.paraview, {
+                points: pointGroup,
+                fill: "red",
+                opacity: .15,
+                strokeWidth: 5
+              });
+              this.group('thresholds')!.append(path);
             }
           }
         }

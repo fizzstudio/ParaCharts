@@ -363,6 +363,9 @@ export class LinePath extends PathShape {
       const config = SettingsManager.getGroupLinkForInstance<MarkerConfig>('marker', this.paraview.paraState.config, `threshold-${i}`);
       if (config.isChangeThresholdHighlightColor) {
         altStyleInfo["stroke"] = "red";
+        if (config.highlightColor !== '') {
+          altStyleInfo["stroke"] = config.highlightColor;
+        }
       }
       if (config.isMakeThresholdHighlightDashed) {
         altStyleInfo["stroke-dasharray"] = "9, 9";

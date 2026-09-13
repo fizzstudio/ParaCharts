@@ -220,6 +220,7 @@ export const defaultConfig: Config = {
       isMakeThresholdHighlightDashed: false,
       isChangeThresholdHighlightColor: false,
       highlightColor: "",
+      highlightUnderLine: false,
     },
     popup: {
       opacity: 1,

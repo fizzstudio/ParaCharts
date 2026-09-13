@@ -651,6 +651,8 @@ export interface MarkerConfig extends ConfigGroup {
   isChangeThresholdHighlightColor: boolean;
   /** Change highlight color */
   highlightColor: string;
+  /** Only highlight between line and threshold */
+  highlightUnderLine: boolean;
 }
 /**
  * Tooltip and popup styling.

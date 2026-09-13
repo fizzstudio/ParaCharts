@@ -20,6 +20,7 @@ export class MarkerSettingsDialog extends SettingControlContainer {
     protected settingGroupLabels: TemplateResult[] = []
     protected hasMadeDialog = false;
     protected numSettings = 2;
+    tempMarkerIndex: number | undefined = undefined;
     /**
      * Close button text.
      */
@@ -44,7 +45,7 @@ export class MarkerSettingsDialog extends SettingControlContainer {
                 }
                 this.settingGroupLabels = [];
                 if (['line', 'stepline'].includes(this._paraState.type)) {
-                    this.numSettings = 3;
+                    this.numSettings = 4;
                 }
                 const sortedHorizThresholds = this._paraState.thresholds.filter(t => t.orientation == 'horiz').sort((a, b) => b.align - a.align);
                 const sortedVertThresholds = this._paraState.thresholds.filter(t => t.orientation == 'vert').sort((a, b) => a.align - b.align);
@@ -59,6 +60,7 @@ export class MarkerSettingsDialog extends SettingControlContainer {
                     this._paraState.settingControls.insert('marker.highlightColor', { instanceID: id });
                     if (['line', 'stepline'].includes(this._paraState.type)) {
                         this._paraState.settingControls.insert('marker.isMakeThresholdHighlightDashed', { instanceID: id });
+                        this._paraState.settingControls.insert('marker.highlightUnderLine', { instanceID: id });
                     }
                 }
                 if (sortedHorizThresholds.length > 0 && sortedVertThresholds.length == 0) {
@@ -161,11 +163,14 @@ export class MarkerSettingsDialog extends SettingControlContainer {
     render() {
         const vertLength = this._paraState.thresholds.filter(t => t.orientation == 'horiz').length;
         const horizLength = this._paraState.thresholds.filter(t => t.orientation == 'vert').length;
-        const content = this._paraState.settingControls.getContent('controlPanel.tabs.chart.marker.dialog');
+        let content = this._paraState.settingControls.getContent('controlPanel.tabs.chart.marker.dialog');
         for (let i = 0; i < this.settingGroupLabels.length; i++) {
             const label = this.settingGroupLabels[i];
             const index = i * ((content.length - i) / this.settingGroupLabels.length) + i;
             content.splice(index, 0, label);
+        }
+        if (this.tempMarkerIndex !== undefined) {
+            content = content.slice(this.tempMarkerIndex * (this.numSettings + 1), this.tempMarkerIndex * (this.numSettings + 1) + this.numSettings + 1);
         }
         // If either dimension is zero, fall back to the original linear layout.
         const rows = Math.max(0, vertLength) + 1;
@@ -249,7 +254,10 @@ export class MarkerSettingsDialog extends SettingControlContainer {
     /**
      * Show the dialog
      */
-    async show() {
+    async show(index?: number) {
+        if (index !== undefined) {
+            this.tempMarkerIndex = index;
+        }
         await this._dialogRef.value!.show();
     }
 }

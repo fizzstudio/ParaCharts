@@ -28,7 +28,7 @@ export class ColorPickerSettingControl extends SettingControl<'colorPicker'> {
       <label>
         <input
           type="color"
-          id="color"
+          id=color-${this.info.instanceID}
           value="#FF0000"
           @change=${(e: Event) => {
             this._updateSetting(
