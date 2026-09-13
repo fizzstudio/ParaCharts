@@ -305,6 +305,7 @@ export interface Config extends ConfigGroup {
     description: DescriptionConfig;
     grid: GridConfig;
     legend: LegendConfig;
+    marker: MarkerConfig;
     popup: PopupConfig;
     scrollytelling: ScrollytellingConfig;
     sonification: SonificationConfig;
@@ -580,6 +581,12 @@ export interface ManifestBuilderInput {
         units?: string;
         multiplier?: number;
     };
+}
+
+// @public
+export interface MarkerConfig extends ConfigGroup {
+    isChangeThresholdHighlightColor: boolean;
+    isMakeThresholdHighlightDashed: boolean;
 }
 
 // @public
@@ -1057,6 +1064,8 @@ export interface TypePastryConfig extends ConfigGroup {
     insideLabels: TypePastryInsidelabelsConfig;
     orientationAngleOffset: number;
     outsideLabels: TypePastryOutsidelabelsConfig;
+    sliceLabelFormat: LabelFormat;
+    sliceValueFormat: LabelFormat;
 }
 
 // @public

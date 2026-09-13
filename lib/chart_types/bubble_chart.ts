@@ -1,9 +1,9 @@
 import { formatBox } from "@fizz/parasummary";
-import { datapointIdToCursor } from "../state";
+import { datapointIdToCursor, SettingsManager } from "../state";
 import { PointChartInfo } from "./point_chart";
-import { LegendItem } from "../view/legend";
+import { LegendItem, LegendItemsWithPosition } from "../view/legend";
 import { DataSymbols } from "../view/symbol";
-import { CardinalDirection } from "../config/config_types";
+import { LegendConfig } from "../config/config_types";
 
 export class BubbleChartInfo extends PointChartInfo {
 
@@ -43,7 +43,7 @@ export class BubbleChartInfo extends PointChartInfo {
         return `${series.label} (${formatBox(dp.facetBox('x')!, 'raw')}, ${formatBox(dp.facetBox('y')!, 'raw')}, ${formatBox(dp.facetBox('z')!, 'raw')})`;
     };
 
-    legend(position?: CardinalDirection) {
+    legend(): LegendItemsWithPosition[] {
         const model = this._paraState.model!;
         //let symbolType = series.symbol;
         const types = new DataSymbols().types;
@@ -61,20 +61,21 @@ export class BubbleChartInfo extends PointChartInfo {
         this.maxZ = maxZ;
         const medSymbolSize = ((((zRange / 2) * sizeRange / zRange) + minSize) ** 2)
         const maxSymbolSize = (sizeRange + minSize) ** 2;
-        const items: LegendItem[] = [];
+        const seriesItems: LegendItem[] = [];
+        const sizeItems: LegendItem[] = [];
         for (let i = 0; i < model.seriesKeys.length; i++) {
             const key = model.seriesKeys[i];
-            const symbolItem: LegendItem = {
+            const seriesSymbolItem: LegendItem = {
                 label: `${model.atKey(key)!.getLabel()}`,
                 seriesKey: key,
                 colorIndex: i,
                 symbol: types[(i + 8) % 16],
                 symbolOptions: { baseSize: 1, lighten: true }
             }
-            items.push(symbolItem);
+            seriesItems.push(seriesSymbolItem);
         }
         const key = model.seriesKeys[0];
-        const minSymbolItem: LegendItem = {
+        const minSizeSymbolItem: LegendItem = {
             label: `${minZ}`,
             seriesKey: key,
             colorIndex: 0,
@@ -82,7 +83,7 @@ export class BubbleChartInfo extends PointChartInfo {
             symbolOptions: { baseSize: minSymbolSize, lighten: true, dashed: true },
             bubbleSize: "small"
         }
-        const medSymbolItem: LegendItem = {
+        const medSizeSymbolItem: LegendItem = {
             label: `${medZ}`,
             seriesKey: key,
             colorIndex: 0,
@@ -90,7 +91,7 @@ export class BubbleChartInfo extends PointChartInfo {
             symbolOptions: { baseSize: medSymbolSize, lighten: true, dashed: true },
             bubbleSize: "medium"
         }
-        const maxSymbolItem: LegendItem = {
+        const maxSizeSymbolItem: LegendItem = {
             label: `${maxZ}`,
             seriesKey: key,
             colorIndex: 0,
@@ -98,10 +99,21 @@ export class BubbleChartInfo extends PointChartInfo {
             symbolOptions: { baseSize: maxSymbolSize, lighten: true, dashed: true },
             bubbleSize: "large"
         }
-        items.push(minSymbolItem);
-        items.push(medSymbolItem);
-        items.push(maxSymbolItem);
-        return items;
+        sizeItems.push(minSizeSymbolItem);
+        sizeItems.push(medSizeSymbolItem);
+        sizeItems.push(maxSizeSymbolItem);
+        const seriesConfig = SettingsManager.getGroupLinkForInstance<LegendConfig>('legend', this._paraState.config, `legend-${0}`)
+        const sizeConfig = SettingsManager.getGroupLinkForInstance<LegendConfig>('legend', this._paraState.config, `legend-${1}`)
+        const seriesPosition = seriesConfig.position;
+        const sizePosition = sizeConfig.position;
+        const legendItems = [];
+        if (seriesConfig.isAlwaysDrawLegend) {
+            legendItems.push({ position: seriesPosition ?? "north", items: seriesItems })
+        }
+        if (sizeConfig.isAlwaysDrawLegend) {
+            legendItems.push({ position: sizePosition ?? "north", items: sizeItems })
+        }
+        return legendItems;
     }
 
     protected _createVerticalNavLinks(): void {

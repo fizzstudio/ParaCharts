@@ -6,9 +6,10 @@ import { customElement } from 'lit/decorators.js';
 import { html, css, nothing } from 'lit';
 
 export interface RadioSettingControlOptions {
-  buttons: {[key: string]: ButtonDescriptor};
+  buttons: { [key: string]: ButtonDescriptor };
   layout?: 'horiz' | 'compress' | 'vert';
   wrap?: boolean;
+  instanceID?: string;
 }
 
 @customElement('para-radio-setting-control')
@@ -36,7 +37,7 @@ export class RadioSettingControl extends SettingControl<'radio'> {
         layout=${opts!.layout ?? nothing}
         ?wrap=${opts!.wrap}
         @select=${(e: CustomEvent) => this._updateSetting(
-          this.info.key, e.detail)}
+          this.info.key, e.detail, this.info.instanceID)}
       >
         <span slot="legend">${this.label}</span>
       </fizz-radiogroup>

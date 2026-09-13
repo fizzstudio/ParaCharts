@@ -70,23 +70,6 @@ export class BarPlotView extends PlanePlotView {
 
   protected _addedToParent() {
     super._addedToParent();
-    /*todo().controller.settingViews.add(this, {
-      type: 'dropdown',
-      key: 'type.bar.stackContent',
-      label: 'Stack content',
-      options: {options: ['All', 'Count'], values: ['all', 'count']},
-      parentView: 'chartDetails.tabs.chart.chart',
-      //dontSaveValue: true
-    });
-    todo().controller.settingViews.add(this, {
-      type: 'textfield',
-      key: 'type.bar.stackCount',
-      label: 'Count',
-      options: {inputType: 'number', min: 1, max: this._model.depVars.length},
-      hidden: true,
-      parentView: 'chartDetails.tabs.chart.chart',
-    });
-    todo().deets!.chartPanel.requestUpdate();*/
     if (this.paraview.paraState.config.type.bar.isAbbrevSeries) {
       this._abbrevs = abbreviateSeries(this.paraview.paraState.model!.seriesKeys);
     }

@@ -199,6 +199,9 @@ export class DatapointView extends DataView {
   }
 
   get shouldClip() {
+    if (this.paraview.paraState.thresholds.length > 0) {
+      return true;
+    }
     if (this.alwaysClip) {
       return true;
     }
@@ -302,7 +305,7 @@ export class DatapointView extends DataView {
     // we need to replace the original shape and symbol
     this._symbol?.remove();
     this._symbol = DataSymbol.fromType(this.paraview, symbolType,
-      { blackBorder: this.paraview.paraState.config.ui.isLowVisionModeEnabled, borderStrokeWidth: 3 });
+      { blackBorder: this.paraview.paraState.config.ui.isLowVisionModeEnabled, borderStrokeWidth: 3, datapoint: this.datapoint });
     this.append(this._symbol);
   }
 
@@ -393,6 +396,55 @@ export class DatapointView extends DataView {
     if (this.paraview.paraState.model!.multi) {
       datapointText = `${this.series.getLabel()} ${datapointText}`
     }
+    if (this.paraview.paraState.thresholds.length > 0) {
+      const horizTs = this.paraview.paraState.thresholds.filter(t => t.orientation == 'horiz');
+      const vertTs = this.paraview.paraState.thresholds.filter(t => t.orientation == 'vert');
+      if (horizTs.length > 0) {
+        const yVal = this.datapoint.facetValueAsNumber('y')!;
+        const aboveT = horizTs.filter(t => t.align > yVal);
+        const belowT = horizTs.filter(t => t.align < yVal);
+        const onT = horizTs.filter(t => t.align == yVal);
+        if (onT.length > 0) {
+          datapointText = datapointText.concat(` On threshold ${onT[0].text ?? onT[0].align}.`)
+        }
+        else if (aboveT.length > 0 && belowT.length > 0) {
+          const highestBelowT = belowT.sort((a, b) => b.align - a.align)[0]!;
+          const lowestAboveT = aboveT.sort((a, b) => a.align - b.align)[0]!;
+          datapointText = datapointText.concat(` Above threshold ${highestBelowT.text ?? highestBelowT.align} but below threshold ${lowestAboveT.text ?? lowestAboveT.align}.`)
+        }
+        else if (aboveT.length > 0) {
+          const lowestAboveT = aboveT.sort((a, b) => a.align - b.align)[0]!;
+          datapointText = datapointText.concat(` Below threshold ${lowestAboveT.text ?? lowestAboveT.align}.`)
+        }
+        else if (belowT.length > 0) {
+          const highestBelowT = belowT.sort((a, b) => b.align - a.align)[0]!;
+          datapointText = datapointText.concat(` Above threshold ${highestBelowT.text ?? highestBelowT.align}.`)
+        }
+      }
+      if (vertTs.length > 0) {
+        const xVal = this.x;
+        const aboveT = vertTs.filter(t => t.clipWidth > xVal);
+        const belowT = vertTs.filter(t => t.clipWidth < xVal);
+        const onT = vertTs.filter(t => t.clipWidth == xVal);
+        if (onT.length > 0) {
+          datapointText = datapointText.concat(` On threshold ${onT[0].text ?? onT[0].align}.`)
+        }
+        else if (aboveT.length > 0 && belowT.length > 0) {
+          const highestBelowT = belowT.sort((a, b) => b.align - a.align)[0]!;
+          const lowestAboveT = aboveT.sort((a, b) => a.align - b.align)[0]!;
+          datapointText = datapointText.concat(` Right of threshold ${highestBelowT.text ?? highestBelowT.align} but left of threshold ${lowestAboveT.text ?? lowestAboveT.align}.`)
+        }
+        else if (aboveT.length > 0) {
+          const lowestAboveT = aboveT.sort((a, b) => a.align - b.align)[0]!;
+          datapointText = datapointText.concat(` Left of threshold ${lowestAboveT.text ?? lowestAboveT.align}.`)
+        }
+        else if (belowT.length > 0) {
+          const highestBelowT = belowT.sort((a, b) => b.align - a.align)[0]!;
+          datapointText = datapointText.concat(` Right of threshold ${highestBelowT.text ?? highestBelowT.align}.`)
+        }
+      }
+    }
+
     let x = this.x;
     let y = this.y;
     let color = this.colorIndex;

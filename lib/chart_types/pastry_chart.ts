@@ -20,10 +20,10 @@ import { Datapoint } from '@fizz/paramodel';
 import { formatBox, formatXYDatapointX } from '@fizz/parasummary';
 import { interpolate } from '@fizz/templum';
 import { BaseChartInfo, RiffOrder } from './base_chart';
-import { type ParaState, datapointIdToCursor, queryMessages, describeSelections, getDatapointMinMax } from '../state';
-import { directions, HorizDirection } from '../config/config_types';
+import { type ParaState, datapointIdToCursor, queryMessages, describeSelections, getDatapointMinMax, SettingsManager } from '../state';
+import { directions, HorizDirection, LegendConfig } from '../config/config_types';
 import { NavLayer, NavNode } from '../view/layers/data/navigation'
-import { LegendItem } from '../view/legend';
+import { LegendItemsWithPosition } from '../view/legend';
 
 
 export type ArcType = 'circle' | 'semicircle';
@@ -50,7 +50,7 @@ export class PastryChartInfo extends BaseChartInfo {
       this._navMap!.node('top', {})!.connect(dir, layer);
     });
     const nodes = this._paraState.model!.series[0].datapoints.map((datapoint, i) => {
-    //const nodes = this._chartLandingView.children[0].children.map((datapointView, i) => {
+      //const nodes = this._chartLandingView.children[0].children.map((datapointView, i) => {
       const node = new NavNode(layer, 'datapoint', {
         seriesKey: datapoint.seriesKey,
         index: datapoint.datapointIndex
@@ -66,18 +66,25 @@ export class PastryChartInfo extends BaseChartInfo {
     nodes.at(-1)!.connect('right', nodes[0]);
   }
 
-  legend(): LegendItem[] {
+  legend(): LegendItemsWithPosition[] {
     const series = this._paraState.model!.series[0];
+    const config = SettingsManager.getGroupLinkForInstance<LegendConfig>('legend', this._paraState.config, `legend-${0}`) ?? this._paraState.config.legend;
     const xs = series.datapoints.map(dp =>
       formatBox(dp.facetBox('x')!, this._paraState.getFormatType('pieSliceLabel')));
     const ys = series.datapoints.map(dp =>
       formatBox(dp.facetBox('y')!, this._paraState.getFormatType('pieSliceValue')));
-    return xs.map((x, i) => ({
+    const items = xs.map((x, i) => ({
       label: `${x}: ${ys[i]}`,
       seriesKey: series.key,
       colorIndex: i,
       datapointIndex: i
     }));
+    const legendItems = [];
+    const position = config.position;
+    if (config.isAlwaysDrawLegend) {
+      legendItems.push({ position: position, items: items });
+    }
+    return legendItems;
   }
 
   shouldDrawTitle(): boolean {
@@ -87,7 +94,7 @@ export class PastryChartInfo extends BaseChartInfo {
   }
 
   playDatapoints(datapoints: PlaneDatapoint[]): Promise<void> {
-    return this._sonifier.playDatapoints(datapoints, {invert: true, durationVariable: true});
+    return this._sonifier.playDatapoints(datapoints, { invert: true, durationVariable: true });
   }
 
   playDir(dir: HorizDirection): void {

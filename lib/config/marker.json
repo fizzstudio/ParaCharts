@@ -1,0 +1,23 @@
+{
+    "description": "Marker/threshold styling.",
+    "family": "marker",
+    "settings": {
+        "isMakeThresholdHighlightDashed": {
+            "label": "cpanel.tabs.chart.marker_dialog.highlight_dashed",
+            "description": "Make highlighted region dashed",
+            "type": "boolean",
+            "default": false,
+            "control": "checkbox",
+            "parentView": "controlPanel.tabs.chart.marker.dialog"
+        }
+        ,
+        "isChangeThresholdHighlightColor": {
+            "label": "cpanel.tabs.chart.marker_dialog.highlight_color",
+            "description": "Highlight points",
+            "type": "boolean",
+            "default": false,
+            "control": "checkbox",
+            "parentView": "controlPanel.tabs.chart.marker.dialog"
+        }
+    }
+}

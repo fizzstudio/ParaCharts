@@ -28,12 +28,18 @@ export interface LegendItem {
   bubbleSize?: "small" | "medium" | "large"
 }
 
+export interface LegendItemsWithPosition {
+  items: LegendItem[];
+  position: CardinalDirection;
+}
+
 export type LegendOrientation = 'horiz' | 'vert';
 
 export interface LegendOptions {
   orientation: LegendOrientation;
   wrapWidth: number;
   rowGap: number;
+  position?: CardinalDirection;
 }
 
 const intersperse = (...arrays: any[][]) => {
@@ -64,14 +70,20 @@ export class Legend extends Container(View) {
   }
 
   get config() {
-    return SettingsManager.getGroupLink<LegendConfig>('legend', this.paraview.paraState.config);
+    return SettingsManager.getGroupLinkForInstance<LegendConfig>('legend', this.paraview.paraState.config, this.id);
   }
+
+  get options() {
+    return this._options;
+  }
+  
 
   get classInfo() {
     return { legend: true };
   }
 
   protected _addedToParent() {
+    this.id = `legend-${this.paraview.paraState.nextLegendID()}`
     const symbols: View[] = [];
     const labels: View[] = [];
     const hasLegendBox = this.config.boxStyle.outline !== 'none' || this.config.boxStyle.fill !== 'none';
@@ -293,7 +305,7 @@ export class Legend extends Container(View) {
         this._grid.children[2 * i + 1].centerY = newY;
         bundledItems.push([this._grid.children[2 * i], this._grid.children[2 * i + 1]])
       }
-      const sortedItems = bundledItems.toSorted((a, b) => a[2].y - b[2].y);
+      const sortedItems = bundledItems.toSorted((a, b) => a[1].y - b[1].y);
       for (let i = 0; i < sortedItems.length; i++) {
         for (let j = i + 1; j < sortedItems.length; j++) {
           const child1 = sortedItems[i][1];
