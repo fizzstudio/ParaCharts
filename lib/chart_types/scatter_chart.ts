@@ -6,8 +6,8 @@ import { DatapointNavNodeType, NavNode, NavNodeOptionsType, ScatterPointNavNodeO
 import { Datapoint, PlaneModel } from '@fizz/paramodel';
 import { DataSymbols } from '../view/symbol';
 import { LegendItemsWithPosition } from '../view/legend';
-import { LegendConfig } from '../common_exports';
 import { SettingsManager } from '../state';
+import { LegendConfig } from '../config/config_types';
 
 
 export class ScatterChartInfo extends PointChartInfo {
