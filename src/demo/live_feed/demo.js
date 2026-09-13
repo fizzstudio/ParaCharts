@@ -1,4 +1,4 @@
-import '/dist-ai/paracharts.js';
+import '/dist/paracharts.js';
 
 const chart = document.getElementById('chart');
 const addBtn = document.getElementById('add-btn');

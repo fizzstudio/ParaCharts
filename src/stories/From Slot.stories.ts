@@ -7,7 +7,7 @@ import { unsafeHTML } from 'lit-html/directives/unsafe-html.js';
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories
 const meta = {
-  title: 'Chart',
+  title: 'Specialized Charts',
   render: (args) => Chart(args),
   argTypes: {
 

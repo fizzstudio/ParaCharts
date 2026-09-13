@@ -1,6 +1,6 @@
-import '../../../lib-ai/index-ai';
+import '../../../lib';
 
-import { ParaChartAi } from '../../../lib-ai/index-ai';
+import { ParaChart } from '../../../lib';
 import { PlaneChartInfo } from '../../../lib/chart_types';
 
 const MANI = '/src/demo/live_update/line-single-manifest-1047.json';
@@ -20,7 +20,7 @@ const resetBtn = document.getElementById('reset-btn')!;
 const maniText = document.getElementById('manifest')!;
 const delayInput = document.getElementById('delay-input') as HTMLInputElement;
 
-const chart = document.getElementById('chart') as ParaChartAi;
+const chart = document.getElementById('chart') as ParaChart;
 
 delayInput.value = `${autoIntervalMs}`;
 

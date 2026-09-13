@@ -381,9 +381,9 @@ describe('paraloader', () => {
         const content = readFileSync(resolve(DEMO_DATA_DIR, 'china-gdp-line-1.manifest.json'), 'utf-8');
         const manifest = JSON.parse(content);
         
-        expect(manifest.datasets[0].representation.subtype).toBe('line');
-        expect(manifest.datasets[0].title).toContain('China');
-        expect(manifest.datasets[0].facets.x.label).toBe('Year');
+        expect(manifest.jim.datasets[0].representation.subtype).toBe('line');
+        expect(manifest.jim.datasets[0].title).toContain('China');
+        expect(manifest.jim.datasets[0].facets.x.label).toBe('Year');
       });
 
       it('should parse bar-multi-manifest-48-external.json (external data source)', () => {

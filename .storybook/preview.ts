@@ -23,32 +23,13 @@ const preview: Preview = {
         color: /(background|color)$/i,
         date: /Date$/i,
       },
+      disableSaveFromUI: true
     },
     options: {
       storySort: {
         order: [
-          'Chart', 
           'CSUN', 
-          'AI-enhanced Charts', [
-            'Pastry Charts', 
-            'Bar Charts', [
-              'Single Bar Charts',
-              'Multi Bar Charts',
-              'Single Column Charts',
-              'Multi Column Charts',
-              'Single Lollipop Charts',
-              'Multi Lollipop Charts',
-            ],
-            'Line Charts',[
-              'Single Line Charts',
-              'Multi Line Charts',
-              'Single Stepline Charts',
-              'Multi Stepline Charts'
-            ],
-            'Scatter Charts',
-            'Histograms',
-            'Heat Maps'
-          ], 'Basic Charts', [
+          'Charts', [
             'Pastry Charts', 
             'Bar Charts', [
               'Single Bar Charts',
