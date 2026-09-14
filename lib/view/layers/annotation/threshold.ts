@@ -79,9 +79,7 @@ export class Threshold extends View {
     }
 
     _createLabel() {
-        if (!this.text) {
-            return;
-        }
+        const text = this.text ?? String(this.align)
         this.label?.remove();
         const checkIntersect = (label: Label) => {
             const dpViews = this.paraview.documentView!.chartLayers.dataLayer.datapointViews;
@@ -98,7 +96,7 @@ export class Threshold extends View {
                 return;
             }
             const label = new Label(this.paraview, {
-                text: this.text,
+                text: text,
                 x: this.dataLayer.width,
                 y: this.clipHeight - 7,
                 //wrapWidth: 150
@@ -122,7 +120,7 @@ export class Threshold extends View {
                 return;
             }
             const label = new Label(this.paraview, {
-                text: this.text,
+                text: text,
                 x: this.clipWidth,
                 y: 0 - 5
             })

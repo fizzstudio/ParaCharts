@@ -350,7 +350,7 @@ export class DataSymbol extends View {
     if (this._options.datapoint) {
       const thresholds = this.paraview.paraState.thresholds;
       if (thresholds.length) {
-        const i = thresholds.filter(t => t.orientation == 'horiz' && t.clipHeight < this.centerY).length;
+        const i = thresholds.filter(t => t.orientation == 'horiz' && t.align > this._options.datapoint!.facetValueNumericized('y')!).length;
         const j = thresholds.filter(t => t.orientation == 'vert' && t.clipWidth < this.centerX).length;
         const markerRegionIndex = j + i * (thresholds.filter(t => t.orientation == 'vert').length + 1);
         const config = SettingsManager.getGroupLinkForInstance<MarkerConfig>('marker', this.paraview.paraState.config, `threshold-${markerRegionIndex}`);
