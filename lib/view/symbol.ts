@@ -36,7 +36,7 @@ import { styleMap } from 'lit/directives/style-map.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { Datapoint } from '@fizz/paramodel';
 import { SettingsManager } from '../state';
-import { MarkerConfig } from '../common_exports';
+import { MarkerConfig } from '../config/config_types';
 
 export type DataSymbolShape =
   'circle' | 'square' | 'triangle_up' | 'diamond' | 'plus' | 'star' | 'triangle_down' | 'x';

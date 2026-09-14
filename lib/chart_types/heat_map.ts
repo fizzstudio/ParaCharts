@@ -2,8 +2,8 @@ import { enumerate, type Datapoint } from '@fizz/paramodel';
 import { type ChartType } from "@fizz/chartsignal-internal";
 import { PlaneChartInfo } from './plane_chart';
 import { SettingsManager, type ParaState } from '../state';
-import { LegendConfig } from '../common_exports';
 import { LegendItemsWithPosition } from '../view/legend';
+import { LegendConfig } from '../config/config_types';
 
 export class HeatMapInfo extends PlaneChartInfo {
   protected _resolution!: number;

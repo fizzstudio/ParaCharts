@@ -1,4 +1,4 @@
-import { AiChart, type ChartProps } from './Chart';
+import { Chart, type ChartProps } from './Chart';
 
 import type { Meta, StoryObj } from '@storybook/web-components';
 
@@ -9,7 +9,7 @@ const localVennManifest3 = new URL('./local-venn-manifest-3.json', import.meta.u
 
 const meta = {
   title: "Demos",
-  render: (args) => AiChart(args),
+  render: (args) => Chart(args),
 } satisfies Meta<ChartProps>;
 
 export default meta;

@@ -45,9 +45,6 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Build AI variant
-        run: npm run build:ai
-
       - name: Run unit tests
         run: npm run test:unit
 
@@ -57,8 +54,8 @@ jobs:
       - name: Run browser tests
         run: npm run test:browser
 
-      - name: Build Storybook
-        run: npm run build-storybook
+      - name: Build Storybook-Static
+        run: npm run build:storybook-static
 
       - name: Build docs
         run: npm run docs:build

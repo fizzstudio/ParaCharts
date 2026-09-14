@@ -6,7 +6,7 @@ import { expect } from 'storybook/test';
 type Story = StoryObj<ChartProps>;
 
 const meta = {
-  title: "Chart",
+  title: 'Specialized Charts',
   render: (args) => Chart(args),
 } satisfies Meta<ChartProps>;
 
