@@ -781,6 +781,8 @@ export class ParaChart extends ParaComponent {
     // (undocumented)
     manifestType: SourceKind;
     // (undocumented)
+    protected _noticeCounts: Map<string, number>;
+    // (undocumented)
     protected _paraAPI: ParaAPI;
     // Warning: (ae-forgotten-export) The symbol "ParaState" needs to be exported by the entry point index.d.ts
     //
@@ -958,6 +960,11 @@ export interface TypeBubbleConfig extends TypePlaneConfig {
 }
 
 // @public
+export interface TypeCandlestickConfig extends TypePlaneConfig {
+    isHollow: boolean;
+}
+
+// @public
 export interface TypeColumnConfig extends TypePlaneConfig {
     barGap: number;
     barWidth: number;
@@ -1001,6 +1008,7 @@ export interface TypeComboConfig extends TypePlaneConfig {
 export interface TypeConfig extends ConfigGroup {
     bar: TypeBarConfig;
     bubble: TypeBubbleConfig;
+    candlestick: TypeCandlestickConfig;
     column: TypeColumnConfig;
     combo: TypeComboConfig;
     donut: TypeDonutConfig;

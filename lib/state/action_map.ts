@@ -2,6 +2,9 @@
 
 export interface AvailableActions {
   move(direction: string): Promise<void>;
+  // moveIn(): Promise<void>;
+  // moveOut(): Promise<void>;
+  jump(direction: string): Promise<void>;
   goFirst(): void;
   goLast(): void;
   goMinimum(): void;

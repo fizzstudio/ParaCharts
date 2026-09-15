@@ -18,17 +18,19 @@ import { Logger, getLogger } from '@fizz/logger';
 import { Datapoint } from '@fizz/paramodel';
 import { ChartType, Facet } from '@fizz/chartsignal-internal';
 import { Summarizer, formatBox, Highlight, summarizerFromModel, HighlightedSummary } from '@fizz/parasummary';
-import { ConfigSetting, DeepReadonly } from '../config/config_types';
+import { ConfigSetting, DeepReadonly, PlaneDirection } from '../config/config_types';
 import { ConfigGroup, Direction, HorizDirection } from '../config/config_types';
 import { ParaView } from '../paraview/paraview';
 import { LegendItemsWithPosition, type LegendItem } from '../view/legend';
 import { AxisOrientation } from '../view/axis';
-import { NavMap, NavNode, NavNodeType, DatapointNavNodeType } from '../view/layers/data/navigation';
+import { NavMap, type NavNode, NavNodeType, DatapointNavNodeType, ChordNavNodeOptions } from '../view/layers/data/navigation';
 import { type ParaState, PointAnnotation, type SparkBrailleInfo, datapointIdToCursor, SettingsManager } from '../state';
 import { Sonifier } from '../audio/sonifier';
 
 
 import { executeParaActions, parseActions } from '../paraactions/paraactions';
+import { populateNavMap } from '../navigation/nav_map_builder';
+import { clusterObject } from '@fizz/clustering';
 
 export const ORIENTATION_SENTENCES = [
   '$.datasets[0].axes.dependent',
@@ -72,6 +74,10 @@ export abstract class BaseChartInfo {
     this._addSettingControls();
   }
 
+  get paraState(): ParaState {
+    return this._paraState;
+  }
+
   setParaView(paraView: ParaView) {
     this._paraView = paraView;
     this._sonifier = new Sonifier(this, this._paraState, this._paraView, this.model!);
@@ -85,6 +91,7 @@ export abstract class BaseChartInfo {
 
   protected _init() {
     this._createNavMap();
+    // this._populateNavMap();
     // We initially get created after the data has loaded, so the
     // postNotice hook won't run
     this._createSummarizer();
@@ -96,6 +103,10 @@ export abstract class BaseChartInfo {
 
   async setup() {
     this._conciseSummary = await this._summarizer.getConciseSummary();
+  }
+
+  get type(): ChartType {
+    return this._type;
   }
 
   get summarizer(): Summarizer {
@@ -168,7 +179,7 @@ export abstract class BaseChartInfo {
   async storeDidChange(key: string, value: any) {
   }
 
-  noticePosted(key: string, value: any) {
+  noticePosted(key: string, value: any, count: number) {
     if (this._paraState.config.ui.isTourGuideEnabled) {
       if (key === 'landmarkStart') {
         const highlight: Highlight = value;
@@ -186,22 +197,39 @@ export abstract class BaseChartInfo {
           this._paraState.clearAllHighlights();
           this._paraState.clearPopups();
           this._paraState.clearSelected();
-          this._navMap!.root.goTo('top', {}, true);
+          this._navMap!.top.goTo('top', {}, true);
         }
       }
     }
     if (key === 'setData') {
       this._createSummarizer();
+    } else if (key === 'navFail') {
+      this._sonifier.playNotification('bumper');
+      if (count > 1) {
+        this._paraState.announce("Can't go further");
+      }
+    } else if (key === 'manifestSet') {
+      this._populateNavMap();
     }
   }
 
   protected _createNavMap() {
     this._navMap = new NavMap(this._paraState, this);
-    const root = this._navMap.layer('root')!;
+    this._createChartLandingNode();
+  }
+
+  protected _populateNavMap(): void {
+    populateNavMap(this._navMap!, this);
+  }
+
+  get clustering(): clusterObject[] | null | undefined {
+    return [];
+  }
+
+  protected _createChartLandingNode() {
+    const topLayer = this._navMap!.layer('top', 0)!;
     // Chart landing (visits no points)
-    const chartLandingNode = new NavNode(root, 'top', {}, this._paraState);
-    root.registerNode(chartLandingNode);
-    root.cursor = chartLandingNode;
+    topLayer.newNode('top', {});
   }
 
   legend(): LegendItemsWithPosition[] {
@@ -229,9 +257,62 @@ export abstract class BaseChartInfo {
   }
 
   async move(dir: Direction) {
-    await this._navMap!.cursor.move(dir);
-    this._paraState.postNotice('move', { dir, options: this._navMap!.cursor.options });
+    const cursor = this.navMap!.cursor;
+    const next = cursor!.peekNode(dir, 1);
+    this._paraState.postNotice('move', {
+      dir,
+      from: cursor,
+      to: next,
+    });
+    const from = cursor;
+    if (await cursor!.move(dir)) {
+      this._onNavOk(dir, from!, this._navMap!.cursor!);
+    } else {
+      this._onNavFail(dir, from!);
+    }
   }
+
+  protected _onNavOk(dir: Direction, from: NavNode, to: NavNode) {
+    this._paraState.postNotice('navOk', { dir, from, to });
+  }
+
+  protected _onNavFail(dir: Direction, from: NavNode) {
+    this._paraState.postNotice('navFail', { dir, from });
+  }
+
+  // async moveIn() {
+  //   this._paraState.postNotice('moveIn', { options: this._navMap!.cursor!.options });
+  //   const from = this._navMap!.cursor;
+  //   if (await this._navMap!.cursor!.moveIn()) {
+  //     this._paraState.postNotice('navOkay', { from, to: this._navMap!.cursor });
+  //   } else {
+  //     this._paraState.postNotice('navFail', null);
+  //   }
+  // }
+
+  // async moveOut() {
+  //   this._paraState.postNotice('moveOut', { options: this._navMap!.cursor!.options });
+  //   const from = this._navMap!.cursor;
+  //   if (await this._navMap!.cursor!.moveOut()) {
+  //     this._paraState.postNotice('navOkay', { from, to: this._navMap!.cursor });
+  //   } else {
+  //     this._paraState.postNotice('navFail', null);
+  //   }
+  // }
+
+  async jump(dir: HorizDirection) {
+    this._paraState.postNotice('jump', { dir, options: this._navMap!.cursor!.options });
+    const from = this._navMap!.cursor;
+    if (await this._navMap!.cursor!.jump(dir)) {
+      this._paraState.postNotice('navOkay', { from, to: this._navMap!.cursor });
+    } else {
+      this._paraState.postNotice('navFail', null);
+    }
+  }
+
+  // chooseNavOutNode(nodes: readonly NavNode[]): NavNode {
+  //   return nodes[0];
+  // }
 
   pointerClick(datasetIndex: number, seriesKey: string, datapointIndex: number, isShift: boolean) {
     // Set quiet = true so that the visit announcement doesn't overwrite
@@ -240,7 +321,7 @@ export abstract class BaseChartInfo {
       seriesKey,
       index: datapointIndex
     }, true);
-    this._paraView.paraState.chartInfo.selectCurrent(isShift);
+    this.selectCurrent(isShift);
   }
 
   /**
@@ -248,7 +329,7 @@ export abstract class BaseChartInfo {
    * @param isMin - If true, go the the minimum. Otherwise, go to the maximum
    */
   goSeriesMinMax(isMin: boolean) {
-    const node = this._navMap!.cursor;
+    const node = this._navMap!.cursor!;
     if (node.isNodeType('top') || node.isNodeType('chord')) {
       this.goChartMinMax(isMin);
     } else if (node.isNodeType(this.navDatapointType)
@@ -283,7 +364,7 @@ export abstract class BaseChartInfo {
         seriesKey: seriesMatchArray[0].seriesKey,
         index: seriesMatchArray[0].datapointIndex
       });
-      this._paraState.postNotice('goSeriesMinMax', { isMin, options: this._navMap!.cursor.options });
+      this._paraState.postNotice('goSeriesMinMax', { isMin, options: this._navMap!.cursor!.options });
     }
   }
 
@@ -300,11 +381,17 @@ export abstract class BaseChartInfo {
       seriesKey: matchDatapoint?.seriesKey,
       index: matchDatapoint?.datapointIndex
     });
-    this._paraState.postNotice('goChartMinMax', { isMin, options: this._navMap!.cursor.options });
+    this._paraState.postNotice('goChartMinMax', { isMin, options: this._navMap!.cursor!.options });
   }
 
   switchToOtherData() {
 
+  }
+
+  protected _composeChordAnnouncement(): string {
+    const index = (this._navMap!.cursor!.options as ChordNavNodeOptions).index;
+    const x = this.model!.series[0].datapoints[index].facetBox('x')!.raw;
+    return `record ${x}`;
   }
 
   protected seriesAndVal = (datapointId: string) => {
@@ -381,13 +468,13 @@ export abstract class BaseChartInfo {
       this._paraState.select();
     }
     const announcement =
-      this._navMap!.cursor.isNodeType('datapoint') ? this.composePointSelectionAnnouncement(isExtend) :
-        this._navMap!.cursor.isNodeType('series') ? this._composeSeriesSelectionAnnouncement() :
+      this._navMap!.cursor!.isNodeType('datapoint') ? this.composePointSelectionAnnouncement(isExtend) :
+        this._navMap!.cursor!.isNodeType('series') ? this._composeSeriesSelectionAnnouncement() :
           '';
     if (announcement) {
       this._paraState.announce(announcement);
     }
-    this._paraState.postNotice('select', { isExtend, options: this._navMap!.cursor.options });
+    this._paraState.postNotice('select', { isExtend, options: this._navMap!.cursor!.options });
   }
 
   clearDatapointSelection(quiet = false) {
@@ -400,57 +487,63 @@ export abstract class BaseChartInfo {
 
   // NOTE: This should be overriden in subclasses
   queryData(): void {
-    const queryType = this._navMap!.cursor.type;
+    const queryType = this._navMap!.cursor!.type;
     this._paraState.announce(
       `[ParaChart/Internal] Error: DataLayer.queryData should be overriden. Query Type: ${queryType}`);
   }
 
   navFirst() {
-    const type = this._navMap!.cursor.type;
+    const type = this._navMap!.cursor!.type;
     if ([this.navDatapointType, 'chord', 'series'].includes(type)) {
-      const dir: Partial<Record<NavNodeType, Direction>> = {
+      const dir: Partial<Record<NavNodeType, PlaneDirection>> = {
         datapoint: 'left',
         chord: 'left',
         series: 'up'
       };
-      this._navMap!.cursor.allNodes(dir[type]!, type).at(-1)?.go();
-      this._paraState.postNotice('goFirst', { options: this._navMap!.cursor.options });
+      this._navMap!.cursor!.allNodes(dir[type]!, type).at(-1)?.go();
+      this._paraState.postNotice('goFirst', { options: this._navMap!.cursor!.options });
     }
   }
 
   navLast() {
-    const type = this._navMap!.cursor.type;
+    const type = this._navMap!.cursor!.type;
     if ([this.navDatapointType, 'chord', 'series'].includes(type)) {
-      const dir: Partial<Record<NavNodeType, Direction>> = {
+      const dir: Partial<Record<NavNodeType, PlaneDirection>> = {
         datapoint: 'right',
         chord: 'right',
         series: 'down'
       };
-      this._navMap!.cursor.allNodes(dir[type]!, type).at(-1)?.go();
-      this._paraState.postNotice('goLast', { options: this._navMap!.cursor.options });
+      this._navMap!.cursor!.allNodes(dir[type]!, type).at(-1)?.go();
+      this._paraState.postNotice('goLast', { options: this._navMap!.cursor!.options });
     }
   }
 
   navToChordLanding() {
-    //Add to this list when adding chord support for additional chart types
-    if (['line', 'bar', 'column'].includes(this._paraState.type) && this.model!.series.length > 1) {
-      if (this._navMap!.cursor.isNodeType(this.navDatapointType)) {
-        const seriesKey = this._navMap!.cursor.options.seriesKey;
-        this._navMap!.cursor.layer.goTo('chord', this._navMap!.cursor.options.index);
-        this._chordPrevSeriesKey = seriesKey;
-        this._paraState.postNotice('enterChordMode', { options: this._navMap!.cursor.options });
-      } else if (this._navMap!.cursor.isNodeType('chord')) {
-        this._navMap!.cursor.layer.goTo(
-          this.navDatapointType, {
-          seriesKey: this._chordPrevSeriesKey,
-          index: this._navMap!.cursor.options.index
-        });
-        this._paraState.postNotice('exitChordMode', { options: this._navMap!.cursor.options });
-      }
-    }
-    else {
-      this.log.info('Chord mode not supported for this chart type');
-    }
+  //   // Add to this list when adding chord support for additional chart types
+  //   if (['line', 'bar', 'column', 'candlestick'].includes(this._paraState.type) && this.model!.series.length > 1) {
+  //     if (this._navMap!.cursor!.isNodeType('top')) {
+  //       this._navMap!.cursor.layer.goTo('chord', 0);
+  //       this._chordPrevSeriesKey = this._paraState.model!.seriesKeys[0];
+  //       this._paraState.postNotice('enterChordMode', { options: this._navMap!.cursor.options });
+  //     } else if (this._navMap!.cursor!.isNodeType(this.navDatapointType)) {
+  //       const seriesKey = this._navMap!.cursor.options.seriesKey;
+  //       this._navMap!.cursor.layer.goTo('chord', this._navMap!.cursor.options.index);
+  //       this._chordPrevSeriesKey = seriesKey;
+  //       this._paraState.postNotice('enterChordMode', { options: this._navMap!.cursor.options });
+  //     } else if (this._navMap!.cursor!.isNodeType('chord')) {
+  //       this._navMap!.cursor.layer.goTo(
+  //         this.navDatapointType, {
+  //         // Candlestick charts default to chord mode, so _chordPrevSeriesKey
+  //         // isn't initially set
+  //         seriesKey: this._chordPrevSeriesKey || this._paraState.model!.seriesKeys[0],
+  //         index: this._navMap!.cursor.options.index
+  //       });
+  //       this._paraState.postNotice('exitChordMode', { options: this._navMap!.cursor.options });
+  //     }
+  //   }
+  //   else {
+  //     this.log.info('Chord mode not supported for this chart type');
+  //   }
   }
 
   async navRunDidStart(cursor: NavNode) {
@@ -529,6 +622,10 @@ export abstract class BaseChartInfo {
           await this.playDatapoints(datapoints);
         }
       }
+      if (!quiet) {
+        this._paraState.announce(this._composeChordAnnouncement());
+      }
+      this._paraState.sparkBrailleInfo = this._sparkBrailleInfo();
     } else if (cursor.isNodeType('sequence')) {
       await this._playCurrentRiff();
       if (!quiet) {
@@ -544,12 +641,17 @@ export abstract class BaseChartInfo {
       // this._paraState.highlight(
       //   `sequence-${cursor.options.seriesKey}-${cursor.options.start}-${cursor.options.end}`);
 
-    }
-    else if (cursor.isNodeType('cluster')) {
+    } else if (cursor.isNodeType('cluster')) {
       this._paraState.announce(
         await this._summarizer.getClusterSummary(
           cursor.options.index
         ))
+    } else if (cursor.isNodeType('collective')) {
+      const numRecords = this.model!.series[0].datapoints.length;
+      const numSeries = this.model!.series.length;
+      const seriesNames = this.model!.series.map(series => series.label).join(', ');
+      this._paraState.announce(
+        `All-series landing. ${numRecords} records, ${numSeries} series: ${seriesNames}`);
     }
   }
 
@@ -560,7 +662,7 @@ export abstract class BaseChartInfo {
 
   didClickBackground() {
     this._paraState.clearSelected();
-    this.navMap!.root.goTo('top', {});
+    this.navMap!.top.goTo('top', {});
   }
 
   /** Nav map layer from which to interpret selectors */
@@ -568,19 +670,19 @@ export abstract class BaseChartInfo {
     return 'root';
   }
 
-  datapointsForSelector(selector: string): readonly Datapoint[] {
-    return this._navMap!.datapointsForSelector(this.selectorLayer, selector);
-  }
+  // datapointsForSelector(selector: string): readonly Datapoint[] {
+  //   return this._navMap!.datapointsForSelector(this.selectorLayer, selector);
+  // }
 
   get shouldDrawFocusRing() {
-    return this._navMap!.cursor.type !== 'top';
+    return this._navMap!.cursor!.type !== 'top';
   }
 
   /** Play a riff for the current nav node */
   protected _playCurrentRiff(order?: RiffOrder, isChord = false): Promise<void> {
     if (this._paraState.config.sonification.isSonificationEnabled
       && this._paraState.config.sonification.isRiffEnabled) {
-      return this.playRiff(this._navMap!.cursor.datapoints, order, isChord);
+      return this.playRiff(this._navMap!.cursor!.datapoints, order, isChord);
     }
     return Promise.resolve();
   }

@@ -8,6 +8,7 @@ import { WaterfallChartInfo } from './waterfall_chart';
 import { VennDiagramInfo } from './venn_diagram';
 import { HistogramChartInfo } from './histogram_chart';
 import { BubbleChartInfo } from './bubble_chart';
+import { CandlestickChartInfo } from './candlestick_chart';
 import { ComboChartInfo } from './combo_chart';
 import { ChartType } from '@fizz/chartsignal-internal';
 import { ParaState } from '../state';
@@ -21,6 +22,7 @@ export * from './scatter_chart';
 export * from './heat_map';
 export * from './waterfall_chart';
 export * from './venn_diagram';
+export * from './candlestick_chart';
 export * from './combo_chart';
 
 type ChartInfoConstructor = new (type: ChartType, state: ParaState) => BaseChartInfo
@@ -41,8 +43,8 @@ export const chartInfoClasses: Record<ChartType, ChartInfoConstructor> = {
   // gauge: BarChart, //GaugeChart,
   stepline: LineChartInfo, //StepLineChart,
   lollipop: BarChartInfo, //LollipopChart
-  venn: VennDiagramInfo, //VennDiagram,
+  venn: VennDiagramInfo,
+  candlestick: CandlestickChartInfo,
   combo: ComboChartInfo,
   bubble: BubbleChartInfo,
-  candlestick: BarChartInfo
 };

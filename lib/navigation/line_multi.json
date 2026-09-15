@@ -1,0 +1,39 @@
+{
+    "start": "series",
+    "levels": [
+        {
+            "id": "series"
+        },
+        {
+            "id": "each-series-datapoints"
+        },
+        {
+            "id": "sequences"
+        }
+    ],
+    "transitions": [
+        {
+            "from": "series",
+            "to": "each-series-datapoints",
+            "dir": "right",
+            "source": "multi",
+            "target": "first",
+            "iter": "datapoints"
+        },
+        {
+            "from": "each-series-datapoints",
+            "to": "series",
+            "dir": "right",
+            "source": "multi",
+            "target": "next",
+            "when": "last",
+            "iter": "datapoints"
+        },
+        {
+            "from": "each-series-datapoints",
+            "to": "sequences",
+            "source": "multi",
+            "target": "containing"
+        }
+    ]
+}

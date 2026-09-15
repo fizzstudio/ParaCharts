@@ -1,0 +1,11 @@
+{
+    "start": "candlesticks",
+    "levels": [
+        {
+            "id": "candlesticks"
+        }
+    ],
+    "transitions": [
+
+    ]
+}

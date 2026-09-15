@@ -19,7 +19,7 @@ import type { DatapointManifest, Manifest } from '@fizz/chartsignal-internal';
 import { ORIENTATION_SENTENCES, PASTRY_ORIENTATION_SENTENCES, type BaseChartInfo } from '../chart_types';
 import { type ParaChart } from '../parachart/parachart';
 import { HotkeyEvent, makeSequenceId, SettingsManager } from '../state';
-import { CardinalDirection, Direction, SettingsInput, ConfigSetting } from '../config/config_types';
+import { CardinalDirection, Direction, SettingsInput, ConfigSetting, HorizDirection, PlaneDirection } from '../config/config_types';
 import { CustomPropertyLoader } from '../state/custom_property_loader';
 import { ActionArgumentMap, AvailableActions } from '../state/action_map';
 import explainers from '../explainers';
@@ -50,6 +50,10 @@ export class ParaAPI {
       move(args: ActionArgumentMap) {
         chartInfo().clearPlay();
         chartInfo().move(args.direction as Direction);
+      },
+      jump(args: ActionArgumentMap) {
+        chartInfo().clearPlay();
+        chartInfo().jump(args.direction as HorizDirection);
       },
       /** Go to the first point of a series. */
       goFirst() {
@@ -274,7 +278,7 @@ export class ParaAPI {
       /** Reset chart selections and navigation. */
       reset() {
         paraView.paraState.clearSelected();
-        chartInfo().navMap!.root.goTo('top', {});
+        chartInfo().navMap!.top.goTo('top', {});
         paraView.createDocumentView();
       }
     };
