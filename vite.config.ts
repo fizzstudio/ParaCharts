@@ -81,7 +81,6 @@ export default defineConfig({
       '@fizz/parasummary',
       '@fizz/ui-components',
       '@fizz/jimerator',
-      '@fizz/paramodel',
       '@fizz/sparkbraille-component',
       '@fizz/templum',
       'decimal.js',

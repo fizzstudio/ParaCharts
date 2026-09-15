@@ -1,6 +1,5 @@
-import { ChartType, Facet } from '@fizz/chartsignal-internal';
+import { ChartType, Facet, PlaneModel } from '@fizz/chartsignal-internal';
 import { BarChartInfo } from './bar_chart';
-import { PlaneModel } from '@fizz/paramodel';
 import { NavMap } from '../view/layers';
 import { ParaState } from '../state';
 import { ConfigSetting, Direction } from '../config/config_types';

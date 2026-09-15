@@ -15,7 +15,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { svg } from 'lit';
-import { Datapoint, enumerate } from '@fizz/paramodel';
+import { Datapoint, enumerate } from '@fizz/chartsignal-internal';
 import { formatBox } from '@fizz/parasummary';
 import { type SeriesView } from '../../../data/series';
 import { linearRegression } from '@fizz/chartsignal-internal';

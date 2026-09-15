@@ -22,13 +22,11 @@ enablePatches();
 import { Logger, getLogger } from '@fizz/logger';
 import {
   dataFromManifest, type AllSeriesData, type ChartType, isPastryType, isVennType, type Point,
-  numberToScaledNumberRounded, SequenceInfo, SeriesAnalysis, clusterObject
+  numberToScaledNumberRounded, SequenceInfo, SeriesAnalysis, clusterObject, facetsFromDataset, 
+  Model, modelFromExternalData, modelFromInlineData, FacetSignature, PlaneDatapoint, 
+  planeModelFromInlineData, planeModelFromExternalData, PlaneModel, type Datapoint
 } from '@fizz/chartsignal-internal';
 import { Jimerator } from '@fizz/jimerator';
-import {
-  facetsFromDataset, Model, modelFromExternalData, modelFromInlineData, FacetSignature, 
-  PlaneDatapoint, planeModelFromInlineData, planeModelFromExternalData, PlaneModel, type Datapoint
-} from '@fizz/paramodel';
 import {
   FormatType, formatXYDatapointX, formatXYDatapointY,
   HighlightedSummary, type Highlight,

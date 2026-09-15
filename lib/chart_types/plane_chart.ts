@@ -15,8 +15,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { Decimal } from 'decimal.js';
-import { type ChartType, type Facet, type Interval, numberToScaledNumberRounded } from '@fizz/chartsignal-internal';
-import { type Datapoint, type PlaneDatapoint, PlaneModel } from '@fizz/paramodel';
+import { type ChartType, type Facet, type Interval, numberToScaledNumberRounded, type Datapoint, type PlaneDatapoint, PlaneModel } from '@fizz/chartsignal-internal';
 import { BaseChartInfo } from './base_chart';
 import { DatapointNavNodeType, NavNode, NavNodeOptionsType, type NavMap } from '../view/layers/data/navigation';
 import { type ParaState } from '../state';

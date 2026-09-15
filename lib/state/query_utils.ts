@@ -1,7 +1,7 @@
 import Decimal from 'decimal.js';
 import { Logger, getLogger } from '@fizz/logger';
 import { capitalize, join, interpolate } from '@fizz/templum';
-import { type Model } from '@fizz/paramodel';
+import { type Model } from '@fizz/chartsignal-internal';
 import { formatXYDatapoint } from '@fizz/parasummary';
 import { type DatapointView } from '../view/data';
 
