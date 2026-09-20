@@ -36,7 +36,6 @@ import {
   formatBox
 } from '@fizz/parasummary';
 import { clusterObject } from '@fizz/clustering';
-import {  } from '@fizz/paramodel';
 import { SeriesAnalyzer } from '@fizz/series-analyzer';
 
 import { BaseState, SettingObserver } from './base_state';
@@ -1656,6 +1655,10 @@ export class ParaState extends BaseState {
 
   clearAllIntersectionHighlights() {
     this._highlightedIntersections = new Set();
+  }
+
+  clearClusterShellViews() {
+    this._clusterShellViews.splice(0, this._clusterShellViews.length);
   }
 
   clearAllHighlights() {

@@ -1110,6 +1110,13 @@ export class ParaView extends ParaComponent implements ViewContext {
     });
   }
 
+  hasDef(key: string) {
+    if (this._defs[key]) {
+      return true;
+    }
+    return false;
+  }
+
   /** Remove a previously-registered def and its DOM node (no-op if missing). */
   removeDef(key: string) {
     // Remove from the reactive defs map so lit stops rendering it.

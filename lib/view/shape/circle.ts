@@ -76,7 +76,13 @@ export class CircleShape extends Shape {
         clip-path=${this._options.isClip ? 'url(#clip-path)' : nothing}
         @pointerenter=${this.options.pointerEnter ?? nothing}
         @pointerleave=${this.options.pointerLeave ?? nothing}
-        @pointermove=${this.options.pointerMove ?? nothing}
+        @pointermove=${(e: PointerEvent) => {
+          this.options.pointerMove ?? nothing
+          this._drag(e)
+        }}
+        @pointerdown=${(e: PointerEvent) => { this._startDrag(e); }}
+        @pointerup=${(e: PointerEvent) => this._endDrag(e)}
+        @pointercancel=${(e: PointerEvent) => this._endDrag(e)}
         @click=${this.options.click ?? nothing}
       ></circle>
     `;
@@ -97,7 +103,13 @@ export class CircleShape extends Shape {
         clip-path=${this._options.isClip ? 'url(#clip-path)' : nothing}
         @pointerenter=${this.options.pointerEnter ?? nothing}
         @pointerleave=${this.options.pointerLeave ?? nothing}
-        @pointermove=${this.options.pointerMove ?? nothing}
+        @pointermove=${(e: PointerEvent) => {
+          this.options.pointerMove ?? nothing
+          this._drag(e)
+        }}
+        @pointerdown=${(e: PointerEvent) => { this._startDrag(e); }}
+        @pointerup=${(e: PointerEvent) => this._endDrag(e)}
+        @pointercancel=${(e: PointerEvent) => this._endDrag(e)}
         @click=${this.options.click ?? nothing}
       ></circle>
     `;

@@ -338,6 +338,10 @@ export class DatapointView extends DataView {
       this.colorIndex; //undefined; // set the color so the highlights layer can clone it
   }
 
+  get symbolColorIndex() {
+    return this._symbolColorIndex;
+  }
+
   protected _contentUpdateShapes() {
     this._shapes.forEach((shape, i) => {
       shape.styleInfo = this._shapeStyleInfo(i);
@@ -347,9 +351,17 @@ export class DatapointView extends DataView {
 
   protected _contentUpdateSymbol() {
     if (this._symbol) {
-      this._symbol.scale = this.symbolScale;
-      this._symbol.colorIndex = this._symbolColorIndex;
-      this._symbol.hidden = !this.paraview.paraState.config.chart.isDrawSymbols;
+      const symbolScale = this.symbolScale;
+      const symbolColorIndex = this._symbolColorIndex;
+      if (this._symbol.scale !== symbolScale) {
+        this._symbol.scale = symbolScale;
+      }
+      if (this._symbol.colorIndex !== symbolColorIndex) {
+        this._symbol.colorIndex = symbolColorIndex;
+      }
+      if (this._symbol.hidden !== !this.paraview.paraState.config.chart.isDrawSymbols) {
+        this._symbol.hidden = !this.paraview.paraState.config.chart.isDrawSymbols;
+      }
     }
   }
 
@@ -362,22 +374,23 @@ export class DatapointView extends DataView {
     this._contentUpdateShapes();
     this._contentUpdateSymbol();
     this._contentUpdateLabels();
+    const classInfo = this.classInfo;
     if (this._children.length === 1) {
       // classInfo may change, so needs to get reassigned here
       const kid = this._children[0] as (Shape | DataSymbol);
       if (kid instanceof DataSymbol) {
         // Merge: preserve symbol-managed classes (symbol, fill-type, lighten) while
         // adding datapoint state classes (series-N, visited, selected, etc.)
-        kid.classInfo = { ...kid.classInfo, ...this.classInfo };
+        kid.classInfo = { ...kid.classInfo, ...classInfo };
       } else {
-        kid.classInfo = this.classInfo;
+        kid.classInfo = classInfo;
       }
     }
     return svg`
         <g
           ${this.ref}
           id=${this._id}
-          class=${classMap(this.classInfo)}
+          class=${classMap(classInfo)}
           role="datapoint"
         >
           ${super.content()}

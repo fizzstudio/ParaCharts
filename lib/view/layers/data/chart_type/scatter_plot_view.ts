@@ -96,7 +96,7 @@ export class ScatterPlotView extends PointPlotView {
   content(...options: any[]) {
     const chartInfo = this.paraview.paraState.chartInfo as ScatterChartInfo;
     if (chartInfo.clustering) {
-      this.paraview.paraState.clusterShellViews = this.paraview.paraState.clusterShellViews.filter(c => c.clusterID !== this._clusterShellView?.clusterID)
+      this.paraview.paraState.clearClusterShellViews();
       this._clusterShellView?.remove();
       if (chartInfo.currentCluster !== -1) {
         this._clusterShellView = new ClusterShellView(this, chartInfo.currentCluster);

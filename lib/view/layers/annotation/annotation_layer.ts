@@ -134,15 +134,15 @@ export class AnnotationLayer extends PlotLayer {
     }
     else {
       //Horizontal and vertical thresholds
-      for (let i = 0; i < sortedHorizThresholds.length + 1; i++) {
+      for (let vertIndex = 0; vertIndex < sortedHorizThresholds.length + 1; vertIndex++) {
         let runningX = 0;
         let newY = 0;
         let newX = 0;
-        for (let j = 0; j < sortedVertThresholds.length + 1; j++) {
-          const id = j + i * (sortedVertThresholds.length + 1);
-          if (i < sortedHorizThresholds.length && j < sortedVertThresholds.length) {
-            const horizThreshold = sortedHorizThresholds[i];
-            const vertThreshold = sortedVertThresholds[j];
+        for (let horizIndex = 0; horizIndex < sortedVertThresholds.length + 1; horizIndex++) {
+          const id = horizIndex + vertIndex * (sortedVertThresholds.length + 1);
+          if (vertIndex < sortedHorizThresholds.length && horizIndex < sortedVertThresholds.length) {
+            const horizThreshold = sortedHorizThresholds[vertIndex];
+            const vertThreshold = sortedVertThresholds[horizIndex];
             const horizClipBox = horizThreshold.highlightPoints()!;
             const vertClipBox = vertThreshold.highlightPoints()!;
             newX = vertClipBox[0].start * clWidth;
@@ -151,15 +151,15 @@ export class AnnotationLayer extends PlotLayer {
             const height = (horizClipBox[1].start) * clHeight - runningY;
             addDef(id, runningX, runningY, width, height);
           }
-          else if (i == sortedHorizThresholds.length && j == sortedVertThresholds.length) {
+          else if (vertIndex == sortedHorizThresholds.length && horizIndex == sortedVertThresholds.length) {
             newX = runningX;
             newY = runningY;
             const width = clWidth - runningX;
             const height = clHeight - runningY;
             addDef(id, runningX, runningY, width, height);
           }
-          else if (i == sortedHorizThresholds.length) {
-            const vertThreshold = sortedVertThresholds[j];
+          else if (vertIndex == sortedHorizThresholds.length) {
+            const vertThreshold = sortedVertThresholds[horizIndex];
             const vertClipBox = vertThreshold.highlightPoints()!;
             newX = vertClipBox[0].start * clWidth;
             newY = runningY;
@@ -167,8 +167,8 @@ export class AnnotationLayer extends PlotLayer {
             const height = clHeight - runningY;
             addDef(id, runningX, runningY, width, height);
           }
-          else if (j == sortedVertThresholds.length) {
-            const horizThreshold = sortedHorizThresholds[i];
+          else if (horizIndex == sortedVertThresholds.length) {
+            const horizThreshold = sortedHorizThresholds[vertIndex];
             const horizClipBox = horizThreshold.highlightPoints()!;
             newX = runningX;
             newY = horizClipBox[1].start * clHeight;
@@ -194,6 +194,125 @@ export class AnnotationLayer extends PlotLayer {
     if (this.paraview.paraState.type == 'line') {
       const chart = this.paraview.documentView!.chartLayers.dataLayer as LinePlotView;
       const points = chart.datapointViews;
+      const getIntersect = (point1: LineSection, point2: LineSection, tHeight: number) => {
+        const slope = (point2.y - point1.y) / (point2.x - point1.x);
+        const intercept = point2.y - slope * point2.x;
+        const y = tHeight;
+        const x = (y - intercept) / slope;
+        return [x, y];
+      }
+      if (sortedVertThresholds.length == 0) {
+        for (let horizIndex = 0; horizIndex < this.paraview.paraState.thresholds.length + 1; horizIndex++) {
+          let tHeight = 0;
+          let isUnder = false
+          if (horizIndex == sortedHorizThresholds.length) {
+            isUnder = true
+            tHeight = sortedHorizThresholds[horizIndex - 1].clipHeight;
+          }
+          else {
+            tHeight = sortedHorizThresholds[horizIndex].clipHeight;
+          }
+          const config = SettingsManager.getGroupLinkForInstance<MarkerConfig>('marker', this.paraview.paraState.config, `threshold-${horizIndex}`);
+          if (!(config.isChangeThresholdHighlightColor && config.highlightUnderLine)) {
+            continue;
+          }
+          let above = false;
+          const vecs = [];
+          let currentVecs = [];
+          if (isUnder) {
+            for (let i = 0; i < points.length; i++) {
+              const point = points[i];
+              if (point.y <= tHeight && above) {
+                continue;
+              }
+              else if (point.y >= tHeight && above) {
+                if (i == 0) {
+                  currentVecs.push(new Vec2(point.x, tHeight));
+                  currentVecs.push(new Vec2(point.x, point.y));
+                }
+                else {
+                  const intersect = getIntersect(points[i - 1], point, tHeight);
+                  currentVecs.push(new Vec2(intersect[0], intersect[1]));
+                  currentVecs.push(new Vec2(point.x, point.y));
+                }
+                above = false;
+              }
+              else if (point.y < tHeight && !above) {
+                const intersect = getIntersect(points[i - 1], point, tHeight);
+                currentVecs.push(new Vec2(intersect[0], intersect[1]));
+                vecs.push(currentVecs);
+                currentVecs = [];
+                above = true;
+              }
+              else {
+                if (i == 0) {
+                  currentVecs.push(new Vec2(point.x, tHeight));
+                  currentVecs.push(new Vec2(point.x, point.y));
+                }
+                if (i == points.length - 1) {
+                  currentVecs.push(new Vec2(point.x, point.y));
+                  currentVecs.push(new Vec2(point.x, tHeight));
+                  vecs.push(currentVecs);
+                }
+                else {
+                  currentVecs.push(new Vec2(point.x, point.y));
+                }
+              }
+            }
+          }
+          else {
+            for (let i = 0; i < points.length; i++) {
+              const point = points[i];
+              if (point.y >= tHeight && !above) {
+                continue;
+              }
+              else if (point.y <= tHeight && !above) {
+                if (i == 0) {
+                  currentVecs.push(new Vec2(point.x, tHeight));
+                  currentVecs.push(new Vec2(point.x, point.y));
+                }
+                else {
+                  const intersect = getIntersect(points[i - 1], point, tHeight);
+                  currentVecs.push(new Vec2(intersect[0], intersect[1]));
+                  currentVecs.push(new Vec2(point.x, point.y));
+                }
+                above = true;
+              }
+              else if (point.y > tHeight && above) {
+                const intersect = getIntersect(points[i - 1], point, tHeight);
+                currentVecs.push(new Vec2(intersect[0], intersect[1]));
+                vecs.push(currentVecs);
+                currentVecs = [];
+                above = false;
+              }
+              else {
+                if (i == points.length - 1) {
+                  currentVecs.push(new Vec2(point.x, point.y));
+                  currentVecs.push(new Vec2(point.x, tHeight));
+                  vecs.push(currentVecs);
+                }
+                else {
+                  currentVecs.push(new Vec2(point.x, point.y));
+                }
+              }
+            }
+          }
+          for (const pointGroup of vecs) {
+            const path = new PathShape(this.paraview, {
+              points: pointGroup,
+              fill: config.highlightColor == '' ? "red" : config.highlightColor,
+              opacity: .15,
+              strokeWidth: 5
+            });
+            this.group('thresholds')!.append(path);
+          }
+        }
+      }
+      /*
+ 
+      if (this.paraview.paraState.type == 'line') {
+      const chart = this.paraview.documentView!.chartLayers.dataLayer as LinePlotView;
+      const points = chart.datapointViews;
       const getIntersect = (point1: LineSection, point2: LineSection, threshold: Threshold) => {
         const slope = (point2.y - point1.y) / (point2.x - point1.x);
         const intercept = point2.y - slope * point2.x;
@@ -201,58 +320,85 @@ export class AnnotationLayer extends PlotLayer {
         const x = (y - intercept) / slope;
         return [x, y];
       }
-      for (let tIndex = 0; tIndex < this.paraview.paraState.thresholds.length; tIndex++) {
-        const threshold = this.paraview.paraState.thresholds[tIndex];
-        const config = SettingsManager.getGroupLinkForInstance<MarkerConfig>('marker', this.paraview.paraState.config, `threshold-${tIndex}`);
-        if (!(config.isChangeThresholdHighlightColor && config.highlightUnderLine)) {
-          continue;
-        }
-        let above = false;
-        const vecs = [];
-        let currentVecs = [];
-        for (let i = 0; i < points.length; i++) {
-          const point = points[i];
-          if (point.y >= threshold.clipHeight && !above) {
-            continue;
-          }
-          else if (point.y <= threshold.clipHeight && !above) {
-            if (i == 0) {
-              currentVecs.push(new Vec2(point.x, threshold.clipHeight));
-              currentVecs.push(new Vec2(point.x, point.y));
+     
+          */
+      else {
+        for (let horizIndex = 0; horizIndex < sortedHorizThresholds.length + 1; horizIndex++) {
+          for (let vertIndex = 0; vertIndex < sortedVertThresholds.length + 1; vertIndex++) {
+            const id = vertIndex + horizIndex * (sortedVertThresholds.length + 1);
+            let tHeight = 0;
+            let tWidth = 0;
+            if (horizIndex == sortedHorizThresholds.length) {
+              tHeight = chart.height;
             }
             else {
-              const intersect = getIntersect(points[i - 1], point, threshold);
-              currentVecs.push(new Vec2(intersect[0], intersect[1]));
-              currentVecs.push(new Vec2(point.x, point.y));
+              tHeight = sortedHorizThresholds[horizIndex].clipHeight;
             }
-            above = true;
-          }
-          else if (point.y > threshold.clipHeight && above) {
-            const intersect = getIntersect(points[i - 1], point, threshold);
-            currentVecs.push(new Vec2(intersect[0], intersect[1]));
-            vecs.push(currentVecs);
-            currentVecs = [];
-            above = false;
-          }
-          else {
-            if (i == points.length - 1) {
-              currentVecs.push(new Vec2(point.x, point.y));
-              currentVecs.push(new Vec2(point.x, threshold.clipHeight));
-              vecs.push(currentVecs);
+            if (vertIndex == sortedVertThresholds.length) {
+              tWidth = chart.width;
             }
             else {
-              currentVecs.push(new Vec2(point.x, point.y));
+              tWidth = sortedVertThresholds[vertIndex].clipWidth;
+            }
+            const config = SettingsManager.getGroupLinkForInstance<MarkerConfig>('marker', this.paraview.paraState.config, `threshold-${id}`);
+            if (!(config.isChangeThresholdHighlightColor && config.highlightUnderLine)) {
+              continue;
+            }
+            let above = false;
+            const vecs = [];
+            let currentVecs = [];
+            for (let i = 0; i < points.length; i++) {
+
+              const point = points[i];
+              if (i !== (points.length - 1) && sortedVertThresholds[vertIndex] && (point.x > tWidth || point.datapoint.facetValue('x') == String(sortedVertThresholds[vertIndex].align))) {
+                currentVecs.push(new Vec2(point.x, point.y));
+                currentVecs.push(new Vec2(point.x, tHeight));
+                vecs.push(currentVecs);
+                break;
+              }
+              if (point.y >= tHeight && !above) {
+                continue;
+              }
+              else if (point.y <= tHeight && !above) {
+                if (i == 0) {
+                  currentVecs.push(new Vec2(point.x, tHeight));
+                  currentVecs.push(new Vec2(point.x, point.y));
+                }
+                else {
+                  const intersect = getIntersect(points[i - 1], point, tHeight);
+                  currentVecs.push(new Vec2(intersect[0], intersect[1]));
+                  currentVecs.push(new Vec2(point.x, point.y));
+                }
+                above = true;
+              }
+              else if (point.y > tHeight && above) {
+                const intersect = getIntersect(points[i - 1], point, tHeight);
+                currentVecs.push(new Vec2(intersect[0], intersect[1]));
+                vecs.push(currentVecs);
+                currentVecs = [];
+                above = false;
+              }
+              else {
+                if (i == points.length - 1) {
+                  currentVecs.push(new Vec2(point.x, point.y));
+                  currentVecs.push(new Vec2(point.x, tHeight));
+                  vecs.push(currentVecs);
+                }
+                else {
+                  currentVecs.push(new Vec2(point.x, point.y));
+                }
+              }
+            }
+            for (const pointGroup of vecs) {
+              const path = new PathShape(this.paraview, {
+                points: pointGroup,
+                fill: config.highlightColor == '' ? "red" : config.highlightColor,
+                opacity: .15,
+                strokeWidth: 5
+              });
+              this.group('thresholds')!.append(path);
             }
           }
-        }
-        for (const pointGroup of vecs) {
-          const path = new PathShape(this.paraview, {
-            points: pointGroup,
-            fill: config.highlightColor == '' ? "red" : config.highlightColor,
-            opacity: .15,
-            strokeWidth: 5
-          });
-          this.group('thresholds')!.append(path);
         }
       }
     }
@@ -261,7 +407,6 @@ export class AnnotationLayer extends PlotLayer {
       this.group('thresholds')!.append(threshold);
     }
   }
-
   renderChildren() {
     if (this.type === 'foreground') {
       if (this.paraview.paraState.modelTrendLines && this.paraview.paraState.chartInfo instanceof PlaneChartInfo) {

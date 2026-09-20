@@ -22,7 +22,7 @@
             "label": "cpanel.tabs.chart.marker_dialog.highlight_color",
             "description": "Change highlight color",
             "type": "string",
-            "default": "",
+            "default": "#FF0000",
             "control": "colorPicker",
             "parentView": "controlPanel.tabs.chart.marker.dialog"
         },

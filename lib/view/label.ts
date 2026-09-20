@@ -79,6 +79,8 @@ export class Label extends View {
   protected _brailleText?: string;
   protected _textCornerOffsets!: LabelTextCorners;
   protected _textLines: TextLine[] = [];
+  protected _fixedX?: string;
+  protected _fixedY?: string;
 
   constructor(paraview: ViewContext, private options: LabelOptions) {
     super(paraview);
@@ -237,19 +239,19 @@ export class Label extends View {
   }
 
   get topNormal(): Vec2 {
-    return new Vec2(0, 1).rotate(this.angle*Math.PI/180);
+    return new Vec2(0, 1).rotate(this.angle * Math.PI / 180);
   }
 
   get bottomNormal(): Vec2 {
-    return new Vec2(0, -1).rotate(this.angle*Math.PI/180);
+    return new Vec2(0, -1).rotate(this.angle * Math.PI / 180);
   }
 
   get leftNormal(): Vec2 {
-    return new Vec2(-1, 0).rotate(this.angle*Math.PI/180);
+    return new Vec2(-1, 0).rotate(this.angle * Math.PI / 180);
   }
 
   get rightNormal(): Vec2 {
-    return new Vec2(1, 0).rotate(this.angle*Math.PI/180);
+    return new Vec2(1, 0).rotate(this.angle * Math.PI / 180);
   }
 
   get topLeftNormal(): Vec2 {
@@ -266,6 +268,38 @@ export class Label extends View {
 
   get bottomLeftNormal(): Vec2 {
     return this.bottomNormal.add(this.leftNormal).normalize();
+  }
+
+  get x() {
+    return this._x;
+  }
+
+  set x(newX: number) {
+    this._fixedX = undefined;
+    super.x = newX;
+  }
+
+  get y() {
+    return this._y;
+  }
+
+  set y(newY: number) {
+    this._fixedY = undefined;
+    super.y = newY;
+  }
+
+  get fixedX() {
+    if (!this._fixedX) {
+      this._fixedX = fixed`${this._x}`;
+    }
+    return this._fixedX;
+  }
+
+  get fixedY() {
+    if (!this._fixedY) {
+      this._fixedY = fixed`${this._y}`;
+    }
+    return this._fixedY;
   }
 
   addClass(cls: string) {
@@ -483,9 +517,9 @@ export class Label extends View {
    * `_textCornerOffsets`.
    */
   protected _measureOuterBbox(bbox: SVGRect): [number, number] {
-    const toRads = Math.PI/180;
+    const toRads = Math.PI / 180;
     // Coord system is vertically mirrored, so flip the sign of the angle
-    const theta = -this.angle*toRads;
+    const theta = -this.angle * toRads;
     const left = bbox.x;
     const right = left + bbox.width;
     const top = bbox.y;
@@ -581,14 +615,14 @@ export class Label extends View {
         ${ref(this._elRef)}
         class=${Object.keys(this._classInfo).length ? classMap(this._classInfo) : nothing}
         role=${this.options.role ?? nothing}
-        x=${fixed`${this._x}`}
-        y=${fixed`${this._y}`}
+        x=${this.fixedX}
+        y=${this.fixedY}
         text-anchor=${this._textAnchor !== 'start' ? this._textAnchor : nothing}
         transform=${this._makeTransform() ?? nothing}
         id=${this.id}
         aria-label=${this._tactileLabelMode === 'Braille' || this._tactileLabelMode === 'Both'
-          ? this._text
-          : nothing}
+        ? this._text
+        : nothing}
         style=${Object.keys(this._styleInfo).length ? styleMap(this._styleInfo) : nothing}
         @pointerenter=${this.options.pointerEnter ?? nothing}
         @pointerleave=${this.options.pointerLeave ?? nothing}
@@ -602,16 +636,16 @@ export class Label extends View {
               x=${fixed`${this._x + line.offset}`}
               dy=${i === 0 ? '0' : `${this._lineHeight + this._lineSpacing}px`}
             >${this._textLines.length
-              ? this.paraview.translateBraille(
-                line.text,
-                this.paraview.paraState.config.chart.tactileBrailleGrade,
-              )
-              : this._brailleText}</tspan>
+            ? this.paraview.translateBraille(
+              line.text,
+              this.paraview.paraState.config.chart.tactileBrailleGrade,
+            )
+            : this._brailleText}</tspan>
             <tspan class="tactile-latin-run" x=${fixed`${this._x + line.offset}`} dy="0">${line.text}</tspan>
           `)
         : this._textLines.length
-        ? this._textLines.map((line, i) =>
-          svg`
+          ? this._textLines.map((line, i) =>
+            svg`
               <tspan
                 x=${fixed`${this._x + line.offset}`}
                 dy=${i === 0 ? '0' : this._lineHeight + this._lineSpacing}
@@ -619,7 +653,7 @@ export class Label extends View {
                 ${line.text}
               </tspan>
             `)
-        : this._displayText ? this._displayText : unsafeHTML('&nbsp;')}
+          : this._displayText ? this._displayText : unsafeHTML('&nbsp;')}
       </text>
     `;
   }

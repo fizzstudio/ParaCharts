@@ -29,7 +29,7 @@ export class ColorPickerSettingControl extends SettingControl<'colorPicker'> {
         <input
           type="color"
           id="color-${this.info.instanceID ?? ''}"
-          .value=${this.value == '' ? '#FF0000' : this.value}
+          .value=${this.value}
           @change=${(e: Event) => {
             this._updateSetting(
               this.info.key, (e.target as HTMLInputElement).value, this.info.instanceID);
