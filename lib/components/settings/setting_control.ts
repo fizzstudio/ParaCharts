@@ -10,7 +10,7 @@ import { property, state } from 'lit/decorators.js';
 import { ConfigSetting } from '../../config/config_types';
 
 
-export type SettingControlType = 'textfield' | 'dropdown' | 'checkbox' | 'radio' | 'slider' | 'button';
+export type SettingControlType = 'textfield' | 'dropdown' | 'checkbox' | 'radio' | 'slider' | 'button' | 'colorPicker';
 
 export type SettingControlValueType<T extends SettingControlType> =
   T extends 'textfield' ? string | number :
@@ -19,6 +19,7 @@ export type SettingControlValueType<T extends SettingControlType> =
   T extends 'radio' ? string :
   T extends 'slider' ? number :
   T extends 'button' ? boolean :
+  T extends 'colorPicker' ? string :
   never;
 
 export abstract class SettingControl<T extends SettingControlType> extends ParaComponent {

@@ -62,6 +62,8 @@ export class RectShape extends Shape {
         height=${fixed`${this.height}`}
         @pointerenter=${this.options.pointerEnter ?? nothing}
         @pointerleave=${this.options.pointerLeave ?? nothing}
+        @pointermove=${this.options.pointerMove ?? nothing}
+        @click=${this.options.click ?? nothing}
       ></rect>
     `;
     }
@@ -81,6 +83,7 @@ export class RectShape extends Shape {
         @pointerenter=${this.options.pointerEnter ?? nothing}
         @pointerleave=${this.options.pointerLeave ?? nothing}
         @pointermove=${this.options.pointerMove ?? nothing}
+        @click=${this.options.click ?? nothing}
       ></rect>
     `;
     }

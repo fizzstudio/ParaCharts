@@ -80,6 +80,10 @@ export class ChartPanel extends ControlPanelTabPanel {
     `
   ];
 
+  get markerDialogRef() {
+    return this._markerDialogRef;
+  }
+  
   connectedCallback() {
     super.connectedCallback();
     this._paraState.settingControls.insert('description.captionFormat');

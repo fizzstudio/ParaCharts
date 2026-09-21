@@ -348,14 +348,21 @@ export class DataSymbol extends View {
 
   content() {
     if (this._options.datapoint) {
+      const dp = this._options.datapoint;
       const thresholds = this.paraview.paraState.thresholds;
       if (thresholds.length) {
-        const i = thresholds.filter(t => t.orientation == 'horiz' && t.clipHeight < this.centerY).length;
+        const i = thresholds.filter(t => t.orientation == 'horiz' && t.align > dp!.facetValueNumericized('y')!).length;
         const j = thresholds.filter(t => t.orientation == 'vert' && t.clipWidth < this.centerX).length;
         const markerRegionIndex = j + i * (thresholds.filter(t => t.orientation == 'vert').length + 1);
         const config = SettingsManager.getGroupLinkForInstance<MarkerConfig>('marker', this.paraview.paraState.config, `threshold-${markerRegionIndex}`);
         if (config.isChangeThresholdHighlightColor) {
-          this._styleInfo.stroke = 'red';
+          if (config.highlightColor !== '') {
+            this._styleInfo.stroke = config.highlightColor;
+          }
+        }
+        else {
+          const dpView = this.paraview.documentView?.chartLayers.dataLayer.datapointView(dp.seriesKey, dp.datapointIndex);
+          this._styleInfo.stroke = this.paraview.paraState.colors.colorValueAt(dpView!.symbolColorIndex);
         }
       }
     }

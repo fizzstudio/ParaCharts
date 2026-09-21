@@ -1,8 +1,10 @@
 import { PlaneChartInfo } from "../../../chart_types";
 import { Vec2 } from "../../../common";
+import { ParaView } from "../../../paraview";
+import { HorizAxis, HorizTickStrip } from "../../axis";
 import { View } from "../../base_view";
 import { Label } from "../../label";
-import { PathShape } from "../../shape";
+import { CircleShape, PathShape } from "../../shape";
 import { ViewContext } from "../../view_context";
 import { PlanePlotView } from "../data";
 
@@ -10,6 +12,8 @@ export class Threshold extends View {
     clipHeight = -1;
     clipWidth = -1;
     protected label?: Label;
+    protected line?: PathShape;
+    protected slider?: CircleShape;
     constructor(paraview: ViewContext, public orientation: 'horiz' | 'vert', public align: number, public text?: string) {
         super(paraview);
         this.id = `threshold-${this.paraview.paraState.nextMarkerID()}`;
@@ -25,13 +29,114 @@ export class Threshold extends View {
         return this.paraview.documentView!.chartLayers.dataLayer as PlanePlotView;
     }
 
+    pointerMove(): void {
+        const coords = this.paraview.paraState.pointerCoords
+        if (!this.slider?.isHeld) {
+            this.slider?.remove();
+            this.slider = undefined;
+        }
+        if (this.orientation == 'horiz') {
+            if (coords.y > (this.clipHeight - 10) && coords.y < (this.clipHeight + 10)) {
+                if (this.slider?.isHeld) {
+                    const interval = (this.chartInfo as PlaneChartInfo).yRangeInfo?.interval;
+                    if (!interval) {
+                        return;
+                    }
+                    let newPos = (1 - (this.slider.centerY / this.dataLayer.height)) * (interval.end - interval.start) + interval.start;
+                    newPos = Math.floor(newPos * 100) / 100
+                    this.align = newPos;
+                    this._createShapes(this.orientation, this.align);
+                    this._createLabel()
+                    return;
+                }
+                const sliderShape = new CircleShape(this.paraview, {
+                    r: 10,
+                    x: this.dataLayer.width + 15,
+                    y: this.clipHeight,
+                    stroke: 'blue',
+                    fill: 'white',
+                    strokeWidth: 3,
+                })
+                sliderShape.isDraggable = true;
+                sliderShape.dragSettings = {
+                    lockX: true, yBounds: { start: 0, end: this.dataLayer.height },
+                    afterDragFunction: () => (this.paraview as ParaView).paraChart.controlPanel.chartPanel.markerDialogRef.value?.createDialogContent()
+                }
+                this.slider = sliderShape
+                this.append(this.slider)
+            }
+            else {
+                if (this.slider) {
+                    this.slider?.remove();
+                    this.slider = undefined
+                }
+                this.paraview.requestUpdate();
+            }
+        }
+        else if (this.orientation == 'vert') {
+            if (coords.x > (this.clipWidth - 10) && coords.x < (this.clipWidth + 10)) {
+                if (this.slider?.isHeld) {
+                    const interval = (this.chartInfo as PlaneChartInfo).xRangeInfo?.interval;
+                    if (!interval) {
+                        let xAxis = (this.paraview.documentView?.xAxis! as HorizAxis);
+                        let xVals = [0];
+                        for (let i = 0; i < xAxis.tickLabelTierValues[0].labels.length - 1; i++) {
+                            xVals.push((xAxis.tickStrip as HorizTickStrip).ruleXs[i]);
+                        }
+                        const xDiff = xVals.map(x => Math.abs(x - this.paraview.paraState.pointerCoords.x));
+                        const nearest = xAxis.tickLabelTierValues[0].labels[xDiff.indexOf(Math.min(...xDiff))];
+                        this.align = Number(nearest);
+                        this._createShapes(this.orientation, this.align);
+                        this._createLabel();
+                        return;
+                    }
+                    let newPos = ((this.slider.centerX / this.dataLayer.width)) * (interval.end - interval.start) + interval.start;
+                    newPos = Math.floor(newPos * 100) / 100
+                    this.align = newPos;
+                    this._createShapes(this.orientation, this.align);
+                    this._createLabel()
+                    return;
+                }
+                const sliderShape = new CircleShape(this.paraview, {
+                    r: 10,
+                    x: this.clipWidth,
+                    y: 10,
+                    stroke: 'blue',
+                    fill: 'white',
+                    strokeWidth: 3,
+                })
+                sliderShape.isDraggable = true;
+                sliderShape.dragSettings = {
+                    lockY: true, xBounds: { start: 0, end: this.dataLayer.width },
+                    afterDragFunction: () => (this.paraview as ParaView).paraChart.controlPanel.chartPanel.markerDialogRef.value?.createDialogContent()
+                }
+                this.slider = sliderShape
+                this.append(this.slider)
+            }
+            else {
+                if (this.slider) {
+                    this.slider?.remove();
+                    this.slider = undefined
+                }
+                this.paraview.requestUpdate();
+            }
+        }
+    }
+
     _createShapes(type: 'horiz' | 'vert', align: number) {
         let height = 0;
         let width = 0;
+        if (this.line) {
+            this.line.remove();
+            this.line = undefined;
+        }
         if (type == 'horiz') {
             if (this.chartInfo.yRangeInfo) {
                 let int = this.chartInfo.yRangeInfo.interval;
                 height = (1 - ((align - int.start) / (int.end - int.start))) * this.dataLayer.height
+            }
+            else {
+                return;
             }
             let points = []
             points.push(new Vec2(0, height))
@@ -41,7 +146,8 @@ export class Threshold extends View {
                 stroke: 'black',
                 strokeWidth: 3
             })
-            this.append(line);
+            this.line = line;
+            this.prepend(line);
             line.classInfo = { "threshold-line": true }
             this.clipHeight = height
         }
@@ -72,16 +178,15 @@ export class Threshold extends View {
                 stroke: 'black',
                 strokeWidth: 3
             })
-            this.append(line);
+            this.line = line;
+            this.prepend(line);
             line.classInfo = { "threshold-line": true }
             this.clipWidth = width;
         }
     }
 
     _createLabel() {
-        if (!this.text) {
-            return;
-        }
+        const text = this.text ?? String(this.align)
         this.label?.remove();
         const checkIntersect = (label: Label) => {
             const dpViews = this.paraview.documentView!.chartLayers.dataLayer.datapointViews;
@@ -98,12 +203,11 @@ export class Threshold extends View {
                 return;
             }
             const label = new Label(this.paraview, {
-                text: this.text,
+                text: text,
                 x: this.dataLayer.width,
                 y: this.clipHeight - 7,
-                //wrapWidth: 150
             })
-
+            label.classInfo = { "popup-text": true };
             label.x -= (label.width / 2);
             this.append(label);
             this.label = label;
@@ -122,10 +226,11 @@ export class Threshold extends View {
                 return;
             }
             const label = new Label(this.paraview, {
-                text: this.text,
+                text: text,
                 x: this.clipWidth,
                 y: 0 - 5
             })
+            label.classInfo = { "popup-text": true };
             this.append(label)
             this.label = label;
         }
@@ -133,6 +238,9 @@ export class Threshold extends View {
 
     highlightPoints() {
         if (this.orientation == 'horiz') {
+            if (!this.chartInfo.yRangeInfo) {
+                return [{ start: 0, end: 1 }, { start: 0, end: 1 }];
+            }
             let int = this.chartInfo.yRangeInfo!.interval;
             if (this.align < int.start || this.align > int.end) {
                 return [{ start: 0, end: 1 }, { start: 0, end: 1 }];
@@ -143,7 +251,7 @@ export class Threshold extends View {
         else if (this.orientation == 'vert') {
             const xValues = this.paraview.paraState.model!.allFacetValues("x")!.map(box => box.raw);
             if (!this.chartInfo.xRangeInfo && !xValues.includes(String(this.align))) {
-                return;
+                return [{ start: 0, end: 1 }, { start: 0, end: 1 }];
             }
             const start = this.clipWidth / this.dataLayer.width;
             return [{ start: start, end: 1 }, { start: 0, end: 1 }]

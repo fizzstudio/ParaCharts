@@ -138,7 +138,9 @@
                     },
                     "marker_dialog": {
                         "highlight_dashed": "Make line dashed",
-                        "highlight_color": "Change datapoint's color"
+                        "highlight_datapoints": "Highlight datapoints",
+                        "highlight_color": "Change highlight color",
+                        "highlight_under_line": "Only highlight between line and threshold"
                     }
                 },
                 "annotations": {

@@ -87,7 +87,8 @@ const inputTypeTags = {
   checkbox: literal`para-checkbox-setting-control`,
   radio: literal`para-radio-setting-control`,
   slider: literal`para-slider-setting-control`,
-  button: literal`para-button-setting-control`
+  button: literal`para-button-setting-control`,
+  colorPicker: literal`para-color-picker-setting-control`
 }
 
 /**
