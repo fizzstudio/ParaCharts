@@ -71,7 +71,7 @@ export abstract class TickStrip extends Container(View) {
 
   protected _computeInterval() {
     const n = this._options.tickCount - 1;
-    this._interval = this._length/(n/this._options.tickStep);
+    this._interval = this._length / (n / this._options.tickStep);
   }
 
   protected _addedToParent(): void {
@@ -132,7 +132,7 @@ export class HorizTickStrip extends TickStrip {
     const n = (this._options.isChartIntertick && this._options.isFacetIndep)
       ? this._options.tickCount
       : this._options.tickCount - 1;
-    this._interval = this._length/(n/this._options.tickStep);
+    this._interval = this._length / (n / this._options.tickStep);
   }
 
   computeSize() {
@@ -145,6 +145,10 @@ export class HorizTickStrip extends TickStrip {
 
   protected get _length(): number {
     return this._width;
+  }
+
+  get ruleXs() {
+    return this._ruleXs;
   }
 
   protected _updateSizeFromLength(length: number) {
@@ -179,11 +183,11 @@ export class HorizTickStrip extends TickStrip {
     // skip axis line tick
     this._indices = this._indices.slice(1);
     const xOffset = (this._axisSettings.ticks.isOnDatapoint && isXIntertick)
-      ? this._interval/2
+      ? this._interval / 2
       : 0;
     this._ruleXs = this._indices.map(i => isOrthoEast
-      ? this.width - i*this._interval
-      : i*this._interval - xOffset);
+      ? this.width - i * this._interval
+      : i * this._interval - xOffset);
     this._indices.forEach((idx, i) => {
       this.append(new HorizTick(
         this._axisSettings.position as VertCardinalDirection,
@@ -228,7 +232,7 @@ export class VertTickStrip extends TickStrip {
     const n = (this._options.isChartIntertick && this._options.isFacetIndep)
       ? this._options.tickCount
       : this._options.tickCount - 1;
-    this._interval = this._length/(n/this._options.tickStep);
+    this._interval = this._length / (n / this._options.tickStep);
   }
 
   computeSize() {
@@ -270,11 +274,11 @@ export class VertTickStrip extends TickStrip {
       this._ruleX = 0;
     }
     const yOffset = (this._axisSettings.ticks.isOnDatapoint && isXIntertick)
-      ? this._interval/2
+      ? this._interval / 2
       : 0;
     this._ruleYs = this._indices.map(i => isNorth
-      ? this.height - i*this._interval
-      : i*this._interval + yOffset);
+      ? this.height - i * this._interval
+      : i * this._interval + yOffset);
     this._indices.forEach(i => {
       this.append(new VertTick(
         this._axisSettings.position as HorizCardinalDirection,

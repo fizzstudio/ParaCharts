@@ -68,6 +68,9 @@ export class AnnotationLayer extends PlotLayer {
   }
 
   addThresholds() {
+    if (this.paraview.paraState.thresholds.length == 0){
+      return;
+    }
     const backgroundHighlights: RectShape[] = [];
     const addDef = (keyIndex: number, x: number, y: number, width: number, height: number) => {
       const key = `marker-clip-${keyIndex}`;

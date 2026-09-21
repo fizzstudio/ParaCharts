@@ -322,7 +322,7 @@ export interface ConfigControlOptions {
 }
 
 // @public
-export type ConfigControlType = 'textfield' | 'dropdown' | 'checkbox' | 'radio' | 'slider' | 'button';
+export type ConfigControlType = 'textfield' | 'dropdown' | 'checkbox' | 'radio' | 'slider' | 'button' | 'colorPicker';
 
 // @public
 export type ConfigGroup = {
@@ -585,6 +585,8 @@ export interface ManifestBuilderInput {
 
 // @public
 export interface MarkerConfig extends ConfigGroup {
+    highlightColor: string;
+    highlightUnderLine: boolean;
     isChangeThresholdHighlightColor: boolean;
     isMakeThresholdHighlightDashed: boolean;
 }

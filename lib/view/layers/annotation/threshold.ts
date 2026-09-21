@@ -1,5 +1,6 @@
 import { PlaneChartInfo } from "../../../chart_types";
 import { Vec2 } from "../../../common";
+import { HorizAxis, HorizTickStrip } from "../../axis";
 import { View } from "../../base_view";
 import { Label } from "../../label";
 import { CircleShape, PathShape } from "../../shape";
@@ -73,6 +74,16 @@ export class Threshold extends View {
                 if (this.slider?.isHeld) {
                     const interval = (this.chartInfo as PlaneChartInfo).xRangeInfo?.interval;
                     if (!interval) {
+                        let xAxis = (this.paraview.documentView?.xAxis! as HorizAxis);
+                        let xVals = [0];
+                        for (let i = 0; i < xAxis.tickLabelTierValues[0].labels.length - 1; i++) {
+                            xVals.push((xAxis.tickStrip as HorizTickStrip).ruleXs[i]);
+                        }
+                        const xDiff = xVals.map(x => Math.abs(x - this.paraview.paraState.pointerCoords.x));
+                        const nearest = xAxis.tickLabelTierValues[0].labels[xDiff.indexOf(Math.min(...xDiff))];
+                        this.align = Number(nearest);
+                        this._createShapes(this.orientation, this.align);
+                        this._createLabel();
                         return;
                     }
                     let newPos = ((this.slider.centerX / this.dataLayer.width)) * (interval.end - interval.start) + interval.start;
@@ -117,7 +128,7 @@ export class Threshold extends View {
                 let int = this.chartInfo.yRangeInfo.interval;
                 height = (1 - ((align - int.start) / (int.end - int.start))) * this.dataLayer.height
             }
-            else{
+            else {
                 return;
             }
             let points = []
@@ -220,7 +231,7 @@ export class Threshold extends View {
 
     highlightPoints() {
         if (this.orientation == 'horiz') {
-            if (!this.chartInfo.yRangeInfo){
+            if (!this.chartInfo.yRangeInfo) {
                 return [{ start: 0, end: 1 }, { start: 0, end: 1 }];
             }
             let int = this.chartInfo.yRangeInfo!.interval;
