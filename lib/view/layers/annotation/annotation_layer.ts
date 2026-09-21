@@ -68,7 +68,7 @@ export class AnnotationLayer extends PlotLayer {
   }
 
   addThresholds() {
-    if (this.paraview.paraState.thresholds.length == 0){
+    if (this.paraview.paraState.thresholds.length == 0) {
       return;
     }
     const backgroundHighlights: RectShape[] = [];
@@ -86,13 +86,7 @@ export class AnnotationLayer extends PlotLayer {
         width: width,
         height: height,
         opacity: .15,
-        fill: 'red'/*,
-            pointerEnter: (e) => {
-            this.pointerEnterActions(item);
-          },
-          pointerLeave: (e) => {
-            this.pointerLeaveAction(item);
-          },*/
+        fill: 'red'
       })
       rect.options.click = (e) => {
         const paraview = this.paraview as DataLayerContext
@@ -204,206 +198,121 @@ export class AnnotationLayer extends PlotLayer {
         const x = (y - intercept) / slope;
         return [x, y];
       }
-      if (sortedVertThresholds.length == 0) {
-        for (let horizIndex = 0; horizIndex < this.paraview.paraState.thresholds.length + 1; horizIndex++) {
-          let tHeight = 0;
-          let isUnder = false
-          if (horizIndex == sortedHorizThresholds.length) {
-            isUnder = true
-            tHeight = sortedHorizThresholds[horizIndex - 1].clipHeight;
-          }
-          else {
-            tHeight = sortedHorizThresholds[horizIndex].clipHeight;
-          }
-          const config = SettingsManager.getGroupLinkForInstance<MarkerConfig>('marker', this.paraview.paraState.config, `threshold-${horizIndex}`);
-          if (!(config.isChangeThresholdHighlightColor && config.highlightUnderLine)) {
-            continue;
-          }
-          let above = false;
-          const vecs = [];
-          let currentVecs = [];
-          if (isUnder) {
-            for (let i = 0; i < points.length; i++) {
-              const point = points[i];
-              if (point.y <= tHeight && above) {
-                continue;
-              }
-              else if (point.y >= tHeight && above) {
-                if (i == 0) {
-                  currentVecs.push(new Vec2(point.x, tHeight));
-                  currentVecs.push(new Vec2(point.x, point.y));
-                }
-                else {
-                  const intersect = getIntersect(points[i - 1], point, tHeight);
-                  currentVecs.push(new Vec2(intersect[0], intersect[1]));
-                  currentVecs.push(new Vec2(point.x, point.y));
-                }
-                above = false;
-              }
-              else if (point.y < tHeight && !above) {
-                const intersect = getIntersect(points[i - 1], point, tHeight);
-                currentVecs.push(new Vec2(intersect[0], intersect[1]));
-                vecs.push(currentVecs);
-                currentVecs = [];
-                above = true;
-              }
-              else {
-                if (i == 0) {
-                  currentVecs.push(new Vec2(point.x, tHeight));
-                  currentVecs.push(new Vec2(point.x, point.y));
-                }
-                if (i == points.length - 1) {
-                  currentVecs.push(new Vec2(point.x, point.y));
-                  currentVecs.push(new Vec2(point.x, tHeight));
-                  vecs.push(currentVecs);
-                }
-                else {
-                  currentVecs.push(new Vec2(point.x, point.y));
-                }
-              }
-            }
-          }
-          else {
-            for (let i = 0; i < points.length; i++) {
-              const point = points[i];
-              if (point.y >= tHeight && !above) {
-                continue;
-              }
-              else if (point.y <= tHeight && !above) {
-                if (i == 0) {
-                  currentVecs.push(new Vec2(point.x, tHeight));
-                  currentVecs.push(new Vec2(point.x, point.y));
-                }
-                else {
-                  const intersect = getIntersect(points[i - 1], point, tHeight);
-                  currentVecs.push(new Vec2(intersect[0], intersect[1]));
-                  currentVecs.push(new Vec2(point.x, point.y));
-                }
-                above = true;
-              }
-              else if (point.y > tHeight && above) {
-                const intersect = getIntersect(points[i - 1], point, tHeight);
-                currentVecs.push(new Vec2(intersect[0], intersect[1]));
-                vecs.push(currentVecs);
-                currentVecs = [];
-                above = false;
-              }
-              else {
-                if (i == points.length - 1) {
-                  currentVecs.push(new Vec2(point.x, point.y));
-                  currentVecs.push(new Vec2(point.x, tHeight));
-                  vecs.push(currentVecs);
-                }
-                else {
-                  currentVecs.push(new Vec2(point.x, point.y));
-                }
-              }
-            }
-          }
-          for (const pointGroup of vecs) {
-            const path = new PathShape(this.paraview, {
-              points: pointGroup,
-              fill: config.highlightColor == '' ? "red" : config.highlightColor,
-              opacity: .15,
-              strokeWidth: 5
-            });
-            this.group('thresholds')!.append(path);
-          }
+      for (let horizIndex = 0; horizIndex < this.paraview.paraState.thresholds.length + 1; horizIndex++) {
+        let tHeight = 0;
+        let isUnder = false
+        if (horizIndex == sortedHorizThresholds.length) {
+          isUnder = true
+          tHeight = sortedHorizThresholds[horizIndex - 1].clipHeight;
         }
-      }
-      /*
- 
-      if (this.paraview.paraState.type == 'line') {
-      const chart = this.paraview.documentView!.chartLayers.dataLayer as LinePlotView;
-      const points = chart.datapointViews;
-      const getIntersect = (point1: LineSection, point2: LineSection, threshold: Threshold) => {
-        const slope = (point2.y - point1.y) / (point2.x - point1.x);
-        const intercept = point2.y - slope * point2.x;
-        const y = threshold.clipHeight;
-        const x = (y - intercept) / slope;
-        return [x, y];
-      }
-     
-          */
-      else {
-        for (let horizIndex = 0; horizIndex < sortedHorizThresholds.length + 1; horizIndex++) {
-          for (let vertIndex = 0; vertIndex < sortedVertThresholds.length + 1; vertIndex++) {
-            const id = vertIndex + horizIndex * (sortedVertThresholds.length + 1);
-            let tHeight = 0;
-            let tWidth = 0;
-            if (horizIndex == sortedHorizThresholds.length) {
-              tHeight = chart.height;
-            }
-            else {
-              tHeight = sortedHorizThresholds[horizIndex].clipHeight;
-            }
-            if (vertIndex == sortedVertThresholds.length) {
-              tWidth = chart.width;
-            }
-            else {
-              tWidth = sortedVertThresholds[vertIndex].clipWidth;
-            }
-            const config = SettingsManager.getGroupLinkForInstance<MarkerConfig>('marker', this.paraview.paraState.config, `threshold-${id}`);
-            if (!(config.isChangeThresholdHighlightColor && config.highlightUnderLine)) {
+        else {
+          tHeight = sortedHorizThresholds[horizIndex].clipHeight;
+        }
+        const config = SettingsManager.getGroupLinkForInstance<MarkerConfig>('marker', this.paraview.paraState.config, `threshold-${horizIndex}`);
+        if (!(config.isChangeThresholdHighlightColor && config.highlightUnderLine)) {
+          continue;
+        }
+        let above = false;
+        const vecs = [];
+        let currentVecs = [];
+        if (isUnder) {
+          for (let i = 0; i < points.length; i++) {
+            const point = points[i];
+            if (point.y <= tHeight && above) {
               continue;
             }
-            let above = false;
-            const vecs = [];
-            let currentVecs = [];
-            for (let i = 0; i < points.length; i++) {
-
-              const point = points[i];
-              if (i !== (points.length - 1) && sortedVertThresholds[vertIndex] && (point.x > tWidth || point.datapoint.facetValue('x') == String(sortedVertThresholds[vertIndex].align))) {
+            else if (point.y >= tHeight && above) {
+              if (i == 0) {
+                currentVecs.push(new Vec2(point.x, tHeight));
+                currentVecs.push(new Vec2(point.x, point.y));
+              }
+              else {
+                const intersect = getIntersect(points[i - 1], point, tHeight);
+                currentVecs.push(new Vec2(intersect[0], intersect[1]));
+                currentVecs.push(new Vec2(point.x, point.y));
+              }
+              above = false;
+            }
+            else if (point.y < tHeight && !above) {
+              const intersect = getIntersect(points[i - 1], point, tHeight);
+              currentVecs.push(new Vec2(intersect[0], intersect[1]));
+              vecs.push(currentVecs);
+              currentVecs = [];
+              above = true;
+            }
+            else {
+              if (i == 0) {
+                currentVecs.push(new Vec2(point.x, tHeight));
+                currentVecs.push(new Vec2(point.x, point.y));
+              }
+              if (i == points.length - 1) {
                 currentVecs.push(new Vec2(point.x, point.y));
                 currentVecs.push(new Vec2(point.x, tHeight));
                 vecs.push(currentVecs);
-                break;
-              }
-              if (point.y >= tHeight && !above) {
-                continue;
-              }
-              else if (point.y <= tHeight && !above) {
-                if (i == 0) {
-                  currentVecs.push(new Vec2(point.x, tHeight));
-                  currentVecs.push(new Vec2(point.x, point.y));
-                }
-                else {
-                  const intersect = getIntersect(points[i - 1], point, tHeight);
-                  currentVecs.push(new Vec2(intersect[0], intersect[1]));
-                  currentVecs.push(new Vec2(point.x, point.y));
-                }
-                above = true;
-              }
-              else if (point.y > tHeight && above) {
-                const intersect = getIntersect(points[i - 1], point, tHeight);
-                currentVecs.push(new Vec2(intersect[0], intersect[1]));
-                vecs.push(currentVecs);
-                currentVecs = [];
-                above = false;
               }
               else {
-                if (i == points.length - 1) {
-                  currentVecs.push(new Vec2(point.x, point.y));
-                  currentVecs.push(new Vec2(point.x, tHeight));
-                  vecs.push(currentVecs);
-                }
-                else {
-                  currentVecs.push(new Vec2(point.x, point.y));
-                }
+                currentVecs.push(new Vec2(point.x, point.y));
               }
-            }
-            for (const pointGroup of vecs) {
-              const path = new PathShape(this.paraview, {
-                points: pointGroup,
-                fill: config.highlightColor == '' ? "red" : config.highlightColor,
-                opacity: .15,
-                strokeWidth: 5
-              });
-              this.group('thresholds')!.append(path);
             }
           }
         }
+        else {
+          for (let i = 0; i < points.length; i++) {
+            const point = points[i];
+            if (point.y >= tHeight && !above) {
+              continue;
+            }
+            else if (point.y <= tHeight && !above) {
+              if (i == 0) {
+                currentVecs.push(new Vec2(point.x, tHeight));
+                currentVecs.push(new Vec2(point.x, point.y));
+              }
+              else {
+                const intersect = getIntersect(points[i - 1], point, tHeight);
+                currentVecs.push(new Vec2(intersect[0], intersect[1]));
+                currentVecs.push(new Vec2(point.x, point.y));
+              }
+              above = true;
+            }
+            else if (point.y > tHeight && above) {
+              const intersect = getIntersect(points[i - 1], point, tHeight);
+              currentVecs.push(new Vec2(intersect[0], intersect[1]));
+              vecs.push(currentVecs);
+              currentVecs = [];
+              above = false;
+            }
+            else {
+              if (i == points.length - 1) {
+                currentVecs.push(new Vec2(point.x, point.y));
+                currentVecs.push(new Vec2(point.x, tHeight));
+                vecs.push(currentVecs);
+              }
+              else {
+                currentVecs.push(new Vec2(point.x, point.y));
+              }
+            }
+          }
+        }
+        for (let pointGroupIndex = 0; pointGroupIndex < vecs.length; pointGroupIndex++) {
+          const pointGroup = vecs[pointGroupIndex];
+          const path = new PathShape(this.paraview, {
+            points: pointGroup,
+            fill: config.highlightColor == '' ? "red" : config.highlightColor,
+            opacity: .15,
+            strokeWidth: 5
+          });
+          path.options.click = (e) => {
+            console.log("sneed")
+            const paraview = this.paraview as DataLayerContext
+            (paraview.paraChart as ParaChart).controlPanel.chartPanel.markerDialogRef.value?.show(horizIndex).then(() => {
+              (paraview.paraChart as ParaChart).controlPanel.chartPanel.markerDialogRef.value!.tempMarkerIndex = undefined
+            })
+          }
+          this.group('thresholds')!.append(path);
+        }
       }
+
+
     }
     for (const threshold of this.paraview.paraState.thresholds) {
       threshold.classInfo = { 'threshold': true };

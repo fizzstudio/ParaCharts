@@ -527,7 +527,7 @@ export interface PopupPathOptions extends PathOptions {
 }
 export class PopupPathShape extends PathShape {
     shape: ShapeTypes;
-    constructor(paraview: ViewContext, private options: PopupPathOptions) {
+    constructor(paraview: ViewContext, public options: PopupPathOptions) {
         super(paraview, options);
         this._points = options.points.map(p => p.clone());
         this.shape = this.options.shape;

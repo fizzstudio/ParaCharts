@@ -17,7 +17,7 @@ export class PathShape extends Shape {
   protected _points: Vec2[];
   protected pathStored?: string;
 
-  constructor(paraview: ViewContext, options: PathOptions) {
+  constructor(paraview: ViewContext, public options: PathOptions) {
     super(paraview, options);
     this._points = options.points.map(p => p.clone());
   }
@@ -110,6 +110,10 @@ export class PathShape extends Shape {
         role=${this._role || nothing}
         d=${this._pathD}
         clip-path=${this._options.isClip ? 'url(#clip-path)' : nothing}
+        @pointerenter=${this.options.pointerEnter ?? nothing}
+        @pointerleave=${this.options.pointerLeave ?? nothing}
+        @pointermove=${this.options.pointerMove ?? nothing}
+        @click=${this.options.click ?? nothing}
       ></path>
     `;
   }
