@@ -254,9 +254,8 @@ export class MarkerSettingsDialog extends SettingControlContainer {
      * Show the dialog
      */
     async show(index?: number) {
-        if (index !== undefined) {
-            this.tempMarkerIndex = index;
-        }
+        this.tempMarkerIndex = index;
+        this.requestUpdate();
         await this._dialogRef.value!.show();
     }
 }

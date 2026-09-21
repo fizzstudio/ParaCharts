@@ -410,8 +410,8 @@ export class Popup extends View {
         this._box = box;
         this.prepend(this._box);
         this.box.classInfo = { 'popup-box': true };
-        this._box.x = this._grid.x
-        this._box.y = this._grid.bottom
+        this._box.x = this._grid.x;
+        this._box.y = this._grid.bottom;
     }
 
     content() {

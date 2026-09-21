@@ -23,16 +23,27 @@ export class CheckboxSettingControl extends SettingControl<'checkbox'> {
     `
   ];
 
+  protected updated(_changedProps: Map<string, unknown>) {
+    if (!this.info) return;
+    const id = `checkbox-${this.info.instanceID ?? ''}`;
+    const input = this.renderRoot?.querySelector(`#${id}`) as HTMLInputElement | null;
+    const desired = !!this.value;
+    if (input && input.checked !== desired) {
+      input.checked = desired;
+    }
+  }
+
   protected content() {
+    const id = `checkbox-${this.info.instanceID ?? ''}`
     return html`
       <label>
         <input
           type="checkbox"
-          id="checkbox"
+          id="${id}"
           .checked=${!!this._value}
           @change=${(e: Event) => {
             this._updateSetting(
-              this.info.key, (e.target as HTMLInputElement).checked), this.info.instanceID
+              this.info.key, (e.target as HTMLInputElement).checked, this.info.instanceID);
           }}
         >
         <span>${this.label}</span>
