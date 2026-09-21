@@ -85,9 +85,13 @@ export class BarPlotView extends PlanePlotView {
     this.log = getLogger('BarPlotView');
   }
 
-  settingDidChange(path: string, oldValue?: ConfigSetting, newValue?: ConfigSetting): void {
-    super.settingDidChange(path, oldValue, newValue);
-  }
+  // settingDidChange(path: string, oldValue?: ConfigSetting, newValue?: ConfigSetting): void {
+  //   if (['legend.isAlwaysDrawLegend'].includes(path)) {
+  //     this.paraview.createDocumentView();
+  //     this.paraview.requestUpdate();
+  //   }
+  //   super.settingDidChange(path, oldValue, newValue);
+  // }
 
   get abbrevs() {
     return this._abbrevs;

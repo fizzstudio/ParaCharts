@@ -3,7 +3,7 @@ import { datapointIdToCursor, SettingsManager } from "../state";
 import { PointChartInfo } from "./point_chart";
 import { LegendItem, LegendItemsWithPosition } from "../view/legend";
 import { DataSymbols } from "../view/symbol";
-import { LegendConfig } from "../config/config_types";
+import { DeepReadonly, LegendConfig } from "../config/config_types";
 import { NavMap } from '../view/layers';
 import { populateNavMap } from '../navigation/nav_map_builder';
 
@@ -52,6 +52,12 @@ export class BubbleChartInfo extends PointChartInfo {
 
     protected _populateNavMap(): void {
         populateNavMap(this._navMap!, this);
+    }
+
+    protected _shouldDrawLegendWithConfig(config: DeepReadonly<LegendConfig>): boolean {
+        const should = config.isDrawLegend
+            && (config.isAlwaysDrawLegend || this._paraState.model!.multi);
+        return should;
     }
 
     legend(): LegendItemsWithPosition[] {
@@ -118,10 +124,10 @@ export class BubbleChartInfo extends PointChartInfo {
         const seriesPosition = seriesConfig.position;
         const sizePosition = sizeConfig.position;
         const legendItems = [];
-        if (seriesConfig.isAlwaysDrawLegend) {
+        if (this._shouldDrawLegendWithConfig(seriesConfig)) {
             legendItems.push({ position: seriesPosition ?? "north", items: seriesItems })
         }
-        if (sizeConfig.isAlwaysDrawLegend) {
+        if (this._shouldDrawLegendWithConfig(sizeConfig)) {
             legendItems.push({ position: sizePosition ?? "north", items: sizeItems })
         }
         return legendItems;

@@ -50,43 +50,6 @@ export class CandlestickChartInfo extends PointChartInfo {
     return true;
   }
 
-/*  protected _populateNavMap() {
-    const top = this._navMap!.top.cursor!;
-    const candlesticksLayer = this._navMap!.newLayer('candlestick');
-    top.connectIn(candlesticksLayer);
-
-    // Sort by value of first datapoint from greatest to least
-    const sortedSeries = this.seriesInNavOrder();
-    let prevCandlestickNode: NavNode | null = null;
-    sortedSeries[0].datapoints.forEach((_datapoint, i) => {
-      const candlestickNode = candlesticksLayer.newNode(
-        'candlestick',
-        {
-          index: i
-        });
-      if (prevCandlestickNode) {
-        candlestickNode.connect('left', prevCandlestickNode);
-        candlestickNode.connect('up', prevCandlestickNode);
-      }
-      prevCandlestickNode = candlestickNode;
-      const detailsLayer = this._navMap!.newLayer('details');
-      candlestickNode.connectIn(detailsLayer);
-      let prevNode: NavNode | null = null;
-      ['open', 'high', 'low', 'close'].forEach((seriesKey, j) => {
-        const node = detailsLayer.newNode(
-          'datapoint',
-          {
-            seriesKey,
-            index: i
-          });
-          if (prevNode) {
-            node.connect('down', prevNode);
-          }
-          prevNode = node;
-      });
-    });
-  } */
-
   pointerClick(datasetIndex: number, seriesKey: string, datapointIndex: number, isShift: boolean) {
     // Set quiet = true so that the visit announcement doesn't overwrite
     // the selection announcement
