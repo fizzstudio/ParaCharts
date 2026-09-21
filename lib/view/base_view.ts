@@ -54,6 +54,7 @@ export interface DragSettings {
   lockY?: boolean;
   yBounds?: Interval;
   xBounds?: Interval;
+  afterDragFunction?: () => void;
 }
 
 export interface Padding {
@@ -1012,22 +1013,12 @@ export class View extends BaseView {
       return;
     }
     this._dragPointerId = e.pointerId;
-    //this._dragStartX = this.centerX;
-    //this._dragStartY = this.centerY;
     this._isHeld = true;
     (e.currentTarget as Element).setPointerCapture(e.pointerId);
   }
 
   protected _drag(e: PointerEvent) {
     if (!this.isHeld || e.pointerId !== this._dragPointerId) return;
-    // use chart-local coords, not raw clientX/clientY if you want stable alignment
-    /*
-    const dx = this.paraview.paraState.pointerCoords.x - this._dragStartX;
-    const dy = this.paraview.paraState.pointerCoords.y - this._dragStartY;
-
-    this.centerX += dx;
-    this.centerY += dy;
-*/
     if (!this.dragSettings?.lockX) {
       if (!this.dragSettings?.xBounds) {
         this.centerX = this.paraview.paraState.pointerCoords.x;
@@ -1035,7 +1026,7 @@ export class View extends BaseView {
       else {
         const min = this.dragSettings?.xBounds.start;
         const max = this.dragSettings?.xBounds.end;
-        this.centerX = Math.min(Math.max(this.paraview.paraState.pointerCoords.x, min), max)
+        this.centerX = Math.min(Math.max(this.paraview.paraState.pointerCoords.x, min), max);
       }
     }
     if (!this.dragSettings?.lockY) {
@@ -1045,7 +1036,7 @@ export class View extends BaseView {
       else {
         const min = this.dragSettings?.yBounds.start;
         const max = this.dragSettings?.yBounds.end;
-        this.centerY = Math.min(Math.max(this.paraview.paraState.pointerCoords.y, min), max)
+        this.centerY = Math.min(Math.max(this.paraview.paraState.pointerCoords.y, min), max);
       }
 
     }
@@ -1056,7 +1047,9 @@ export class View extends BaseView {
     (e.currentTarget as Element).releasePointerCapture(e.pointerId);
     this._dragPointerId = null;
     this._isHeld = false;
-    (this.paraview as ParaView).paraChart.controlPanel.chartPanel.markerDialogRef.value?.createDialogContent();
+    if (this.dragSettings?.afterDragFunction) {
+      this.dragSettings?.afterDragFunction();
+    }
   }
 }
 

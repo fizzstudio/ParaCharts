@@ -1,5 +1,6 @@
 import { PlaneChartInfo } from "../../../chart_types";
 import { Vec2 } from "../../../common";
+import { ParaView } from "../../../paraview";
 import { HorizAxis, HorizTickStrip } from "../../axis";
 import { View } from "../../base_view";
 import { Label } from "../../label";
@@ -57,7 +58,10 @@ export class Threshold extends View {
                     strokeWidth: 3,
                 })
                 sliderShape.isDraggable = true;
-                sliderShape.dragSettings = { lockX: true, yBounds: { start: 0, end: this.dataLayer.height } }
+                sliderShape.dragSettings = {
+                    lockX: true, yBounds: { start: 0, end: this.dataLayer.height },
+                    afterDragFunction: () => (this.paraview as ParaView).paraChart.controlPanel.chartPanel.markerDialogRef.value?.createDialogContent()
+                }
                 this.slider = sliderShape
                 this.append(this.slider)
             }
@@ -102,7 +106,10 @@ export class Threshold extends View {
                     strokeWidth: 3,
                 })
                 sliderShape.isDraggable = true;
-                sliderShape.dragSettings = { lockY: true, xBounds: { start: 0, end: this.dataLayer.width } }
+                sliderShape.dragSettings = {
+                    lockY: true, xBounds: { start: 0, end: this.dataLayer.width },
+                    afterDragFunction: () => (this.paraview as ParaView).paraChart.controlPanel.chartPanel.markerDialogRef.value?.createDialogContent()
+                }
                 this.slider = sliderShape
                 this.append(this.slider)
             }
