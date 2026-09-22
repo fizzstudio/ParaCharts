@@ -1,0 +1,56 @@
+{
+    "start": {
+        "level": "chords"
+    },
+    "levels": [
+        {
+            "id": "series"
+        },
+        {
+            "id": "eachSeriesDatapoints"
+        },
+        {
+            "id": "sequences"
+        },
+        {
+            "id": "chords",
+            "invisible": true
+        }
+    ],
+    "transitions": [
+        {
+            "from": "series",
+            "to": "eachSeriesDatapoints",
+            "dir": "right",
+            "iter": "datapoints",
+            "mode": "eachToFirstOfEachSet"
+        },
+        {
+            "from": "eachSeriesDatapoints",
+            "to": "series",
+            "dir": "right",
+            "mode": "eachOfSetToNextSet",
+            "when": "last",
+            "iter": "datapoints"
+        },
+        {
+            "from": "eachSeriesDatapoints",
+            "to": "sequences",
+            "mode": "trendPointToTrend"
+        },
+        {
+            "from": "chords",
+            "to": "series",
+            "dir": "in",
+            "mode": "eachToFirst",
+            "iter": "records"
+        },
+        {
+            "from": "series",
+            "to": "chords",
+            "mode": "eachToFirst",
+            "dir": "out",
+            "iter": "datapoints"
+        }
+    ]
+}

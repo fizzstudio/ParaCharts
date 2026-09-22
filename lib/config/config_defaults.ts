@@ -282,6 +282,11 @@ export const defaultConfig: Config = {
         maxBubbleSize: 3,
         minBubbleSize: 0.5,
       },
+      candlestick: {
+        minYValue: "unset",
+        maxYValue: "unset",
+        isHollow: false,
+      },
       column: {
         minYValue: "unset",
         maxYValue: "unset",

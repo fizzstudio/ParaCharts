@@ -25,6 +25,8 @@ import { datapointIdToCursor, type ParaState, queryMessages, describeAdjacentDat
 import { ConfigSetting, DeepReadonly, LegendConfig, TypeBarConfig } from '../config/config_types';
 import { type Label } from '../view/label';
 import { LegendItemsWithPosition } from '../view/legend';
+import { NavMap, type NavNode } from '../view/layers';
+import { populateNavMap } from '../navigation/nav_map_builder';
 
 type BarClusterMap = { [key: string]: BarCluster };
 
@@ -125,6 +127,20 @@ export class BarChartInfo extends PlaneChartInfo {
       this._stacksPerCluster = Math.ceil(numSeries / seriesPerStack);
     } else {
       this._stacksPerCluster = this._normalizeStackCountsInput().split(/\s/).length;
+    }
+  }
+
+  noticePosted(key: string, value: any, count: number): void {
+    super.noticePosted(key, value, count);
+    if (key === 'navOkay') {
+      if (this._navMap!.cursor!.isNodeType('stack')) {
+        const numStacks = Object.values(this._clusteredData)
+          .map(cluster => Object.values(cluster.stacks).length)
+          .reduce((a, b) => a + b, 0);
+        this._paraState.announce(
+          `Stack ${this._navMap!.cursor.index + 1} of ${numStacks}`
+        );
+      }
     }
   }
 
@@ -293,30 +309,14 @@ export class BarChartInfo extends PlaneChartInfo {
     return clusterMap;
   }
 
-  settingDidChange(path: string, oldValue?: ConfigSetting, newValue?: ConfigSetting): void {
-    if (['type.line.isTrendNavigationModeEnabled'].includes(path)) {
-      [this._navMap, this._altNavMap] = [this._altNavMap, this._navMap!];
-      this._navMap!.root.goTo('top', {});
-    }
-    super.settingDidChange(path, oldValue, newValue);
-  }
-
-  async storeDidChange(key: string, value: any) {
-    await super.storeDidChange(key, value);
-    if (key === 'seriesAnalyses') {
-      // This gets called each time a series analysis completes after a
-      // new manifest is loaded in AI mode. The following call will only
-      // do anything once analyses have been generated for all series.
-      this._createSequenceNavNodes();
-    }
-  }
-
-  protected _createNavMap() {
-    super._createNavMap();
-    // In AI mode, the following call will only do anything when the doc view
-    // has been recreated (so the series analyses already exist)
-    this._createSequenceNavNodes();
-  }
+  // chooseNavOutNode(nodes: readonly NavNode[]): NavNode {
+  //   console.log('CHOOSE OUT FOR', this._navMap!.cursor!.type);
+  //   if (this._navMap!.cursor!.isNodeType('sequence')) {
+  //     return nodes[this._navMap!.cursor.options.start];
+  //   } else {
+  //     return nodes[0];
+  //   }
+  // }
 
   legend(): LegendItemsWithPosition[] {
     const model = this._paraState.model!;
@@ -347,7 +347,7 @@ export class BarChartInfo extends PlaneChartInfo {
   queryData(): void {
     const msgArray: string[] = [];
 
-    const queriedNode = this._navMap!.cursor;
+    const queriedNode = this._navMap!.cursor!;
 
     if (queriedNode.isNodeType('top')) {
       msgArray.push(`Displaying Chart: ${this._paraState.title}`);

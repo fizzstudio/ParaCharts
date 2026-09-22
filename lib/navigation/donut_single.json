@@ -1,0 +1,15 @@
+{
+    "start": {
+        "level": "datapoints"
+    },
+    "oneWayTopLink": true,
+    "levels": [
+        {
+            "id": "datapoints",
+            "wrap": true
+        }
+    ],
+    "transitions": [
+
+    ]
+}

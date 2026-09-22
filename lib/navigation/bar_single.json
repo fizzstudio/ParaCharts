@@ -1,0 +1,20 @@
+{
+    "start": {
+        "level": "datapoints"
+    },
+    "levels": [
+        {
+            "id": "datapoints"
+        },
+        {
+            "id": "sequences"
+        }
+    ],
+    "transitions": [
+        {
+            "from": "datapoints",
+            "to": "sequences",
+            "mode": "trendPointToTrend"
+        }
+    ]
+}

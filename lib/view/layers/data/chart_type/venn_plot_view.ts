@@ -1460,7 +1460,7 @@ export class VennPlotView extends DataLayer {
   focusRingShape(): Shape | null {
     const chartInfo = this.paraview.paraState.chartInfo;
     const cursor = chartInfo.navMap!.cursor;
-    if (cursor.isNodeType('datapoint')) {
+    if (cursor!.isNodeType('datapoint')) {
       return this.datapointView(cursor.options.seriesKey, cursor.options.index)!.focusRingShape();
     }
     return null;

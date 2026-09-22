@@ -123,7 +123,7 @@ export class ParaCaptionBox extends ParaComponent {
     }
   }
 
-  noticePosted(key: string, value: any) {
+  noticePosted(key: string, value: any, count: number) {
     if (this._paraState.config.ui.isTourGuideEnabled) {
       if (key === 'landmarkStart') {
         const highlight: Highlight = value;

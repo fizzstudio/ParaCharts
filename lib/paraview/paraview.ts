@@ -359,8 +359,36 @@ export class ParaView extends ParaComponent implements ViewContext {
       stroke-dasharray: 12 12;
       stroke-opacity: 0.8;
       }
+      .threshold-line{
+      stroke-dasharray: 12 12;
+      stroke-opacity: 0.8;
+      }
+      .candlestick.bullish {
+        stroke: var(--color-palette-series-2);
+        fill: var(--color-palette-series-2);
+      }
+      .candlestick.bearish {
+        stroke: var(--color-palette-series-1);
+        fill: var(--color-palette-series-1);
+      }
+      .candlestick.hollow.bullish.rising {
+        stroke: var(--color-palette-series-2);
+        fill: none;
+      }
+      .candlestick.hollow.bearish.falling {
+        stroke: var(--color-palette-series-1);
+        fill: var(--color-palette-series-1);
+      }
+      .candlestick.hollow.bullish.falling {
+        stroke: var(--color-palette-series-1);
+        fill: none;
+      }
+      .candlestick.hollow.bearish.rising {
+        stroke: var(--color-palette-series-2);
+        fill: var(--color-palette-series-2);
+      }
       .datapoint.visited:not(.highlighted) {
-        stroke: var(--visited-color, hsl(0, 100%, 50%));
+        stroke: var(--visited-color, hsl(0, 100%, 50%)) !important;
         fill: var(--visited-color, hsl(0, 100%, 50%));
         stroke-width: var(--visited-stroke-width);
       }
@@ -553,7 +581,7 @@ export class ParaView extends ParaComponent implements ViewContext {
     this._paraState.keymapManager.removeEventListener('hotkeyPress', this._hotkeyListener);
   }
 
-  async noticePosted(key: string, value: any) {
+  async noticePosted(key: string, value: any, count: number) {
     if (key === 'setData') {
       this._resetJimReady();
       await this._dataUpdated();
@@ -1350,7 +1378,7 @@ export class ParaView extends ParaComponent implements ViewContext {
               </rect>
             </clipPath>
           ` : ''
-      }          
+      }
         </defs>
         <metadata data-type="application/jim+json">
           ${this._paraState.jimerator ? JSON.stringify(this._paraState.jimerator.manifest, undefined, 2) : ''}

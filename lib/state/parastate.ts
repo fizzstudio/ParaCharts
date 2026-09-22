@@ -810,6 +810,7 @@ export class ParaState extends BaseState {
         }));
       this.postNotice('seriesAnalyses', null);
     }
+    this.postNotice('manifestSet', null);
     this.postNotice('paranotice', { key: 'manifestSet' });
     this.dispatchEvent(
       new CustomEvent('manifestSet')
@@ -1224,14 +1225,14 @@ export class ParaState extends BaseState {
     this.clearSelected();
     this.clearAllHighlights();
     this.clearPopups();
-    this._chartInfo.navMap!.root.goTo('top', {}, true);
+    this._chartInfo.navMap!.top.goTo('top', {}, true);
   }
 
   endTourGuide() {
     this.clearSelected();
     this.clearAllHighlights();
     this.clearPopups();
-    this.chartInfo.navMap!.root.goTo('top', {}, true);
+    this.chartInfo.navMap!.top.goTo('top', {}, true);
   }
 
   dimSeries(seriesKey: string) {

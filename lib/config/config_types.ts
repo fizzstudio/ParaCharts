@@ -727,6 +727,8 @@ export interface TypeConfig extends ConfigGroup {
   bar: TypeBarConfig;
   /** Shared settings for Cartesian chart types. */
   bubble: TypeBubbleConfig;
+  /** Shared settings for Cartesian chart types. */
+  candlestick: TypeCandlestickConfig;
   /** Vertical column chart settings. */
   column: TypeColumnConfig;
   /** Combination chart settings. */
@@ -803,6 +805,14 @@ export interface TypeBubbleConfig extends TypePlaneConfig {
   maxBubbleSize: number;
   /** Min bubble size */
   minBubbleSize: number;
+}
+/**
+ * Shared settings for Cartesian chart types.
+ * @public
+ */
+export interface TypeCandlestickConfig extends TypePlaneConfig {
+  /** Whether the chart is a hollow candlestick chart */
+  isHollow: boolean;
 }
 /**
  * Vertical column chart settings.

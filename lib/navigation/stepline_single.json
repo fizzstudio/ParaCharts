@@ -1,0 +1,33 @@
+{
+    "start": {
+        "level": "series",
+        "if": "sonificationIsEnabled",
+        "else": "eachSeriesDatapoints"
+    },
+    "levels": [
+        {
+            "id": "series"
+        },
+        {
+            "id": "eachSeriesDatapoints"
+        },
+        {
+            "id": "sequences"
+        }
+    ],
+    "transitions": [
+        {
+            "from": "series",
+            "to": "eachSeriesDatapoints",
+            "dir": "right",
+            "iter": "datapoints",
+            "mode": "eachToFirstOfEachSet",
+            "reciprocal": true
+        },
+        {
+            "from": "datapoints",
+            "to": "sequences",
+            "mode": "trendPointToTrend"
+        }
+    ]
+}

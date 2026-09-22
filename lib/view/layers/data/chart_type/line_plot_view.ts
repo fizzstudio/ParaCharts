@@ -283,7 +283,7 @@ export class LineSection extends PointDatapointView {
   }
 
   protected _shapeStyleInfo(shapeIndex: number): StyleInfo {
-    if (this.paraview.paraState.chartInfo.navMap!.cursor.isNodeType('sequence')) {
+    if (this.paraview.paraState.chartInfo.navMap!.cursor!.isNodeType('sequence')) {
       const node = this.paraview.paraState.chartInfo.navMap!.cursor;
       if ((this.index === node.options.start && this.index && !shapeIndex)
         || (this.index === node.options.end - 1 && shapeIndex)) {

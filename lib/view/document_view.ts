@@ -170,8 +170,26 @@ export class DocumentView extends Container(View) {
       this._createSecondaryVertAxis(comboFacet, this.paraview.paraState.comboChartInfo as PlaneChartInfo, this._height);
     }
 
+    // Initially create the direct label strip so the horiz axis can use its size
+    if (this._shouldAddDirectLabelStrip) {
+      this._directLabelStrip?.remove();
+      this._directLabelStrip = new DirectLabelStrip(
+        this.paraview, this._vertAxis?.height ?? this._height);
+      this._directLabelStrip.updateSize();
+    }
 
     // Recreate the axes using the size info computed above
+
+    // Do the horiz axis first in case it needs to stagger and change its height
+    if (this._paraState.config.axis.horiz.isDrawAxis && horizFacet) {
+      this._createHorizAxis(horizFacet, this.paraview.paraState.chartInfo as PlaneChartInfo, this._width
+        - (this._vertAxis?.width ?? 0)
+        - (this._secondaryVertAxis?.width ?? 0)
+        - (this._directLabelStrip?.width ?? 0)
+      );
+      this.append(this._horizAxis!);
+    }
+
     if (this._paraState.config.axis.vert.isDrawAxis && vertFacet) {
       this._createVertAxis(vertFacet, this.paraview.paraState.chartInfo as PlaneChartInfo, this._height
         - (this._titleLabel?.paddedHeight || 0)
@@ -183,7 +201,7 @@ export class DocumentView extends Container(View) {
       this.append(this._vertAxis!);
     }
 
-    // Create the direct label strip here so it can take its height from
+    // Create the direct label strip again here so it can take its height from
     // the vertical axis
     if (this._shouldAddDirectLabelStrip) {
       this._directLabelStrip?.remove();
@@ -214,7 +232,6 @@ export class DocumentView extends Container(View) {
       this._createSecondaryVertAxis(comboFacet, this.paraview.paraState.comboChartInfo as PlaneChartInfo, plotHeight);
       this.append(this._secondaryVertAxis!);
     }
-
 
     ////////////////////////////////////////////
     // FIXME (@simonvarey): This is a temporary fix until we guarantee that plane charts
