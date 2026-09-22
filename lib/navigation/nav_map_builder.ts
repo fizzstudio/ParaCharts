@@ -82,7 +82,7 @@ export function populateNavMap(navMap: NavMap, ctx: NavMapBuilderContext) {
         const from = nodes.get(`${transition.from}-${i}`);
         const to = nodes.get(`${transition.to}-0`);
         transition.dir!.split(/ /).forEach((d: PlaneDirection) => {
-          from!.connect(d, to!, transition.reciprocal);
+          from!.connect(d, to!, !!transition.reciprocal);
         });
       });
     } else if (transition.mode === 'trendPointToTrend') {
