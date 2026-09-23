@@ -100,7 +100,7 @@
   },
   "types": "./dist/paracharts.d.ts",
   "devDependencies": {
-    "@fizz/chart-data": "^2.5.11",
+    "@fizz/chart-data": "^2.5.13",
     "@fizz/test-utils": "^0.4.7",
     "@microsoft/api-documenter": "^7.25.11",
     "@microsoft/api-extractor": "^7.47.6",
@@ -130,11 +130,11 @@
   },
   "dependencies": {
     "@elemental/localization": "^1.10.0",
-    "@fizz/chartsignal-internal": "^0.0.16-alpha.0",
+    "@fizz/chartsignal-internal": "^0.0.16-alpha.4",
     "@fizz/dataframe": "^0.27.2",
     "@fizz/jimerator": "^0.20.2",
     "@fizz/logger": "^0.1.0",
-    "@fizz/parasummary": "^0.17.7-alpha.0",
+    "@fizz/parasummary": "^0.17.8-alpha.3",
     "@fizz/sparkbraille-component": "^0.5.0",
     "@fizz/templum": "^0.5.9",
     "@fizz/ui-components": "^0.73.0",
