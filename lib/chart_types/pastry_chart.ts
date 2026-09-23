@@ -44,32 +44,6 @@ export class PastryChartInfo extends BaseChartInfo {
     this._paraState.settingControls.insert(`type.${this._type}.explode`);
   }
 
-  protected _populateNavMap(): void {
-    populateNavMap(this._navMap!, this);
-  }
-
-  // protected _populateNavMap() {
-  //   const top = this._navMap!.top.get()!;
-  //   const layer = this._navMap!.newLayer('datapoint');
-  //   top.connectIn(layer);
-  //   top.connect('left', layer);
-  //   top.connect('right', layer);
-  //   top.connect('up', layer);
-  //   top.connect('down', layer);
-  //   const nodes = this._paraState.model!.series[0].datapoints.map((datapoint, i) => {
-  //     const node = layer.newNode(
-  //       {
-  //         seriesKey: datapoint.seriesKey,
-  //         index: datapoint.datapointIndex
-  //       });
-  //     return node;
-  //   });
-  //   nodes.slice(0, -1).forEach((node, i) => {
-  //     node.connect('right', layer.get(i + 1)!);
-  //   });
-  //   nodes.at(-1)!.connect('right', nodes[0]);
-  // }
-
   legend(): LegendItemsWithPosition[] {
     const series = this._paraState.model!.series[0];
     const config = SettingsManager.getGroupLinkForInstance<LegendConfig>('legend', this._paraState.config, `legend-${0}`) ?? this._paraState.config.legend;
@@ -110,17 +84,25 @@ export class PastryChartInfo extends BaseChartInfo {
 
   protected _sparkBrailleInfo() {
     return {
-      data: (this._navMap!.cursor!.isNodeType('datapoint')
-        || this._navMap!.cursor!.isNodeType('series'))
-        ? JSON.stringify(this._paraState.model!.atKey(
-          this._navMap!.cursor.options.seriesKey)!.datapoints.map(dp => ({
+      data: this._sparkBrailleData(),
+      isProportional: true
+    };
+  }
+
+  protected _sparkBrailleData(): string {
+    if (this._navMap!.cursor!.isNodeType('top')
+      || this._navMap!.cursor!.isNodeType('datapoint')
+      || this._navMap!.cursor!.isNodeType('series')) {
+      return JSON.stringify(
+        this.model!.series[0].datapoints
+          .map(dp => ({
             // XXX shouldn't assume x is string (or that we have an 'x' facet, for that matter)
             label: dp.facetValue('x') as string,
             value: dp.facetValueAsNumber('y')
-          })))
-        : '0',
-      isProportional: true
-    };
+          })));
+    } else {
+      return '0';
+    }
   }
 
   // TODO: localize this text output

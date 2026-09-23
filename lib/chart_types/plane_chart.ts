@@ -435,11 +435,18 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
   }
 
   protected _sparkBrailleData(): string {
-    return (this._navMap!.cursor!.isNodeType(this._datapointNavNodeType)
+    if (this._navMap!.cursor!.isNodeType('top')) {
+      return this.model!.series[0].datapoints
+        .map(dp => dp.facetValueAsNumber('y')!)
+        .join(' ');
+    } else if (this._navMap!.cursor!.isNodeType(this._datapointNavNodeType)
       || this._navMap!.cursor!.isNodeType('series')
-      || this._navMap!.cursor!.isNodeType('sequence'))
-      ? this.model!.atKey(this._navMap!.cursor.options.seriesKey)!.datapoints.map(dp =>
-        dp.facetValueAsNumber('y')!).join(' ')
-      : '0';
+      || this._navMap!.cursor!.isNodeType('sequence')) {
+      return this.model!.atKey(this._navMap!.cursor.options.seriesKey)!.datapoints
+        .map(dp => dp.facetValueAsNumber('y')!)
+        .join(' ');
+    } else {
+      return '0';
+    }
   }
 }
