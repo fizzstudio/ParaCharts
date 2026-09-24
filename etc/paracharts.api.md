@@ -303,6 +303,7 @@ export interface Config extends ConfigGroup {
     description: DescriptionConfig;
     grid: GridConfig;
     legend: LegendConfig;
+    marker: MarkerConfig;
     popup: PopupConfig;
     scrollytelling: ScrollytellingConfig;
     sonification: SonificationConfig;
@@ -319,7 +320,7 @@ export interface ConfigControlOptions {
 }
 
 // @public
-export type ConfigControlType = 'textfield' | 'dropdown' | 'checkbox' | 'radio' | 'slider' | 'button';
+export type ConfigControlType = 'textfield' | 'dropdown' | 'checkbox' | 'radio' | 'slider' | 'button' | 'colorPicker';
 
 // @public
 export type ConfigGroup = {
@@ -581,6 +582,14 @@ export interface ManifestBuilderInput {
 }
 
 // @public
+export interface MarkerConfig extends ConfigGroup {
+    highlightColor: string;
+    highlightUnderLine: boolean;
+    isChangeThresholdHighlightColor: boolean;
+    isMakeThresholdHighlightDashed: boolean;
+}
+
+// @public
 export class ParaAPI {
     constructor(_paraChart: ParaChart);
     // (undocumented)
@@ -772,6 +781,8 @@ export class ParaChart extends ParaComponent {
     // (undocumented)
     manifestType: SourceKind;
     // (undocumented)
+    protected _noticeCounts: Map<string, number>;
+    // (undocumented)
     protected _paraAPI: ParaAPI;
     // Warning: (ae-forgotten-export) The symbol "ParaState" needs to be exported by the entry point index.d.ts
     //
@@ -949,6 +960,11 @@ export interface TypeBubbleConfig extends TypePlaneConfig {
 }
 
 // @public
+export interface TypeCandlestickConfig extends TypePlaneConfig {
+    isHollow: boolean;
+}
+
+// @public
 export interface TypeColumnConfig extends TypePlaneConfig {
     barGap: number;
     barWidth: number;
@@ -992,6 +1008,7 @@ export interface TypeComboConfig extends TypePlaneConfig {
 export interface TypeConfig extends ConfigGroup {
     bar: TypeBarConfig;
     bubble: TypeBubbleConfig;
+    candlestick: TypeCandlestickConfig;
     column: TypeColumnConfig;
     combo: TypeComboConfig;
     donut: TypeDonutConfig;
@@ -1055,6 +1072,8 @@ export interface TypePastryConfig extends ConfigGroup {
     insideLabels: TypePastryInsidelabelsConfig;
     orientationAngleOffset: number;
     outsideLabels: TypePastryOutsidelabelsConfig;
+    sliceLabelFormat: LabelFormat;
+    sliceValueFormat: LabelFormat;
 }
 
 // @public

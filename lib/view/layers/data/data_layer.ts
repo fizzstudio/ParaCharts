@@ -181,6 +181,19 @@ export abstract class DataLayer extends PlotLayer {
         this.paraview.requestUpdate();
       }
     }
+    if (['legend.isAlwaysDrawLegend', 'legend.useDirectLegends', 'legend.itemOrder', 'legend.position'].includes(path)) {
+      this.paraview.paraState.createChartInfo();
+      this.paraview.paraState.resetLegendID();
+      this.paraview.paraState.resetMarkerID();
+      this.paraview.paraState.chartInfo.setup().then(() => {
+        this.paraview.createDocumentView();
+        this.paraview.requestUpdate();
+      })
+    }
+    if (['marker.isChangeThresholdHighlightColor', 'marker.highlightColor', 'marker.isMakeThresholdHighlightDashed',
+      "marker.highlightUnderLine"].includes(path)) {
+      this.paraview.requestUpdate();
+    }
     super.settingDidChange(path, oldValue, newValue);
   }
 
@@ -318,7 +331,7 @@ export abstract class DataLayer extends PlotLayer {
 
   focusRingBbox() {
     const chartInfo = this.paraview.paraState.chartInfo;
-    const cursor = chartInfo.navMap!.cursor;
+    const cursor = chartInfo.navMap!.cursor!;
     if (['series', 'chord', 'datapoint', 'sequence'].includes(cursor.type)) {
       return bboxOfBboxes(...cursor.datapoints.map(dp =>
         this.datapointView(dp.seriesKey, dp.datapointIndex)!.outerBbox));

@@ -1,0 +1,43 @@
+{
+    "start": {
+        "level": "collective"
+    },
+    "shouldWrapMove": true,
+    "levels": [
+        {
+            "id": "collective"
+        },
+        {
+            "id": "stacks"
+        },
+        {
+            "id": "eachStackDatapoints",
+            "orientation": "vert"
+        },
+        {
+            "id": "series"
+        }
+    ],
+    "transitions": [
+        {
+            "from": "collective",
+            "to": "stacks",
+            "dir": "right down",
+            "mode": "oneToFirst"
+        },
+        {
+            "from": "stacks",
+            "to": "eachStackDatapoints",
+            "iter": "records",
+            "mode": "eachToFirstOfEachSet"
+        },
+        {
+            "from": "eachStackDatapoints",
+            "to": "series",
+            "iter": "recordDatapoints",
+            "when": "first",
+            "dir": "left",
+            "mode": "eachOfSetToSameSet"
+        }
+    ]
+}

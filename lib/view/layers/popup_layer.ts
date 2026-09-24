@@ -53,7 +53,7 @@ export class PopupLayer extends PlotLayer {
         if (this.paraview.paraState.config.chart.isShowPopups && this.paraview.paraState.config.popup.activation === "onFocus") {
             this.paraview.paraState.clearPopups();
             this.paraview.paraState.userLineBreaks.splice(0, this.paraview.paraState.userLineBreaks.length)
-            const cursor = this.paraview.documentView!.chartLayers!.dataLayer.chartInfo.navMap!.cursor
+            const cursor = this.paraview.documentView!.chartLayers!.dataLayer.chartInfo.navMap!.cursor!;
             const datapoints = cursor.datapoints;
             const datapointViews = datapoints.map(datapoint =>
                 this._parent.dataLayer.datapointView(datapoint.seriesKey, datapoint.datapointIndex)!) as PlaneDatapointView[];

@@ -15,8 +15,9 @@ export interface PathOptions extends ShapeOptions {
 
 export class PathShape extends Shape {
   protected _points: Vec2[];
+  protected pathStored?: string;
 
-  constructor(paraview: ViewContext, options: PathOptions) {
+  constructor(paraview: ViewContext, public options: PathOptions) {
     super(paraview, options);
     this._points = options.points.map(p => p.clone());
   }
@@ -88,12 +89,15 @@ export class PathShape extends Shape {
   }
 
   protected get _pathD() {
-    const relPoints = this._points.map(p => p.add(this._loc));
-    let d = fixed`M${relPoints[0].x},${relPoints[0].y}`;
-    relPoints.slice(1).forEach(p => {
-      d += fixed`L${p.x},${p.y}`;
-    });
-    return d;
+    if (!this.pathStored) {
+      const relPoints = this._points.map(p => p.add(this._loc));
+      let d = fixed`M${relPoints[0].x},${relPoints[0].y}`;
+      relPoints.slice(1).forEach(p => {
+        d += fixed`L${p.x},${p.y}`;
+      });
+      this.pathStored = d;
+    }
+    return this.pathStored;
   }
 
   render() {
@@ -106,6 +110,10 @@ export class PathShape extends Shape {
         role=${this._role || nothing}
         d=${this._pathD}
         clip-path=${this._options.isClip ? 'url(#clip-path)' : nothing}
+        @pointerenter=${this.options.pointerEnter ?? nothing}
+        @pointerleave=${this.options.pointerLeave ?? nothing}
+        @pointermove=${this.options.pointerMove ?? nothing}
+        @click=${this.options.click ?? nothing}
       ></path>
     `;
   }

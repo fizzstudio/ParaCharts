@@ -18,10 +18,11 @@ import { ChartType, type PlaneDatapoint, Datapoint } from '@fizz/chartsignal-int
 import { formatBox, formatXYDatapointX } from '@fizz/parasummary';
 import { interpolate } from '@fizz/templum';
 import { BaseChartInfo, RiffOrder } from './base_chart';
-import { type ParaState, datapointIdToCursor, queryMessages, describeSelections, getDatapointMinMax } from '../state';
-import { directions, HorizDirection } from '../config/config_types';
-import { NavLayer, NavNode } from '../view/layers/data/navigation'
-import { LegendItem } from '../view/legend';
+import { type ParaState, datapointIdToCursor, queryMessages, describeSelections, getDatapointMinMax, SettingsManager } from '../state';
+import { HorizDirection, LegendConfig } from '../config/config_types';
+import { type NavNode } from '../view/layers/data/navigation'
+import { LegendItemsWithPosition } from '../view/legend';
+import { populateNavMap } from '../navigation/nav_map_builder';
 
 
 export type ArcType = 'circle' | 'semicircle';
@@ -41,41 +42,25 @@ export class PastryChartInfo extends BaseChartInfo {
     this._paraState.settingControls.insert(`type.${this._type}.explode`);
   }
 
-  protected _createNavMap() {
-    super._createNavMap();
-    const layer = new NavLayer(this._navMap!, 'slices');
-    directions.forEach(dir => {
-      this._navMap!.node('top', {})!.connect(dir, layer);
-    });
-    const nodes = this._paraState.model!.series[0].datapoints.map((datapoint, i) => {
-    //const nodes = this._chartLandingView.children[0].children.map((datapointView, i) => {
-      const node = new NavNode(layer, 'datapoint', {
-        seriesKey: datapoint.seriesKey,
-        index: datapoint.datapointIndex
-      }, this._paraState);
-      //node.addDatapointView(datapointView);
-      node.connect('out', this._navMap!.root);
-      node.connect('up', this._navMap!.root);
-      return node;
-    });
-    nodes.slice(0, -1).forEach((node, i) => {
-      node.connect('right', layer.get('datapoint', i + 1)!);
-    });
-    nodes.at(-1)!.connect('right', nodes[0]);
-  }
-
-  legend(): LegendItem[] {
+  legend(): LegendItemsWithPosition[] {
     const series = this._paraState.model!.series[0];
+    const config = SettingsManager.getGroupLinkForInstance<LegendConfig>('legend', this._paraState.config, `legend-${0}`) ?? this._paraState.config.legend;
     const xs = series.datapoints.map(dp =>
       formatBox(dp.facetBox('x')!, this._paraState.getFormatType('pieSliceLabel')));
     const ys = series.datapoints.map(dp =>
       formatBox(dp.facetBox('y')!, this._paraState.getFormatType('pieSliceValue')));
-    return xs.map((x, i) => ({
+    const items = xs.map((x, i) => ({
       label: `${x}: ${ys[i]}`,
       seriesKey: series.key,
       colorIndex: i,
       datapointIndex: i
     }));
+    const legendItems = [];
+    const position = config.position;
+    if (this._shouldDrawLegend()) {
+      legendItems.push({ position: position, items: items });
+    }
+    return legendItems;
   }
 
   shouldDrawTitle(): boolean {
@@ -85,7 +70,7 @@ export class PastryChartInfo extends BaseChartInfo {
   }
 
   playDatapoints(datapoints: PlaneDatapoint[]): Promise<void> {
-    return this._sonifier.playDatapoints(datapoints, {invert: true, durationVariable: true});
+    return this._sonifier.playDatapoints(datapoints, { invert: true, durationVariable: true });
   }
 
   playDir(dir: HorizDirection): void {
@@ -97,17 +82,25 @@ export class PastryChartInfo extends BaseChartInfo {
 
   protected _sparkBrailleInfo() {
     return {
-      data: (this._navMap!.cursor.isNodeType('datapoint')
-        || this._navMap!.cursor.isNodeType('series'))
-        ? JSON.stringify(this._paraState.model!.atKey(
-          this._navMap!.cursor.options.seriesKey)!.datapoints.map(dp => ({
+      data: this._sparkBrailleData(),
+      isProportional: true
+    };
+  }
+
+  protected _sparkBrailleData(): string {
+    if (this._navMap!.cursor!.isNodeType('top')
+      || this._navMap!.cursor!.isNodeType('datapoint')
+      || this._navMap!.cursor!.isNodeType('series')) {
+      return JSON.stringify(
+        this.model!.series[0].datapoints
+          .map(dp => ({
             // XXX shouldn't assume x is string (or that we have an 'x' facet, for that matter)
             label: dp.facetValue('x') as string,
             value: dp.facetValueAsNumber('y')
-          })))
-        : '0',
-      isProportional: true
-    };
+          })));
+    } else {
+      return '0';
+    }
   }
 
   // TODO: localize this text output
@@ -116,7 +109,7 @@ export class PastryChartInfo extends BaseChartInfo {
   queryData(): void {
     const msgArray: string[] = [];
 
-    const queriedNode = this._navMap!.cursor;
+    const queriedNode = this._navMap!.cursor!;
 
     if (queriedNode.isNodeType('top')) {
       msgArray.push(`Displaying Chart: ${this._paraState.title}`);

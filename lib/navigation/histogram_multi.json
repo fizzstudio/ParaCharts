@@ -1,0 +1,22 @@
+{
+    "start": {
+        "level": "series"
+    },
+    "levels": [
+        {
+            "id": "series",
+            "orientation": "horiz"
+        },
+        {
+            "id": "eachSeriesDatapoints"
+        }
+    ],
+    "transitions": [
+        {
+            "from": "series",
+            "to": "eachSeriesDatapoints",
+            "mode": "eachToFirstOfEachSet",
+            "iter": "datapoints"
+        }
+    ]
+}

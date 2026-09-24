@@ -1,7 +1,11 @@
 import { type ChartType } from "@fizz/chartsignal-internal";
 import { PlaneChartInfo } from './plane_chart';
-import { type ParaState } from '../state';
-import { DeepReadonly, type TypeHistogramConfig } from "../config/config_types";
+import { SettingsManager, type ParaState } from '../state';
+import { DeepReadonly, LegendConfig, type TypeHistogramConfig } from "../config/config_types";
+import { enumerate } from "@fizz/paramodel";
+import { LegendItemsWithPosition } from "../view/legend";
+import { type NavNode } from '../view/layers';
+import { populateNavMap } from '../navigation/nav_map_builder';
 
 export class HistogramChartInfo extends PlaneChartInfo {
   protected _bins: number = 20;
@@ -43,8 +47,7 @@ export class HistogramChartInfo extends PlaneChartInfo {
     this._maxCount = Math.max(...values);
     this._paraState.clearVisited();
     this._paraState.clearSelected();
-    this._createNavMap();
-    this._createSummarizer();
+    super._init();
   }
 
   async setup() {
@@ -100,7 +103,50 @@ export class HistogramChartInfo extends PlaneChartInfo {
     this._paraState.settingControls.insert('type.histogram.relativeAxes');
   }
 
-  protected _createChordNavNodes() {
+  protected _populateNavMap() {
+    populateNavMap(this._navMap!, this);
+  }
+
+  /*protected _populateNavMap() {
+    const top = this._navMap!.root.get('top')!;
+    const datapointLayer = this._navMap!.newLayer('datapoint');
+    top.connectIn(datapointLayer);
+    let prevDatapointNode: NavNode | null = null;
+    const datapoints = this.model!.series[0].datapoints;
+    datapoints.forEach((datapoint, i) => {
+      const datapointNode = datapointLayer.newNode(
+        'datapoint',
+        {
+          seriesKey: this.model!.series[0].key,
+          index: i
+        });
+      if (prevDatapointNode) {
+        datapointNode.connect('left', prevDatapointNode);
+      }
+      prevDatapointNode = datapointNode;
+    });
+  }*/
+  legend(): LegendItemsWithPosition[] {
+    const model = this._paraState.model!;
+    const config = SettingsManager.getGroupLinkForInstance<LegendConfig>('legend', this._paraState.config, `legend-${0}`) ?? this._paraState.config.legend;
+    const seriesKeys = enumerate([...model.seriesKeys]);
+    if (config.itemOrder === 'alphabetical') {
+      seriesKeys.sort((a, b) => a[0].localeCompare(b[0]));
+    }
+    else if (config.itemOrder === 'reverseAlphabetical') {
+      seriesKeys.sort((a, b) => -1 * a[0].localeCompare(b[0]));
+    }
+    const items = seriesKeys.map(key => ({
+      label: model.atKey(key[0])!.getLabel(),
+      seriesKey: key[0],
+      colorIndex: this._paraState.seriesProperties!.properties(key[0]).colorIndex,
+    }));
+    const legendItems = [];
+    const position = config.position;
+    if (this._shouldDrawLegend()) {
+      legendItems.push({ position: position, items: items });
+    }
+    return legendItems;
   }
 
 }

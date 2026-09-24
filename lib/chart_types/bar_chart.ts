@@ -20,12 +20,14 @@ import { ChartType, strToId, enumerate, Box, Series } from '@fizz/chartsignal-in
 import { formatBox, formatXYDatapoint, formatXYDatapointX } from '@fizz/parasummary';
 import { interpolate } from '@fizz/templum';
 import { PlaneChartInfo, computeAxisRange, AxisRangeInfo } from './plane_chart';
-import { datapointIdToCursor, type ParaState, queryMessages, describeAdjacentDatapoints, describeSelections, getDatapointMinMax } from '../state';
-import { ConfigSetting, DeepReadonly, TypeBarConfig } from '../config/config_types';
+import { datapointIdToCursor, type ParaState, queryMessages, describeAdjacentDatapoints, describeSelections, getDatapointMinMax, SettingsManager } from '../state';
+import { ConfigSetting, DeepReadonly, LegendConfig, TypeBarConfig } from '../config/config_types';
 import { type Label } from '../view/label';
-import { LegendItem } from '../view/legend';
+import { LegendItemsWithPosition } from '../view/legend';
+import { NavMap, type NavNode } from '../view/layers';
+import { populateNavMap } from '../navigation/nav_map_builder';
 
-type BarClusterMap = {[key: string]: BarCluster};
+type BarClusterMap = { [key: string]: BarCluster };
 
 export interface BarStackItem {
   series: string;
@@ -36,7 +38,7 @@ export interface BarStackItem {
  * Contains clustered bar stack data.
  */
 export class BarCluster {
-  stacks: {[key: string]: BarStack} = {};
+  stacks: { [key: string]: BarStack } = {};
   readonly id: string;
   readonly labelId: string;
   protected log: Logger = getLogger("BarCluster");
@@ -54,7 +56,7 @@ export class BarCluster {
  * Contains data for bars contained in a stack.
  */
 export class BarStack {
-  bars: {[key: string]: BarStackItem} = {};
+  bars: { [key: string]: BarStackItem } = {};
 
   readonly id: string;
   readonly labelId: string;
@@ -99,7 +101,7 @@ export class BarChartInfo extends PlaneChartInfo {
     const yValues = Object.values(this._clusteredData).flatMap(c =>
       Object.values(c.stacks).map(s =>
         Object.values(s.bars).map(item => item.value.value).reduce((a, b) => a + b, 0)
-//        + Object.values(s.bars).length*this.settings.stackInsideGap
+        //        + Object.values(s.bars).length*this.settings.stackInsideGap
       ));
     //const idxMax = yValues.indexOf(Math.max(...yValues));
     //const numBars = Object.values(Object.values(Object.values(this._clusteredData)[0].stacks)[0].bars).length;
@@ -121,9 +123,23 @@ export class BarChartInfo extends PlaneChartInfo {
       this._stacksPerCluster = 1;
     } else if (this.config.stacking === 'none') {
       const seriesPerStack = 1;
-      this._stacksPerCluster = Math.ceil(numSeries/seriesPerStack);
+      this._stacksPerCluster = Math.ceil(numSeries / seriesPerStack);
     } else {
       this._stacksPerCluster = this._normalizeStackCountsInput().split(/\s/).length;
+    }
+  }
+
+  noticePosted(key: string, value: any, count: number): void {
+    super.noticePosted(key, value, count);
+    if (key === 'navOkay') {
+      if (this._navMap!.cursor!.isNodeType('stack')) {
+        const numStacks = Object.values(this._clusteredData)
+          .map(cluster => Object.values(cluster.stacks).length)
+          .reduce((a, b) => a + b, 0);
+        this._paraState.announce(
+          `Stack ${this._navMap!.cursor.index + 1} of ${numStacks}`
+        );
+      }
     }
   }
 
@@ -162,7 +178,7 @@ export class BarChartInfo extends PlaneChartInfo {
       const yValues = Object.values(this._clusteredData).flatMap(c =>
         Object.values(c.stacks).map(s =>
           Object.values(s.bars).map(item => item.value.value).reduce((a, b) => a + b, 0)
-      ));
+        ));
       return [...yValues.map(ct => ct.toString())];
     } else {
       throw new Error("facet key must be 'x' or 'y'");
@@ -176,10 +192,10 @@ export class BarChartInfo extends PlaneChartInfo {
       const yValues = Object.values(this._clusteredData).flatMap(c =>
         Object.values(c.stacks).map(s =>
           Object.values(s.bars).map(item => item.value.value).reduce((a, b) => a + b, 0)
-      ));
+        ));
       const minY = Math.min(0, ...yValues);
       const maxY = Math.max(...yValues);
-      this._yExtremes = {start: minY, end: maxY};
+      this._yExtremes = { start: minY, end: maxY };
       return computeAxisRange(minY, maxY);
     } else {
       throw new Error("facet key must be 'x' or 'y'");
@@ -292,45 +308,37 @@ export class BarChartInfo extends PlaneChartInfo {
     return clusterMap;
   }
 
-  settingDidChange(path: string, oldValue?: ConfigSetting, newValue?: ConfigSetting): void {
-    if (['type.line.isTrendNavigationModeEnabled'].includes(path)) {
-      [this._navMap, this._altNavMap] = [this._altNavMap, this._navMap!];
-      this._navMap!.root.goTo('top', {});
-    }
-    super.settingDidChange(path, oldValue, newValue);
-  }
+  // chooseNavOutNode(nodes: readonly NavNode[]): NavNode {
+  //   console.log('CHOOSE OUT FOR', this._navMap!.cursor!.type);
+  //   if (this._navMap!.cursor!.isNodeType('sequence')) {
+  //     return nodes[this._navMap!.cursor.options.start];
+  //   } else {
+  //     return nodes[0];
+  //   }
+  // }
 
-  async storeDidChange(key: string, value: any) {
-    await super.storeDidChange(key, value);
-    if (key === 'seriesAnalyses') {
-      // This gets called each time a series analysis completes after a
-      // new manifest is loaded in AI mode. The following call will only
-      // do anything once analyses have been generated for all series.
-      this._createSequenceNavNodes();
-    }
-  }
-
-  protected _createNavMap() {
-    super._createNavMap();
-    // In AI mode, the following call will only do anything when the doc view
-    // has been recreated (so the series analyses already exist)
-    this._createSequenceNavNodes();
-  }
-
-  legend(): LegendItem[] {
+  legend(): LegendItemsWithPosition[] {
     const model = this._paraState.model!;
+    const config = SettingsManager.getGroupLinkForInstance<LegendConfig>(
+      'legend', this._paraState.config, `legend-${0}`) ?? this._paraState.config.legend;
     const seriesKeys = enumerate([...model.seriesKeys]);
-    if (this._paraState.config.legend.itemOrder === 'alphabetical') {
+    if (config.itemOrder === 'alphabetical') {
       seriesKeys.sort((a, b) => a[0].localeCompare(b[0]));
     }
-    else if (this._paraState.config.legend.itemOrder === 'reverseAlphabetical') {
+    else if (config.itemOrder === 'reverseAlphabetical') {
       seriesKeys.sort((a, b) => -1 * a[0].localeCompare(b[0]));
     }
-    return seriesKeys.map(key => ({
+    const items = seriesKeys.map(key => ({
       label: model.atKey(key[0])!.getLabel(),
       seriesKey: key[0],
       colorIndex: this._paraState.seriesProperties!.properties(key[0]).colorIndex,
     }));
+    const legendItems = [];
+    const position = config.position;
+    if (this._shouldDrawLegend()) {
+      legendItems.push({ position: position, items: items });
+    }
+    return legendItems;
   }
 
   // TODO: localize this text output
@@ -339,7 +347,7 @@ export class BarChartInfo extends PlaneChartInfo {
   queryData(): void {
     const msgArray: string[] = [];
 
-    const queriedNode = this._navMap!.cursor;
+    const queriedNode = this._navMap!.cursor!;
 
     if (queriedNode.isNodeType('top')) {
       msgArray.push(`Displaying Chart: ${this._paraState.title}`);

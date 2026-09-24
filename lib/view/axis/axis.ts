@@ -168,6 +168,10 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
     return this._layout;
   }
 
+  get tickStrip() {
+    return this._tickStrip;
+  }
+
   resize(width: number, height: number) {
     this._layout.resize(width, height);
     super.resize(width, height);
@@ -344,17 +348,18 @@ export class HorizAxis extends Axis<'horiz'> {
     return this._tickLabelTierValues.map((tier, i) =>
       new HorizTickLabelTier(
         this.paraview,
-        this.config, {
-        orientation: this.orientation,
-        content: tier,
-        index: i,
-        length: this._width,
-        step: this.config.ticks.step,
-        numTicks: this._tickLabelTierValues[0].labels.length,
-        isChartIntertick: this._chartInfo.isIntertick,
-        datatype: this.datatype,
-        isFacetIndep: this._facet.variableType === 'independent'
-      },
+        this.config,
+        {
+          orientation: this.orientation,
+          content: tier,
+          index: i,
+          length: this._width,
+          step: this.config.ticks.step,
+          numTicks: this._tickLabelTierValues[0].labels.length,
+          isChartIntertick: this._chartInfo.isIntertick,
+          datatype: this.datatype,
+          isFacetIndep: this._facet.variableType === 'independent'
+        },
         this._isPrimary
       ));
   }
@@ -483,16 +488,16 @@ export class VertAxis extends Axis<'vert'> {
       new VertTickLabelTier(
         this.paraview,
         this.config, {
-          orientation: this.orientation,
-          content: tier,
-          index: i,
-          length: this._height,
-          step: this.config.ticks.step,
-          numTicks: this._tickLabelTierValues[0].labels.length,
-          isChartIntertick: this._chartInfo.isIntertick,
-          datatype: this.datatype,
-          isFacetIndep: this._facet.variableType === 'independent'
-        },
+        orientation: this.orientation,
+        content: tier,
+        index: i,
+        length: this._height,
+        step: this.config.ticks.step,
+        numTicks: this._tickLabelTierValues[0].labels.length,
+        isChartIntertick: this._chartInfo.isIntertick,
+        datatype: this.datatype,
+        isFacetIndep: this._facet.variableType === 'independent'
+      },
         this._isPrimary
       ));
   }

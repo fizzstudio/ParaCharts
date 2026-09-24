@@ -19,10 +19,11 @@ import { ChartType, type Datapoint, type PlaneDatapoint } from '@fizz/chartsigna
 import { formatXYDatapointX } from '@fizz/parasummary';
 import { type ParaState } from '../state';
 import { type DeepReadonly, TypeWaterfallConfig } from '../config/config_types';
-import { type NavNode } from '../view/layers';
+import { NavNode } from '../view/layers';
 import { PlaneChartInfo, SONI_RIFF_SPEEDS, computeAxisRange, AxisRangeInfo } from './plane_chart';
 import { loopParaviewRefresh } from '../common';
 import { SoniPoint } from '../audio/soni_point';
+import { populateNavMap } from '../navigation/nav_map_builder';
 
 export class WaterfallChartInfo extends PlaneChartInfo {
   protected _cumulativeTotals!: number[];

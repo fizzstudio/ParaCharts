@@ -199,6 +199,9 @@ export class DatapointView extends DataView {
   }
 
   get shouldClip() {
+    if (this.paraview.paraState.thresholds.length > 0) {
+      return true;
+    }
     if (this.alwaysClip) {
       return true;
     }
@@ -302,7 +305,7 @@ export class DatapointView extends DataView {
     // we need to replace the original shape and symbol
     this._symbol?.remove();
     this._symbol = DataSymbol.fromType(this.paraview, symbolType,
-      { blackBorder: this.paraview.paraState.config.ui.isLowVisionModeEnabled, borderStrokeWidth: 3 });
+      { blackBorder: this.paraview.paraState.config.ui.isLowVisionModeEnabled, borderStrokeWidth: 3, datapoint: this.datapoint });
     this.append(this._symbol);
   }
 
@@ -335,6 +338,10 @@ export class DatapointView extends DataView {
       this.colorIndex; //undefined; // set the color so the highlights layer can clone it
   }
 
+  get symbolColorIndex() {
+    return this._symbolColorIndex;
+  }
+
   protected _contentUpdateShapes() {
     this._shapes.forEach((shape, i) => {
       shape.styleInfo = this._shapeStyleInfo(i);
@@ -344,9 +351,17 @@ export class DatapointView extends DataView {
 
   protected _contentUpdateSymbol() {
     if (this._symbol) {
-      this._symbol.scale = this.symbolScale;
-      this._symbol.colorIndex = this._symbolColorIndex;
-      this._symbol.hidden = !this.paraview.paraState.config.chart.isDrawSymbols;
+      const symbolScale = this.symbolScale;
+      const symbolColorIndex = this._symbolColorIndex;
+      if (this._symbol.scale !== symbolScale) {
+        this._symbol.scale = symbolScale;
+      }
+      if (this._symbol.colorIndex !== symbolColorIndex) {
+        this._symbol.colorIndex = symbolColorIndex;
+      }
+      if (this._symbol.hidden !== !this.paraview.paraState.config.chart.isDrawSymbols) {
+        this._symbol.hidden = !this.paraview.paraState.config.chart.isDrawSymbols;
+      }
     }
   }
 
@@ -359,22 +374,23 @@ export class DatapointView extends DataView {
     this._contentUpdateShapes();
     this._contentUpdateSymbol();
     this._contentUpdateLabels();
+    const classInfo = this.classInfo;
     if (this._children.length === 1) {
       // classInfo may change, so needs to get reassigned here
       const kid = this._children[0] as (Shape | DataSymbol);
       if (kid instanceof DataSymbol) {
         // Merge: preserve symbol-managed classes (symbol, fill-type, lighten) while
         // adding datapoint state classes (series-N, visited, selected, etc.)
-        kid.classInfo = { ...kid.classInfo, ...this.classInfo };
+        kid.classInfo = { ...kid.classInfo, ...classInfo };
       } else {
-        kid.classInfo = this.classInfo;
+        kid.classInfo = classInfo;
       }
     }
     return svg`
         <g
           ${this.ref}
           id=${this._id}
-          class=${classMap(this.classInfo)}
+          class=${classMap(classInfo)}
           role="datapoint"
         >
           ${super.content()}
@@ -393,6 +409,55 @@ export class DatapointView extends DataView {
     if (this.paraview.paraState.model!.multi) {
       datapointText = `${this.series.getLabel()} ${datapointText}`
     }
+    if (this.paraview.paraState.thresholds.length > 0) {
+      const horizTs = this.paraview.paraState.thresholds.filter(t => t.orientation == 'horiz');
+      const vertTs = this.paraview.paraState.thresholds.filter(t => t.orientation == 'vert');
+      if (horizTs.length > 0) {
+        const yVal = this.datapoint.facetValueAsNumber('y')!;
+        const aboveT = horizTs.filter(t => t.align > yVal);
+        const belowT = horizTs.filter(t => t.align < yVal);
+        const onT = horizTs.filter(t => t.align == yVal);
+        if (onT.length > 0) {
+          datapointText = datapointText.concat(` On threshold ${onT[0].text ?? onT[0].align}.`)
+        }
+        else if (aboveT.length > 0 && belowT.length > 0) {
+          const highestBelowT = belowT.sort((a, b) => b.align - a.align)[0]!;
+          const lowestAboveT = aboveT.sort((a, b) => a.align - b.align)[0]!;
+          datapointText = datapointText.concat(` Above threshold ${highestBelowT.text ?? highestBelowT.align} but below threshold ${lowestAboveT.text ?? lowestAboveT.align}.`)
+        }
+        else if (aboveT.length > 0) {
+          const lowestAboveT = aboveT.sort((a, b) => a.align - b.align)[0]!;
+          datapointText = datapointText.concat(` Below threshold ${lowestAboveT.text ?? lowestAboveT.align}.`)
+        }
+        else if (belowT.length > 0) {
+          const highestBelowT = belowT.sort((a, b) => b.align - a.align)[0]!;
+          datapointText = datapointText.concat(` Above threshold ${highestBelowT.text ?? highestBelowT.align}.`)
+        }
+      }
+      if (vertTs.length > 0) {
+        const xVal = this.x;
+        const aboveT = vertTs.filter(t => t.clipWidth > xVal);
+        const belowT = vertTs.filter(t => t.clipWidth < xVal);
+        const onT = vertTs.filter(t => t.clipWidth == xVal);
+        if (onT.length > 0) {
+          datapointText = datapointText.concat(` On threshold ${onT[0].text ?? onT[0].align}.`)
+        }
+        else if (aboveT.length > 0 && belowT.length > 0) {
+          const highestBelowT = belowT.sort((a, b) => b.align - a.align)[0]!;
+          const lowestAboveT = aboveT.sort((a, b) => a.align - b.align)[0]!;
+          datapointText = datapointText.concat(` Right of threshold ${highestBelowT.text ?? highestBelowT.align} but left of threshold ${lowestAboveT.text ?? lowestAboveT.align}.`)
+        }
+        else if (aboveT.length > 0) {
+          const lowestAboveT = aboveT.sort((a, b) => a.align - b.align)[0]!;
+          datapointText = datapointText.concat(` Left of threshold ${lowestAboveT.text ?? lowestAboveT.align}.`)
+        }
+        else if (belowT.length > 0) {
+          const highestBelowT = belowT.sort((a, b) => b.align - a.align)[0]!;
+          datapointText = datapointText.concat(` Right of threshold ${highestBelowT.text ?? highestBelowT.align}.`)
+        }
+      }
+    }
+
     let x = this.x;
     let y = this.y;
     let color = this.colorIndex;

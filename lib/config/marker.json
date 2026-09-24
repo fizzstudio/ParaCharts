@@ -1,0 +1,38 @@
+{
+    "description": "Marker/threshold styling.",
+    "family": "marker",
+    "settings": {
+        "isMakeThresholdHighlightDashed": {
+            "label": "cpanel.tabs.chart.marker_dialog.highlight_dashed",
+            "description": "Make highlighted region dashed",
+            "type": "boolean",
+            "default": false,
+            "control": "checkbox",
+            "parentView": "controlPanel.tabs.chart.marker.dialog"
+        },
+        "isChangeThresholdHighlightColor": {
+            "label": "cpanel.tabs.chart.marker_dialog.highlight_datapoints",
+            "description": "Highlight points",
+            "type": "boolean",
+            "default": false,
+            "control": "checkbox",
+            "parentView": "controlPanel.tabs.chart.marker.dialog"
+        },
+        "highlightColor": {
+            "label": "cpanel.tabs.chart.marker_dialog.highlight_color",
+            "description": "Change highlight color",
+            "type": "string",
+            "default": "#FF0000",
+            "control": "colorPicker",
+            "parentView": "controlPanel.tabs.chart.marker.dialog"
+        },
+        "highlightUnderLine": {
+            "label": "cpanel.tabs.chart.marker_dialog.highlight_under_line",
+            "description": "Only highlight between line and threshold",
+            "type": "boolean",
+            "default": false,
+            "control": "checkbox",
+            "parentView": "controlPanel.tabs.chart.marker.dialog"
+        }
+    }
+}

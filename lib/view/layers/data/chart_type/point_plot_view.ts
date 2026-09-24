@@ -53,7 +53,7 @@ export abstract class PointPlotView extends PlanePlotView {
     return new PointSeriesView(this, seriesKey);
   }
 
-  protected _newDatapointView(seriesView: SeriesView) {
+  protected _newDatapointView(seriesView: SeriesView, datapoints: Datapoint[]) {
     return new PointDatapointView(seriesView);
   }
 
@@ -66,8 +66,9 @@ export abstract class PointPlotView extends PlanePlotView {
     for (const [series, i] of enumerate(this.model.series)) {
       const seriesView = this._newSeriesView(series.key);
       this._chartLandingView.append(seriesView);
-      for (const [value, j] of enumerate(series)) {
-        const datapointView = this._newDatapointView(seriesView);
+      for (const [datapoint, j] of enumerate(series)) {
+        const datapointView = this._newDatapointView(
+          seriesView, this.paraview.paraState.model!.series.map(s => s.datapoints[j]));
         seriesView.append(datapointView);
         // the `index` property of the datapoint view will equal j
       }
@@ -200,9 +201,13 @@ export class PointDatapointView extends PlaneDatapointView {
   }
 
   computeY() {
+    return this._computeDatapointY(this.datapoint);
+  }
+
+  protected _computeDatapointY(datapoint: Datapoint) {
     const yRange = this.chart.chartInfo.yRangeInfo!;
     const pxPerYUnit = this.chart.height / (yRange.interval.end - yRange.interval.start);
-    return this.chart.height - (this.datapoint.facetValueNumericized('y')! - yRange.interval.start) * pxPerYUnit;
+    return this.chart.height - (datapoint.facetValueNumericized('y')! - yRange.interval.start) * pxPerYUnit;
   }
 
   computeLocation() {

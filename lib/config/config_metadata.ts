@@ -25,12 +25,14 @@ import DescriptionJson from "./description.json" with { type: "json" };
 import GridJson from "./grid.json" with { type: "json" };
 import LegendJson from "./legend/index.json" with { type: "json" };
 import LegendBoxstyleJson from "./legend/boxStyle.json" with { type: "json" };
+import MarkerJson from "./marker.json" with { type: "json" };
 import PopupJson from "./popup.json" with { type: "json" };
 import ScrollytellingJson from "./scrollytelling.json" with { type: "json" };
 import SonificationJson from "./sonification.json" with { type: "json" };
 import TypeJson from "./type/index.json" with { type: "json" };
 import TypeBarJson from "./type/bar.json" with { type: "json" };
 import TypeBubbleJson from "./type/bubble.json" with { type: "json" };
+import TypeCandlestickJson from "./type/candlestick.json" with { type: "json" };
 import TypeColumnJson from "./type/column.json" with { type: "json" };
 import TypeComboJson from "./type/combo.json" with { type: "json" };
 import TypeDonutJson from "./type/donut/index.json" with { type: "json" };
@@ -79,12 +81,14 @@ export const configMetadata: ConfigMetadata = {
   'grid': GridJson as unknown as ConfigGroupMetadata,
   'legend': LegendJson as unknown as ConfigGroupMetadata,
   'legend.boxStyle': LegendBoxstyleJson as unknown as ConfigGroupMetadata,
+  'marker': MarkerJson as unknown as ConfigGroupMetadata,
   'popup': PopupJson as unknown as ConfigGroupMetadata,
   'scrollytelling': ScrollytellingJson as unknown as ConfigGroupMetadata,
   'sonification': SonificationJson as unknown as ConfigGroupMetadata,
   'type': TypeJson as unknown as ConfigGroupMetadata,
   'type.bar': TypeBarJson as unknown as ConfigGroupMetadata,
   'type.bubble': TypeBubbleJson as unknown as ConfigGroupMetadata,
+  'type.candlestick': TypeCandlestickJson as unknown as ConfigGroupMetadata,
   'type.column': TypeColumnJson as unknown as ConfigGroupMetadata,
   'type.combo': TypeComboJson as unknown as ConfigGroupMetadata,
   'type.donut': TypeDonutJson as unknown as ConfigGroupMetadata,

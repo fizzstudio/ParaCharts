@@ -35,6 +35,7 @@ import { type ViewContext } from '../view/view_context';
 import { loopParaviewRefresh, fixed, SVGNS } from '../common';
 import { ParaViewController } from '.';
 import { CSS_DPI, MM_PER_INCH, PAPER_INFO } from '../common/paper';
+import { Interval } from '@fizz/chart-classifier-utils';
 
 /**
  * Data provided for the on focus callback
@@ -354,8 +355,40 @@ export class ParaView extends ParaComponent implements ViewContext {
         stroke-dasharray: 12 12;
         stroke-opacity: 0.8;
       }
+      .threshold-line{
+      stroke-dasharray: 12 12;
+      stroke-opacity: 0.8;
+      }
+      .threshold-line{
+      stroke-dasharray: 12 12;
+      stroke-opacity: 0.8;
+      }
+      .candlestick.bullish {
+        stroke: var(--color-palette-series-2);
+        fill: var(--color-palette-series-2);
+      }
+      .candlestick.bearish {
+        stroke: var(--color-palette-series-1);
+        fill: var(--color-palette-series-1);
+      }
+      .candlestick.hollow.bullish.rising {
+        stroke: var(--color-palette-series-2);
+        fill: none;
+      }
+      .candlestick.hollow.bearish.falling {
+        stroke: var(--color-palette-series-1);
+        fill: var(--color-palette-series-1);
+      }
+      .candlestick.hollow.bullish.falling {
+        stroke: var(--color-palette-series-1);
+        fill: none;
+      }
+      .candlestick.hollow.bearish.rising {
+        stroke: var(--color-palette-series-2);
+        fill: var(--color-palette-series-2);
+      }
       .datapoint.visited:not(.highlighted) {
-        stroke: var(--visited-color, hsl(0, 100%, 50%));
+        stroke: var(--visited-color, hsl(0, 100%, 50%)) !important;
         fill: var(--visited-color, hsl(0, 100%, 50%));
         stroke-width: var(--visited-stroke-width);
       }
@@ -548,7 +581,7 @@ export class ParaView extends ParaComponent implements ViewContext {
     this._paraState.keymapManager.removeEventListener('hotkeyPress', this._hotkeyListener);
   }
 
-  async noticePosted(key: string, value: any) {
+  async noticePosted(key: string, value: any, count: number) {
     if (key === 'setData') {
       this._resetJimReady();
       await this._dataUpdated();
@@ -569,6 +602,7 @@ export class ParaView extends ParaComponent implements ViewContext {
       this.log.error('dataUpdated error:', error);
       this._jimReadyRejector();
     }
+    this.paraState.postNotice('docView created', null)
   }
 
   protected willUpdate(changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {
@@ -1104,6 +1138,44 @@ export class ParaView extends ParaComponent implements ViewContext {
     });
   }
 
+  hasDef(key: string) {
+    if (this._defs[key]) {
+      return true;
+    }
+    return false;
+  }
+
+  /** Remove a previously-registered def and its DOM node (no-op if missing). */
+  removeDef(key: string) {
+    // Remove from the reactive defs map so lit stops rendering it.
+    if (!this._defs[key]) return;
+    const remaining = { ...this._defs };
+    delete remaining[key];
+    this._defs = remaining;
+
+    // Remove from registered pattern keys if present.
+    const idx = this._registeredPatternKeys.indexOf(key);
+    if (idx !== -1) this._registeredPatternKeys.splice(idx, 1);
+
+    // Best-effort DOM cleanup for nodes rendered under the defs container.
+    try {
+      const defsEl = this._defsRef.value;
+      if (defsEl && defsEl.querySelector) {
+        // Remove any element with the id equal to the key.
+        const nodeById = defsEl.querySelector(`#${key}`);
+        if (nodeById && nodeById.parentNode) nodeById.parentNode.removeChild(nodeById);
+
+        // Also remove any remaining elements that reference the key (def templates vary).
+        const nodes = Array.from(defsEl.querySelectorAll(`[id="${key}"], [data-def-key="${key}"]`));
+        for (const n of nodes) {
+          if (n.parentNode) n.parentNode.removeChild(n);
+        }
+      }
+    } catch {
+      // ignore DOM removal failures; state map is already updated
+    }
+  }
+
   protected _registerPatternDefs() {
     const palette = this._paraState.colors.palette;
     if (!palette || !palette.isPattern || !palette.patterns) return;
@@ -1297,7 +1369,7 @@ export class ParaView extends ParaComponent implements ViewContext {
           </g>
           ${svg`${this._seriesCss() ? svg`<style>${this._seriesCss()}</style>` : ''}`}
           ${this._documentView?.horizAxis ? svg`
-            <clipPath id="clip-path">
+            <clipPath id="clip-path" >
               <rect
                 x=${0}
                 y=${0}

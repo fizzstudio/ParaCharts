@@ -216,6 +216,12 @@ export const defaultConfig: Config = {
       fontSize: "10pt",
       useDirectLegends: false,
     },
+    marker: {
+      isMakeThresholdHighlightDashed: false,
+      isChangeThresholdHighlightColor: false,
+      highlightColor: "#FF0000",
+      highlightUnderLine: false,
+    },
     popup: {
       opacity: 1,
       leftPadding: 10,
@@ -276,6 +282,11 @@ export const defaultConfig: Config = {
         maxBubbleSize: 3,
         minBubbleSize: 0.5,
       },
+      candlestick: {
+        minYValue: "unset",
+        maxYValue: "unset",
+        isHollow: false,
+      },
       column: {
         minYValue: "unset",
         maxYValue: "unset",
@@ -323,6 +334,8 @@ export const defaultConfig: Config = {
         orientationAngleOffset: 90,
         explode: "",
         explodeDistance: 20,
+        sliceLabelFormat: "raw",
+        sliceValueFormat: "raw",
         insideLabels: {
           format: "raw",
           position: 0.85,
@@ -373,6 +386,8 @@ export const defaultConfig: Config = {
         orientationAngleOffset: 90,
         explode: "",
         explodeDistance: 20,
+        sliceLabelFormat: "raw",
+        sliceValueFormat: "raw",
         insideLabels: {
           format: "raw",
           position: 0.9,

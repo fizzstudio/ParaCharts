@@ -181,7 +181,7 @@ export class ParaControlPanel extends ParaComponent {
     this.addButtonListeners();
   }
 
-  noticePosted(key: string, value: any) {
+  noticePosted(key: string, value: any, count: number) {
     if (key === 'setData') {
       this.dataUpdated();
     }

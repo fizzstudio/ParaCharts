@@ -101,6 +101,7 @@
                     "bubble_label_facet": "facet to use as labels",
                     "bubble_max_bubble_size": "max bubble size",
                     "bubble_min_bubble_size": "min bubble size",
+                    "candlestick_hollow": "hollow",
                     "popup_dialog": {
                         "opacity": "opacity",
                         "left_padding": "left padding",
@@ -135,6 +136,12 @@
                         "position": "legend position",
                         "item_order": "legend item order",
                         "direct": "use direct legend"
+                    },
+                    "marker_dialog": {
+                        "highlight_dashed": "Make line dashed",
+                        "highlight_datapoints": "Highlight datapoints",
+                        "highlight_color": "Change highlight color",
+                        "highlight_under_line": "Only highlight between line and threshold"
                     }
                 },
                 "annotations": {

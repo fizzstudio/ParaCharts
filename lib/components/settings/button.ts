@@ -4,7 +4,7 @@ import { customElement } from 'lit/decorators.js';
 import { html, css } from 'lit';
 
 export interface ButtonSettingControlOptions {
-
+  instanceID?: string;
 }
 
 @customElement('para-button-setting-control')
@@ -26,7 +26,7 @@ export class ButtonSettingControl extends SettingControl<'button'> {
           type="button"
           @click=${(e: Event) => {
             this._value = !this._value;
-            this._updateSetting(this.info.key, this._value);
+            this._updateSetting(this.info.key, this._value, this.info.instanceID);
           }}
         >
           ${this.label}

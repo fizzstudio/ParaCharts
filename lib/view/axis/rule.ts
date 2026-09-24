@@ -32,6 +32,8 @@ type RuleOrientation = 'h' | 'v';
 export abstract class AxisRule extends View {
 
   declare protected _parent: TickStrip;
+  protected _move?: string;
+  protected _line?: string;
 
   constructor(
     paraview: ViewContext,
@@ -60,8 +62,35 @@ export abstract class AxisRule extends View {
   }
 
   set length(length: number) {
-
+    this.initLine(length);
   }
+
+  get move() {
+    if (this._move) {
+      return this._move;
+    }
+    else {
+      this._move = fixed`M${this._x},${this._y}`;
+      return this._move;
+    }
+  }
+
+  get line() {
+    if (this._line) {
+      return this._line;
+    }
+    else {
+      const length = this._shouldNegateLength ? -this.length : this.length;
+      this._line = this._orientation + fixed`${length}`;
+      return this._line;
+    }
+  }
+
+  protected initLine(length: number) {
+    const l = this._shouldNegateLength ? -length : length;
+    this._line = this._orientation + fixed`${l}`;
+  }
+
 
   protected abstract get _shouldNegateLength(): boolean;
 
@@ -71,9 +100,8 @@ export abstract class AxisRule extends View {
   }
 
   content() {
-    const length = this._shouldNegateLength ? -this.length : this.length;
-    const move = fixed`M${this._x},${this._y}`;
-    const line = this._orientation + fixed`${length}`;
+    const move = this.move;
+    const line = this.line;
     return svg`
       <path
         id=${this._id || nothing}
@@ -105,6 +133,7 @@ export abstract class HorizRule extends AxisRule {
     coord?: AxisCoord
   ) {
     super(paraview, major, length, 'v', darken, id, coord);
+    this.initLine(length);
   }
 
   get length() {
@@ -145,6 +174,7 @@ export abstract class VertRule extends AxisRule {
     coord?: AxisCoord
   ) {
     super(paraview, major, length, 'h', darken, id, coord);
+    this.initLine(length);
   }
 
   get length() {
@@ -179,7 +209,7 @@ export class HorizTick extends HorizRule {
   }
 
   get length() {
-    return this._major ? super.length : super.length/2;
+    return this._major ? super.length : super.length / 2;
   }
 
   set length(length: number) {
@@ -205,7 +235,7 @@ export class VertTick extends VertRule {
   }
 
   get length() {
-    return this._major ? super.length : super.length/2;
+    return this._major ? super.length : super.length / 2;
   }
 
   set length(length: number) {

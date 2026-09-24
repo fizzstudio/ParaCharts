@@ -104,7 +104,7 @@ export type ColorPrefSource =
   | 'modeDefault'  // set by an active mode (e.g. low-vision mode)
   | 'profile'      // saved in manifest extensions
   | 'system'       // derived from current media-query state
-  | 'user';        // explicit user choice — wins until explicitly reset
+  | 'user';        // explicit user choice - wins until explicitly reset
 
 /** @public */
 export type DeepReadonly<T> = {
@@ -132,6 +132,8 @@ export interface Config extends ConfigGroup {
   grid: GridConfig;
   /** Legend visibility, positioning, and styling. */
   legend: LegendConfig;
+  /** Marker/threshold styling. */
+  marker: MarkerConfig;
   /** Tooltip and popup styling. */
   popup: PopupConfig;
   /** Narrative scrolling features. */
@@ -638,6 +640,20 @@ export interface LegendBoxstyleConfig extends ConfigGroup {
   fill: Color;
 }
 /**
+ * Marker/threshold styling.
+ * @public
+ */
+export interface MarkerConfig extends ConfigGroup {
+  /** Make highlighted region dashed */
+  isMakeThresholdHighlightDashed: boolean;
+  /** Highlight points */
+  isChangeThresholdHighlightColor: boolean;
+  /** Change highlight color */
+  highlightColor: string;
+  /** Only highlight between line and threshold */
+  highlightUnderLine: boolean;
+}
+/**
  * Tooltip and popup styling.
  * @public
  */
@@ -710,6 +726,8 @@ export interface TypeConfig extends ConfigGroup {
   bar: TypeBarConfig;
   /** Shared settings for Cartesian chart types. */
   bubble: TypeBubbleConfig;
+  /** Shared settings for Cartesian chart types. */
+  candlestick: TypeCandlestickConfig;
   /** Vertical column chart settings. */
   column: TypeColumnConfig;
   /** Combination chart settings. */
@@ -786,6 +804,14 @@ export interface TypeBubbleConfig extends TypePlaneConfig {
   maxBubbleSize: number;
   /** Min bubble size */
   minBubbleSize: number;
+}
+/**
+ * Shared settings for Cartesian chart types.
+ * @public
+ */
+export interface TypeCandlestickConfig extends TypePlaneConfig {
+  /** Whether the chart is a hollow candlestick chart */
+  isHollow: boolean;
 }
 /**
  * Vertical column chart settings.
@@ -950,6 +976,10 @@ export interface TypePastryConfig extends ConfigGroup {
   explode: string;
   /** Distance for exploded slices */
   explodeDistance: number;
+  /** Format for slice labels */
+  sliceLabelFormat: LabelFormat;
+  /** Format for slice values */
+  sliceValueFormat: LabelFormat;
   /** Shared inside-label settings for radial charts. */
   insideLabels: TypePastryInsidelabelsConfig;
   /** Shared outside-label settings for radial charts. */

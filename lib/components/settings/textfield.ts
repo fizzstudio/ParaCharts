@@ -9,6 +9,7 @@ export interface TextfieldSettingControlOptions {
   min?: number;
   max?: number;
   size?: number;
+  instanceID?: string;
 }
 
 @customElement('para-textfield-setting-control')
@@ -46,7 +47,7 @@ export class TextfieldSettingControl extends SettingControl<'textfield'> {
             const value = isNumber ? parseFloat(input.value) : input.value;
             if (this._validateInput(value, input)) {
               this._value = value;
-              this._updateSetting(this.info.key, value);
+              this._updateSetting(this.info.key, value, this.info.instanceID);
             } else {
               input.value = this._value!.toString();
             }

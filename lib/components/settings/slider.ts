@@ -18,6 +18,7 @@ export interface SliderSettingControlOptions {
   showValue?: boolean;
   compact?: boolean;
   width?: string;
+  instanceID?: string;
 }
 
 @customElement('para-slider-setting-control')
@@ -56,7 +57,7 @@ export class SliderSettingControl extends SettingControl<'slider'> {
         ?showvalue=${opts?.showValue}
         ?compact=${opts?.compact}
         @update=${(e: CustomEvent) => this._updateSetting(
-          this.info.key, e.detail)}
+          this.info.key, e.detail, this.info.instanceID)}
       ></fizz-slider>
     `;
   }

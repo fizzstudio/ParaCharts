@@ -115,25 +115,25 @@ export class DataTable extends ParaComponent {
       const delta = event.key === 'ArrowLeft' ? -1 : 1;
       if ((delta === -1 && col > 0) || (delta === 1 && col < this._numCols - 1)) {
         // this._tabTargetCellCursor = {row, col: col + delta};
-        this._paraState.chartInfo.navMap!.root.updateCursor([this._grid[row][col + delta].datapoint]);
+        this._paraState.chartInfo.navMap!.top.updateCursor([this._grid[row][col + delta].datapoint]);
         this._gridEls[row][col + delta].value!.focus();
       }
     } else if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
       const delta = event.key === 'ArrowUp' ? -1 : 1;
       if ((delta === -1 && row > 0) || (delta === 1 && row < this._numRows - 1)) {
         // this._tabTargetCellCursor = {row: row + delta, col};
-        this._paraState.chartInfo.navMap!.root.updateCursor([this._grid[row + delta][col].datapoint]);
+        this._paraState.chartInfo.navMap!.top.updateCursor([this._grid[row + delta][col].datapoint]);
         this._gridEls[row + delta][col].value!.focus();
       }
     } else if (event.key === 'Home') {
       const row = cells[0].datapoint.datapointIndex;
       // this._tabTargetCellCursor = {row, col: 0};
-      this._paraState.chartInfo.navMap!.root.updateCursor([this._grid[row][0].datapoint]);
+      this._paraState.chartInfo.navMap!.top.updateCursor([this._grid[row][0].datapoint]);
       this._gridEls[row][0].value!.focus();
     } else if (event.key === 'End') {
       const row = cells[0].datapoint.datapointIndex;
       // this._tabTargetCellCursor = {row, col: this._numCols - 1};
-      this._paraState.chartInfo.navMap!.root.updateCursor([this._grid[row][this._numCols - 1].datapoint]);
+      this._paraState.chartInfo.navMap!.top.updateCursor([this._grid[row][this._numCols - 1].datapoint]);
       this._gridEls[row][this._numCols - 1].value!.focus();
     } else if (event.key === 'd' || event.key === 'D') {
       this.paraChart.isDataTableVisible = ! this.paraChart.isDataTableVisible;
@@ -146,7 +146,7 @@ export class DataTable extends ParaComponent {
 
   protected _onClick(cell: GridCell, row: number, col: number) {
     this._paraState.visit([cell.datapoint]);
-    this._paraState.chartInfo.navMap!.root.updateCursor([cell.datapoint]);
+    this._paraState.chartInfo.navMap!.top.updateCursor([cell.datapoint]);
     this._gridEls[row][col].value!.focus();
   }
 

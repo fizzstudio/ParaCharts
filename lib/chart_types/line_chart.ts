@@ -19,12 +19,13 @@ import { interpolate } from '@fizz/templum';
 import { formatXYDatapoint } from '@fizz/parasummary';
 import { type ChartType, enumerate, PlaneDatapoint, PlaneModel } from '@fizz/chartsignal-internal';
 import { PointChartInfo } from './point_chart';
-import { datapointIdToCursor, type ParaState, queryMessages, describeSelections, describeAdjacentDatapoints, getDatapointMinMax } from '../state';
-import { NavNode } from '../view/layers';
+import { datapointIdToCursor, type ParaState, queryMessages, describeSelections, describeAdjacentDatapoints, getDatapointMinMax, SettingsManager } from '../state';
+import { NavMap, type NavNode } from '../view/layers';
 import { DataSymbols } from '../view/symbol';
-import { ConfigSetting } from '../config/config_types';
+import { ConfigSetting, LegendConfig, PlaneDirection } from '../config/config_types';
 import { AxisRangeInfo } from './plane_chart';
-import { LegendItem } from '../view/legend';
+import { LegendItemsWithPosition } from '../view/legend';
+import { populateNavMap } from '../navigation/nav_map_builder';
 
 /**
  * Business logic for line charts.
@@ -34,7 +35,7 @@ export class LineChartInfo extends PointChartInfo {
 
   constructor(type: ChartType, paraState: ParaState) {
     super(type, paraState);
-    this.log = getLogger("LineChartInfo");
+    this.log = getLogger('LineChartInfo');
   }
 
   protected _addSettingControls(): void {
@@ -48,42 +49,26 @@ export class LineChartInfo extends PointChartInfo {
   }
 
   async settingDidChange(path: string, oldValue?: ConfigSetting, newValue?: ConfigSetting): Promise<void> {
-    if (['type.line.isTrendNavigationModeEnabled'].includes(path)) {
-      if (this._navMap!.cursor.type === 'top') {
-        [this._navMap, this._altNavMap] = [this._altNavMap, this._navMap!];
-        return;
-      }
-      if (!newValue) {
-        await this._navMap!.cursor.move('in');
-      }
-      const index = this._navMap!.cursor.index;
-      const type = this._navMap!.cursor.type;
-      [this._navMap, this._altNavMap] = [this._altNavMap, this._navMap!];
-      // go to corresponding data point in new mode nav map
-      this._navMap!.cursor.layer.goTo(type, index, true);
-      if (newValue) {
-        const trendNode = this._navMap!.cursor.peekNode('out', 1)!;
-        trendNode.connect('in', this._navMap!.cursor, false);
-        await this._navMap!.cursor.move('out');
-      }
-    }
-    // Add or remove single-series series landings based on whether
-    // soni is enabled
     if (path === 'sonification.isSonificationEnabled') {
-      const idx = this._navMap!.cursor.index;
-      this._createNavMap();
+      // Add or remove single-series series landings based on whether
+      // soni is enabled
+      const idx = this._navMap!.cursor!.index;
+      if (!this.model!.multi) {
+        this._createNavMap();
+        this._populateNavMap();
+      }
       if (!this._paraState.comboModel || this._paraState.currentDataset) {
-        this._navMap!.layer(this._navMap!.currentLayer)!.goTo('datapoint', idx, true);
+        this._navMap!.goTo('datapoint', { seriesKey: this.model!.seriesKeys[0], index: idx }, true);
       }
     }
     super.settingDidChange(path, oldValue, newValue);
   }
 
-  noticePosted(key: string, value: any) {
-    super.noticePosted(key, value);
-    if (key === 'seriesAnalyses') {
-      this._createSequenceNavNodes();
-    }
+  noticePosted(key: string, value: any, count: number) {
+    super.noticePosted(key, value, count);
+    // if (key === 'seriesAnalyses') {
+    //   this._createSequenceNavNodes();
+    // }
   }
 
   get model() {
@@ -105,42 +90,54 @@ export class LineChartInfo extends PointChartInfo {
     const range = super._numericYAxisRange(facetKey);
     return this._paraState.comboModel
       ? {
-          interval: {
-            start: Math.min(0, range.interval.start),
-            end: range.interval.end
-          },
-          step: range.step
-        }
+        interval: {
+          start: Math.min(0, range.interval.start),
+          end: range.interval.end
+        },
+        step: range.step
+      }
       : range;
   }
 
-  protected _createNavMap() {
-    super._createNavMap();
-    // In AI mode, the following call will only do anything when the doc view
-    // has been recreated (so the series analyses already exist)
-    this._createSequenceNavNodes();
-  }
-
-  didNavToNode(cursor: NavNode) {
-    if (cursor.isNodeType(this.navDatapointType)) {
-      const trendNode = cursor.peekNode('out', 1)!;
-      if (trendNode) {
-        trendNode.connect('in', cursor, false);
-      }
+  protected _onNavFail(dir: PlaneDirection, from: NavNode): void {
+    if (this.model!.series.length < 2) return;
+    // Wrap to next series landing
+    if (dir === 'right' && from.isNodeType('datapoint')) {
+      this.move('out');
+      this._navMap!.currentLayer.cursorForward();
+    } else {
+      super._onNavFail(dir, from);
     }
   }
 
-  legend(): LegendItem[] {
+  protected _canCreateSequenceNavNodes(): boolean {
+    return !!this._navMap && Object.keys(this._paraState.seriesAnalyses).length === this.model!.seriesKeys.length
+      && !!this._paraState.seriesAnalyses[this.model!.seriesKeys[0]];
+  }
+
+  protected _shouldDrawLegend(): boolean {
+    const config = SettingsManager.getGroupLinkForInstance<LegendConfig>(
+      'legend', this._paraState.config, `legend-${0}`) ?? this._paraState.config.legend;
+    const should = config.isDrawLegend &&
+      (config.isAlwaysDrawLegend
+        || (this.model!.multi
+          && (!this._paraState.config.chart.hasDirectLabels || this._paraState.config.chart.hasLegendWithDirectLabels)));
+    return should;
+  }
+
+  legend(): LegendItemsWithPosition[] {
     const model = this.model!;
+    const config = SettingsManager.getGroupLinkForInstance<LegendConfig>(
+      'legend', this._paraState.config, `legend-${0}`) ?? this._paraState.config.legend;
     const seriesKeys = enumerate([...model.seriesKeys]);
     const types = new DataSymbols().types;
-    if (this._paraState.config.legend.itemOrder === 'alphabetical') {
+    if (config.itemOrder === 'alphabetical') {
       seriesKeys.sort((a, b) => a[0].localeCompare(b[0]));
     }
-    else if (this._paraState.config.legend.itemOrder === 'reverseAlphabetical') {
+    else if (config.itemOrder === 'reverseAlphabetical') {
       seriesKeys.sort((a, b) => -1 * a[0].localeCompare(b[0]));
     }
-    else if (this._paraState.config.legend.itemOrder === 'startingOrder') {
+    else if (config.itemOrder === 'startingOrder') {
       const model = this.model as PlaneModel;
       const startChord = model.getChordAt(model.independentFacetKeys[0], (model.allPoints.at(0) as PlaneDatapoint).indepBox)!;
       seriesKeys.sort((a, b) =>
@@ -148,7 +145,7 @@ export class LineChartInfo extends PointChartInfo {
         - startChord.find(point => point.seriesKey === a[0])!.facetValueAsNumber("y")!
       );
     }
-    else if (this._paraState.config.legend.itemOrder === 'endingOrder') {
+    else if (config.itemOrder === 'endingOrder') {
       const model = this.model as PlaneModel;
       const endChord = model.getChordAt(model.independentFacetKeys[0], (model.allPoints.at(-1) as PlaneDatapoint).indepBox)!;
       seriesKeys.sort((a, b) =>
@@ -156,13 +153,19 @@ export class LineChartInfo extends PointChartInfo {
         - endChord.find(point => point.seriesKey === a[0])!.facetValueAsNumber("y")!
       );
     }
-    return seriesKeys.map(key => ({
+    const items = seriesKeys.map(key => ({
       label: model.atKey(key[0])!.getLabel(),
       seriesKey: key[0],
       colorIndex: this.seriesProperties.properties(key[0]).colorIndex,
       symbol: types[key[1]],
       symbolOptions: { lighten: true }
     }));
+    const legendItems = [];
+    const position = config.position;
+    if (this._shouldDrawLegend()) {
+      legendItems.push({ position: position ?? "east", items: items });
+    }
+    return legendItems;
   }
 
   // TODO: localize this text output
@@ -171,7 +174,7 @@ export class LineChartInfo extends PointChartInfo {
   queryData(): void {
     const msgArray: string[] = [];
 
-    const queriedNode = this._navMap!.cursor;
+    const queriedNode = this._navMap!.cursor!;
 
     if (queriedNode.isNodeType('top')) {
       msgArray.push(`Displaying Chart: ${this._paraState.title}`);

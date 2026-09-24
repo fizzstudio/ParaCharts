@@ -70,23 +70,6 @@ export class BarPlotView extends PlanePlotView {
 
   protected _addedToParent() {
     super._addedToParent();
-    /*todo().controller.settingViews.add(this, {
-      type: 'dropdown',
-      key: 'type.bar.stackContent',
-      label: 'Stack content',
-      options: {options: ['All', 'Count'], values: ['all', 'count']},
-      parentView: 'chartDetails.tabs.chart.chart',
-      //dontSaveValue: true
-    });
-    todo().controller.settingViews.add(this, {
-      type: 'textfield',
-      key: 'type.bar.stackCount',
-      label: 'Count',
-      options: {inputType: 'number', min: 1, max: this._model.depVars.length},
-      hidden: true,
-      parentView: 'chartDetails.tabs.chart.chart',
-    });
-    todo().deets!.chartPanel.requestUpdate();*/
     if (this.paraview.paraState.config.type.bar.isAbbrevSeries) {
       this._abbrevs = abbreviateSeries(this.paraview.paraState.model!.seriesKeys);
     }
@@ -102,9 +85,13 @@ export class BarPlotView extends PlanePlotView {
     this.log = getLogger('BarPlotView');
   }
 
-  settingDidChange(path: string, oldValue?: ConfigSetting, newValue?: ConfigSetting): void {
-    super.settingDidChange(path, oldValue, newValue);
-  }
+  // settingDidChange(path: string, oldValue?: ConfigSetting, newValue?: ConfigSetting): void {
+  //   if (['legend.isAlwaysDrawLegend'].includes(path)) {
+  //     this.paraview.createDocumentView();
+  //     this.paraview.requestUpdate();
+  //   }
+  //   super.settingDidChange(path, oldValue, newValue);
+  // }
 
   get abbrevs() {
     return this._abbrevs;

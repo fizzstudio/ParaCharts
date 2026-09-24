@@ -26,6 +26,8 @@ import { Vec2 } from '../common/vector';
 import { type Popup } from './popup';
 import { HIGHLIGHT_PADDING, fixed } from '../common';
 import { type ConfigSetting } from '../config/config_types';
+import { Interval } from '@fizz/chart-classifier-utils';
+import { ParaView } from '../paraview';
 
 export type SnapLocation = 'start' | 'end' | 'center';
 
@@ -45,6 +47,14 @@ export interface PaddingInput {
   bottom?: number;
   left?: number;
   right?: number;
+}
+
+export interface DragSettings {
+  lockX?: boolean;
+  lockY?: boolean;
+  yBounds?: Interval;
+  xBounds?: Interval;
+  afterDragFunction?: () => void;
 }
 
 export interface Padding {
@@ -179,8 +189,8 @@ export class BaseView {
   renderHighlight(type: 'fg' | 'bg') {
     return svg`
       <rect
-        x=${this.x - HIGHLIGHT_PADDING/2}
-        y=${this.y - HIGHLIGHT_PADDING/2}
+        x=${this.x - HIGHLIGHT_PADDING / 2}
+        y=${this.y - HIGHLIGHT_PADDING / 2}
         width=${this.width + HIGHLIGHT_PADDING}
         height=${this.height + HIGHLIGHT_PADDING}
         class="view-highlight-${type}"
@@ -233,6 +243,13 @@ export class View extends BaseView {
   protected _isObserveStore = false;
   protected _isObserveNotices = false;
   protected _popup?: Popup;
+
+  protected _dragPointerId: number | null = null;
+  protected _dragStartX: number = 0;
+  protected _dragStartY: number = 0;
+  protected _isDraggable: boolean = false;
+  protected _dragSettings?: DragSettings = {}
+  protected _isHeld = false;
 
   constructor(public readonly paraview: ViewContext) {
     super();
@@ -431,6 +448,26 @@ export class View extends BaseView {
 
   get popup() {
     return this._popup
+  }
+
+  get isDraggable() {
+    return this._isDraggable;
+  }
+
+  set isDraggable(bool: boolean) {
+    this._isDraggable = bool;
+  }
+
+  get dragSettings(): DragSettings | undefined {
+    return this._dragSettings;
+  }
+
+  set dragSettings(settings: DragSettings) {
+    this._dragSettings = settings;
+  }
+
+  get isHeld() {
+    return this._isHeld;
   }
 
   protected _expandPadding(padding: PaddingInput | number, defaults?: Padding): Padding {
@@ -948,13 +985,13 @@ export class View extends BaseView {
     }
   }
 
-  noticePosted(key: string, value: any) {
+  noticePosted(key: string, value: any, count: number) {
     if (!this._isObserveNotices) {
       return;
     }
     this._children.forEach(kid => {
       if (kid.isObserveNotices) {
-        kid.noticePosted(key, value);
+        kid.noticePosted(key, value, count);
       }
     });
   }
@@ -971,6 +1008,49 @@ export class View extends BaseView {
     this.children.forEach(c => c.pointerMove())
   }
 
+  protected _startDrag(e: PointerEvent) {
+    if (!this._isDraggable) {
+      return;
+    }
+    this._dragPointerId = e.pointerId;
+    this._isHeld = true;
+    (e.currentTarget as Element).setPointerCapture(e.pointerId);
+  }
+
+  protected _drag(e: PointerEvent) {
+    if (!this.isHeld || e.pointerId !== this._dragPointerId) return;
+    if (!this.dragSettings?.lockX) {
+      if (!this.dragSettings?.xBounds) {
+        this.centerX = this.paraview.paraState.pointerCoords.x;
+      }
+      else {
+        const min = this.dragSettings?.xBounds.start;
+        const max = this.dragSettings?.xBounds.end;
+        this.centerX = Math.min(Math.max(this.paraview.paraState.pointerCoords.x, min), max);
+      }
+    }
+    if (!this.dragSettings?.lockY) {
+      if (!this.dragSettings?.yBounds) {
+        this.centerY = this.paraview.paraState.pointerCoords.y;
+      }
+      else {
+        const min = this.dragSettings?.yBounds.start;
+        const max = this.dragSettings?.yBounds.end;
+        this.centerY = Math.min(Math.max(this.paraview.paraState.pointerCoords.y, min), max);
+      }
+
+    }
+  }
+
+  protected _endDrag(e: PointerEvent) {
+    if (this._dragPointerId !== e.pointerId) return;
+    (e.currentTarget as Element).releasePointerCapture(e.pointerId);
+    this._dragPointerId = null;
+    this._isHeld = false;
+    if (this.dragSettings?.afterDragFunction) {
+      this.dragSettings?.afterDragFunction();
+    }
+  }
 }
 
 export interface ContainableI {
