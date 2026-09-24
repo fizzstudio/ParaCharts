@@ -35,7 +35,6 @@ import { type ViewContext } from '../view/view_context';
 import { loopParaviewRefresh, fixed, SVGNS } from '../common';
 import { ParaViewController } from '.';
 import { CSS_DPI, MM_PER_INCH, PAPER_INFO } from '../common/paper';
-import { Interval } from '@fizz/chart-classifier-utils';
 
 /**
  * Data provided for the on focus callback

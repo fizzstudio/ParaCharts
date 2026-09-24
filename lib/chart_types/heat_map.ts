@@ -1,4 +1,4 @@
-import { type ChartType, type Datapoint } from "@fizz/chartsignal-internal";
+import { type ChartType, type Datapoint, enumerate } from "@fizz/chartsignal-internal";
 import { PlaneChartInfo } from './plane_chart';
 import { SettingsManager, type ParaState } from '../state';
 import { LegendItemsWithPosition } from '../view/legend';

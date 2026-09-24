@@ -1,12 +1,10 @@
 
-import { Datapoint, Model, Series } from '@fizz/paramodel';
+import { Datapoint, Model, Series, clusterObject } from '@fizz/chartsignal-internal';
 import { NavLevel, NavSchema, navSchemas } from '.';
 import { DatapointNavNodeType, NavLayer, NavNode, NavNodeType, type NavMap } from '../view/layers';
 import { ChartType } from '@fizz/chartsignal-internal';
 import { Direction, PlaneDirection } from '../config/config_types';
 import { ParaState } from '../state';
-import { clusterObject } from '@fizz/clustering';
-import { mapn } from '@fizz/chart-classifier-utils';
 
 export interface NavMapBuilderContext {
   get type(): ChartType;

@@ -20,7 +20,7 @@ import { Vec2 } from '../../../../common/vector';
 import { bboxOfBboxes } from '../../../../common/utils';
 import { type ConfigSetting } from '../../../../config/config_types';
 import { PointDatapointView, PointPlotView, type PointSeriesView } from './point_plot_view';
-import { Datapoint, enumerate } from '@fizz/paramodel';
+import { Datapoint } from '@fizz/chartsignal-internal';
 import { SeriesView } from '../../../data';
 import { RectShape } from '../../../shape';
 

@@ -26,7 +26,7 @@ import { Vec2 } from '../common/vector';
 import { type Popup } from './popup';
 import { HIGHLIGHT_PADDING, fixed } from '../common';
 import { type ConfigSetting } from '../config/config_types';
-import { Interval } from '@fizz/chart-classifier-utils';
+import { Interval } from '@fizz/chartsignal-internal';
 import { ParaView } from '../paraview';
 
 export type SnapLocation = 'start' | 'end' | 'center';
