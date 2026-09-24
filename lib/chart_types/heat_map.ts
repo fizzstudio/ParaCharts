@@ -120,7 +120,7 @@ export class HeatMapInfo extends PlaneChartInfo {
     }));
     const legendItems = [];
     const position = config.position;
-    if (config.isAlwaysDrawLegend) {
+    if (this._shouldDrawLegend()) {
       legendItems.push({ position: position, items: items });
     }
     return legendItems;

@@ -320,7 +320,8 @@ export class BarChartInfo extends PlaneChartInfo {
 
   legend(): LegendItemsWithPosition[] {
     const model = this._paraState.model!;
-    const config = SettingsManager.getGroupLinkForInstance<LegendConfig>('legend', this._paraState.config, `legend-${0}`) ?? this._paraState.config.legend;
+    const config = SettingsManager.getGroupLinkForInstance<LegendConfig>(
+      'legend', this._paraState.config, `legend-${0}`) ?? this._paraState.config.legend;
     const seriesKeys = enumerate([...model.seriesKeys]);
     if (config.itemOrder === 'alphabetical') {
       seriesKeys.sort((a, b) => a[0].localeCompare(b[0]));
@@ -335,7 +336,7 @@ export class BarChartInfo extends PlaneChartInfo {
     }));
     const legendItems = [];
     const position = config.position;
-    if (config.isAlwaysDrawLegend) {
+    if (this._shouldDrawLegend()) {
       legendItems.push({ position: position, items: items });
     }
     return legendItems;

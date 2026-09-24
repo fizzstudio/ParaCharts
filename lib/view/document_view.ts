@@ -88,10 +88,9 @@ export class DocumentView extends Container(View) {
     if (this._paraState.config.chart.pageSize === 'auto') {
       this._x = 0;
       this._y = 0;
-      return [
-        this._paraState.config.chart.width - paddingHoriz,
-        this._paraState.config.chart.height - paddingVert
-      ];
+      const docWidth = this._paraState.config.chart.width - paddingHoriz;
+      const docHeight = this._paraState.config.chart.height - paddingVert;
+      return [docWidth, docHeight];
     } else {
       const paperInfo = PAPER_INFO[this._paraState.config.chart.pageSize];
       const pageWidth = (paperInfo.widthMm / MM_PER_INCH) * CSS_DPI;
@@ -102,10 +101,9 @@ export class DocumentView extends Container(View) {
       const marginBottom = this._paraState.config.chart.pageMarginBottom * CSS_DPI;
       this._x = marginLeft / 2;
       this._y = marginTop / 2;
-      return [
-        pageWidth - paddingHoriz - marginLeft - marginRight,
-        pageHeight - paddingVert - marginTop - marginBottom
-      ];
+      const docWidth = pageWidth - paddingHoriz - marginLeft - marginRight;
+      const docHeight = pageHeight - paddingVert - marginTop - marginBottom;
+      return [docWidth, docHeight];
     }
   }
 
@@ -680,13 +678,18 @@ export class DocumentView extends Container(View) {
 
   createLegends() {
     const margin = this._paraState.config.legend.margin;
-    this._legends.east?.forEach(l => l.remove())
-    this._legends.west?.forEach(l => l.remove())
-    this._legends.north?.forEach(l => l.remove())
-    this._legends.south?.forEach(l => l.remove())
-    for (let item of this.paraview.paraState.chartInfo.legend()) {
+    this._legends.east?.forEach(l => l.remove());
+    this._legends.west?.forEach(l => l.remove());
+    this._legends.north?.forEach(l => l.remove());
+    this._legends.south?.forEach(l => l.remove());
+    this._legends.east = [];
+    this._legends.west = [];
+    this._legends.north = [];
+    this._legends.south = [];
+    this._paraState._legends = [];
+    for (const item of this.paraview.paraState.chartInfo.legend()) {
       const position = item.position;
-      const items = item.items
+      const items = item.items;
       if (position === 'east') {
         const eastLegend = new Legend(this.paraview, items,
           {
@@ -700,9 +703,9 @@ export class DocumentView extends Container(View) {
           bottom: 0,
           left: margin,
         };
-        this._legends.east?.push(eastLegend)
+        this._legends.east?.push(eastLegend);
         this.append(eastLegend);
-        this._paraState._legends.push(eastLegend)
+        this._paraState._legends.push(eastLegend);
         // this._legends.east.updateSize();
         // this._grid.setColGap(this._directLabelStrip ? 2 : 1, margin);
       } else if (position === 'west') {
@@ -718,9 +721,9 @@ export class DocumentView extends Container(View) {
           bottom: 0,
           left: 0
         };
-        this._legends.west?.push(westLegend)
+        this._legends.west?.push(westLegend);
         this.append(westLegend);
-        this._paraState._legends.push(westLegend)
+        this._paraState._legends.push(westLegend);
         // this._grid.addColumnLeft();
       } else if (position === 'south') {
         const southLegend = new Legend(this.paraview, items, {
@@ -735,9 +738,9 @@ export class DocumentView extends Container(View) {
           bottom: 0,
           left: 0
         };
-        this._legends.south?.push(southLegend)
+        this._legends.south?.push(southLegend);
         this.append(southLegend);
-        this._paraState._legends.push(southLegend)
+        this._paraState._legends.push(southLegend);
       } else if (position === 'north') {
         const northLegend = new Legend(this.paraview, items, {
           orientation: 'horiz',
@@ -759,9 +762,9 @@ export class DocumentView extends Container(View) {
         //   colAlign: 'center',
         //   //margin: {bottom: margin}
         // });
-        this._legends.north?.push(northLegend)
+        this._legends.north?.push(northLegend);
         this.append(northLegend);
-        this._paraState._legends.push(northLegend)
+        this._paraState._legends.push(northLegend);
       }
 
     }

@@ -18,7 +18,7 @@ import { Logger, getLogger } from '@fizz/logger';
 import { Datapoint } from '@fizz/paramodel';
 import { ChartType, Facet } from '@fizz/chartsignal-internal';
 import { Summarizer, formatBox, Highlight, summarizerFromModel, HighlightedSummary } from '@fizz/parasummary';
-import { ConfigSetting, DeepReadonly, PlaneDirection } from '../config/config_types';
+import { ConfigSetting, DeepReadonly, LegendConfig, PlaneDirection } from '../config/config_types';
 import { ConfigGroup, Direction, HorizDirection } from '../config/config_types';
 import { ParaView } from '../paraview/paraview';
 import { LegendItemsWithPosition, type LegendItem } from '../view/legend';
@@ -232,6 +232,14 @@ export abstract class BaseChartInfo {
     const topLayer = this._navMap!.layer('top', 0)!;
     // Chart landing (visits no points)
     topLayer.newNode('top', {});
+  }
+
+  protected _shouldDrawLegend(): boolean {
+    const config = SettingsManager.getGroupLinkForInstance<LegendConfig>(
+      'legend', this._paraState.config, `legend-${0}`) ?? this._paraState.config.legend;
+    const should = config.isDrawLegend
+      && (config.isAlwaysDrawLegend || this._paraState.model!.multi);
+    return should;
   }
 
   legend(): LegendItemsWithPosition[] {

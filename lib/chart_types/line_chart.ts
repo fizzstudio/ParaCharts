@@ -116,18 +116,20 @@ export class LineChartInfo extends PointChartInfo {
       && !!this._paraState.seriesAnalyses[this.model!.seriesKeys[0]];
   }
 
-  // chooseNavOutNode(nodes: readonly NavNode[]): NavNode {
-  //   console.log('CHOOSE OUT FOR', this._navMap!.cursor!.type);
-  //   if (this._navMap!.cursor!.isNodeType('sequence')) {
-  //     return nodes[this._navMap!.cursor.options.start];
-  //   } else {
-  //     return nodes[0];
-  //   }
-  // }
+  protected _shouldDrawLegend(): boolean {
+    const config = SettingsManager.getGroupLinkForInstance<LegendConfig>(
+      'legend', this._paraState.config, `legend-${0}`) ?? this._paraState.config.legend;
+    const should = config.isDrawLegend &&
+      (config.isAlwaysDrawLegend
+        || (this.model!.multi
+          && (!this._paraState.config.chart.hasDirectLabels || this._paraState.config.chart.hasLegendWithDirectLabels)));
+    return should;
+  }
 
   legend(): LegendItemsWithPosition[] {
     const model = this.model!;
-    const config = SettingsManager.getGroupLinkForInstance<LegendConfig>('legend', this._paraState.config, `legend-${0}`) ?? this._paraState.config.legend;
+    const config = SettingsManager.getGroupLinkForInstance<LegendConfig>(
+      'legend', this._paraState.config, `legend-${0}`) ?? this._paraState.config.legend;
     const seriesKeys = enumerate([...model.seriesKeys]);
     const types = new DataSymbols().types;
     if (config.itemOrder === 'alphabetical') {
@@ -161,7 +163,7 @@ export class LineChartInfo extends PointChartInfo {
     }));
     const legendItems = [];
     const position = config.position;
-    if (config.isAlwaysDrawLegend) {
+    if (this._shouldDrawLegend()) {
       legendItems.push({ position: position ?? "east", items: items });
     }
     return legendItems;
