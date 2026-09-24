@@ -687,8 +687,9 @@ export class DocumentView extends Container(View) {
     this._legends.north = [];
     this._legends.south = [];
     this._paraState._legends = [];
+    const tactile = this._paraState.config.chart.isTactileEnabled;
     for (const item of this.paraview.paraState.chartInfo.legend()) {
-      const position = item.position;
+      const position = (tactile && 'south') || item.position;
       const items = item.items;
       if (position === 'east') {
         const eastLegend = new Legend(this.paraview, items,
