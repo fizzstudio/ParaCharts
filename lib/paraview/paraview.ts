@@ -1338,7 +1338,7 @@ export class ParaView extends ParaComponent implements ViewContext {
     <svg
         role="application"
         tabindex=${this.disableFocus ? -1 : 0}
-        aria-label=${this._documentView ? `${this._documentView.titleText}, accessible chart` : 'loading...'}
+        aria-label=${this._documentView ? `${this._documentView.titleText}, accessible chart. Use the arrow keys to navigate.` : 'loading...'}
         ${ref(this._rootRef)}
         xmlns=${SVGNS}
         data-charttype=${this.paraChart.type ?? this.type}
