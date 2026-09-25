@@ -15,8 +15,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { Logger, getLogger } from '@fizz/logger';
-import { Datapoint } from '@fizz/paramodel';
-import { ChartType, Facet } from '@fizz/chartsignal-internal';
+import { ChartType, Facet, Datapoint, clusterObject } from '@fizz/chartsignal-internal';
 import { Summarizer, formatBox, Highlight, summarizerFromModel, HighlightedSummary } from '@fizz/parasummary';
 import { ConfigSetting, DeepReadonly, LegendConfig, PlaneDirection } from '../config/config_types';
 import { ConfigGroup, Direction, HorizDirection } from '../config/config_types';
@@ -30,7 +29,6 @@ import { Sonifier } from '../audio/sonifier';
 
 import { executeParaActions, parseActions } from '../paraactions/paraactions';
 import { populateNavMap } from '../navigation/nav_map_builder';
-import { clusterObject } from '@fizz/clustering';
 
 export const ORIENTATION_SENTENCES = [
   '$.datasets[0].axes.dependent',

@@ -3,7 +3,7 @@ import { ref } from "lit/directives/ref.js";
 import { styleMap } from "lit/directives/style-map.js";
 import { nothing, svg } from "lit";
 import { getLogger } from '@fizz/logger';
-import { enumerate } from "@fizz/paramodel";
+import { enumerate } from "@fizz/chartsignal-internal";
 import { type HeatMapInfo, type BaseChartInfo } from '../../../../chart_types';
 import { fixed } from "../../../../common/utils";
 import { type DataLayerContext } from '../../../view_context';

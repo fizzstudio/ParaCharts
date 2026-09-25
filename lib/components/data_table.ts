@@ -3,7 +3,7 @@ import { property, customElement } from 'lit/decorators.js';
 import { type Ref, ref, createRef } from 'lit/directives/ref.js';
 import { Unsubscribe } from '@lit-app/state';
 import { type Logger, getLogger } from '@fizz/logger';
-import { type PlaneDatapoint } from '@fizz/paramodel';
+import { type PlaneDatapoint } from '@fizz/chartsignal-internal';
 import { formatXYDatapointX, formatXYDatapointY } from '@fizz/parasummary';
 import { ParaComponent } from '.';
 import { datapointIdToCursor } from '../state';

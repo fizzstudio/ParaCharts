@@ -15,9 +15,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { Decimal } from 'decimal.js';
-import { type Interval } from '@fizz/chart-classifier-utils';
-import { type ChartType, type Facet } from '@fizz/chartsignal-internal';
-import { type Datapoint, type PlaneDatapoint, PlaneModel } from '@fizz/paramodel';
+import { type ChartType, type Facet, type Interval, numberToScaledNumberRounded, type Datapoint, type PlaneDatapoint, PlaneModel } from '@fizz/chartsignal-internal';
 import { BaseChartInfo } from './base_chart';
 import { DatapointNavNodeType, NavNode, NavNodeOptionsType, type NavMap } from '../view/layers/data/navigation';
 import { type ParaState } from '../state';
@@ -29,7 +27,6 @@ import { Bezier, loopParaviewRefresh } from '../common';
 import { computeLabels } from '../common';
 import { NOTE_LENGTH } from '../audio/sonifier';
 import { type AxisOrientation } from '../view/axis/axis';
-import { numberToScaledNumberRounded } from '@fizz/number-scaling-rounding';
 
 // Soni Constants
 export const SONI_PLAY_SPEEDS = [1000, 250, 100, 50, 25];

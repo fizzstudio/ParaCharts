@@ -34,7 +34,7 @@ import {
 import { svg, nothing } from 'lit';
 import { styleMap } from 'lit/directives/style-map.js';
 import { classMap } from 'lit/directives/class-map.js';
-import { Datapoint } from '@fizz/paramodel';
+import { Datapoint } from '@fizz/chartsignal-internal';
 import { SettingsManager } from '../state';
 import { MarkerConfig } from '../config/config_types';
 

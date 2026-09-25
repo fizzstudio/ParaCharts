@@ -26,7 +26,7 @@ import { ConfigSetting } from '../../../../config/config_types';
 import { SeriesView } from '../../../data/series';
 import { type PlaneChartInfo } from '../../../../chart_types/plane_chart';
 import { DatapointView } from '../../../data/datapoint';
-import { PlaneDatapoint } from '@fizz/paramodel';
+import { PlaneDatapoint } from '@fizz/chartsignal-internal';
 import { type BaseChartInfo } from '../../../../chart_types/base_chart';
 
 export type DatapointViewType<T extends PlaneDatapointView> =

@@ -1,7 +1,7 @@
 import { html, css } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { Logger, getLogger } from '@fizz/logger';
-import { type PlaneDatapoint, type Model } from '@fizz/paramodel';
+import { type PlaneDatapoint, type Model } from '@fizz/chartsignal-internal';
 import { formatXYDatapointX, formatXYDatapointY } from '@fizz/parasummary';
 import { ParaComponent } from '../components';
 

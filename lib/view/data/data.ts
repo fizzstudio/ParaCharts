@@ -1,5 +1,5 @@
 import { type StyleInfo } from 'lit/directives/style-map.js';
-import { type Series } from '@fizz/paramodel';
+import { type Series } from '@fizz/chartsignal-internal';
 import { View } from '../base_view';
 import { type DataLayer } from '../layers';
 import { type SeriesProperties } from '../../state';

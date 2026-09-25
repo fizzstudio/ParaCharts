@@ -1,5 +1,5 @@
 import { svg } from 'lit';
-import { type PlaneModel } from '@fizz/paramodel';
+import { type PlaneModel } from '@fizz/chartsignal-internal';
 import { type ViewContext } from '../view_context';
 import { datapointIdToCursor, HighlightAxisOptions } from '../../state/parastate';
 import { DataSymbol } from '../symbol';

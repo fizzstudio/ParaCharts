@@ -1,4 +1,4 @@
-import { Model, PlaneDatapoint } from '@fizz/paramodel';
+import { Model, PlaneDatapoint } from '@fizz/chartsignal-internal';
 
 /**
  * A sonifiable datapoint.

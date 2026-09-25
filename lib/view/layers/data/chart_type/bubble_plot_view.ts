@@ -1,4 +1,4 @@
-import { Datapoint, enumerate } from "@fizz/paramodel";
+import { Datapoint, enumerate } from "@fizz/chartsignal-internal";
 import { PointDatapointView, PointPlotView, PointSeriesView } from ".";
 import { DataSymbol, DataSymbols } from "../../../symbol";
 import { ConfigSetting } from "../../../../config/config_types";

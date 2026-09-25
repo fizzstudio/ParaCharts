@@ -16,7 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { svg } from 'lit';
 import { getLogger } from '@fizz/logger';
-import { mapn } from '@fizz/chart-classifier-utils';
+import { mapn } from '@fizz/chartsignal-internal';
 import { type View, type SnapLocation, type PaddingInput, type Padding } from '../base_view';
 import { type ViewContext } from '../view_context';
 import { Layout } from './layout';

@@ -17,8 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 import { getLogger } from '@fizz/logger';
 import { interpolate } from '@fizz/templum';
 import { formatXYDatapoint } from '@fizz/parasummary';
-import { type ChartType } from '@fizz/chartsignal-internal';
-import { enumerate, PlaneDatapoint, PlaneModel } from '@fizz/paramodel';
+import { type ChartType, enumerate, PlaneDatapoint, PlaneModel } from '@fizz/chartsignal-internal';
 import { PointChartInfo } from './point_chart';
 import { datapointIdToCursor, type ParaState, queryMessages, describeSelections, describeAdjacentDatapoints, getDatapointMinMax, SettingsManager } from '../state';
 import { NavMap, type NavNode } from '../view/layers';
