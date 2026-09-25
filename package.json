@@ -134,7 +134,7 @@
     "@fizz/dataframe": "^0.27.2",
     "@fizz/jimerator": "^0.20.2",
     "@fizz/logger": "^0.1.0",
-    "@fizz/parasummary": "^0.17.8",
+    "@fizz/parasummary": "^0.17.9",
     "@fizz/sparkbraille-component": "^0.5.0",
     "@fizz/templum": "^0.5.9",
     "@fizz/ui-components": "^0.73.0",
