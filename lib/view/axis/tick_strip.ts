@@ -20,7 +20,7 @@ import {
   type AxisCoord, type AxisOrientation,
 } from './axis';
 
-import { mapn } from '@fizz/chart-classifier-utils';
+import { mapn } from '@fizz/chartsignal-internal';
 
 import { svg, type TemplateResult } from 'lit';
 import { HorizGridLine, HorizTick, VertGridLine, VertTick } from './rule';

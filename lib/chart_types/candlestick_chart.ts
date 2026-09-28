@@ -17,8 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 import { getLogger } from '@fizz/logger';
 import { interpolate } from '@fizz/templum';
 import { formatXYDatapoint } from '@fizz/parasummary';
-import { type ChartType } from '@fizz/chartsignal-internal';
-import { enumerate, PlaneDatapoint, PlaneModel } from '@fizz/paramodel';
+import { type ChartType, PlaneDatapoint } from '@fizz/chartsignal-internal';
 import { PointChartInfo } from './point_chart';
 import { datapointIdToCursor, type ParaState, queryMessages, describeSelections, describeAdjacentDatapoints, getDatapointMinMax } from '../state';
 import { DataSymbols } from '../view/symbol';
@@ -49,43 +48,6 @@ export class CandlestickChartInfo extends PointChartInfo {
   get isIntertick(): boolean {
     return true;
   }
-
-/*  protected _populateNavMap() {
-    const top = this._navMap!.top.cursor!;
-    const candlesticksLayer = this._navMap!.newLayer('candlestick');
-    top.connectIn(candlesticksLayer);
-
-    // Sort by value of first datapoint from greatest to least
-    const sortedSeries = this.seriesInNavOrder();
-    let prevCandlestickNode: NavNode | null = null;
-    sortedSeries[0].datapoints.forEach((_datapoint, i) => {
-      const candlestickNode = candlesticksLayer.newNode(
-        'candlestick',
-        {
-          index: i
-        });
-      if (prevCandlestickNode) {
-        candlestickNode.connect('left', prevCandlestickNode);
-        candlestickNode.connect('up', prevCandlestickNode);
-      }
-      prevCandlestickNode = candlestickNode;
-      const detailsLayer = this._navMap!.newLayer('details');
-      candlestickNode.connectIn(detailsLayer);
-      let prevNode: NavNode | null = null;
-      ['open', 'high', 'low', 'close'].forEach((seriesKey, j) => {
-        const node = detailsLayer.newNode(
-          'datapoint',
-          {
-            seriesKey,
-            index: i
-          });
-          if (prevNode) {
-            node.connect('down', prevNode);
-          }
-          prevNode = node;
-      });
-    });
-  } */
 
   pointerClick(datasetIndex: number, seriesKey: string, datapointIndex: number, isShift: boolean) {
     // Set quiet = true so that the visit announcement doesn't overwrite

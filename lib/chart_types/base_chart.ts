@@ -15,10 +15,9 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { Logger, getLogger } from '@fizz/logger';
-import { Datapoint } from '@fizz/paramodel';
-import { ChartType, Facet } from '@fizz/chartsignal-internal';
+import { ChartType, Facet, Datapoint, clusterObject } from '@fizz/chartsignal-internal';
 import { Summarizer, formatBox, Highlight, summarizerFromModel, HighlightedSummary } from '@fizz/parasummary';
-import { ConfigSetting, DeepReadonly, PlaneDirection } from '../config/config_types';
+import { ConfigSetting, DeepReadonly, LegendConfig, PlaneDirection } from '../config/config_types';
 import { ConfigGroup, Direction, HorizDirection } from '../config/config_types';
 import { ParaView } from '../paraview/paraview';
 import { LegendItemsWithPosition, type LegendItem } from '../view/legend';
@@ -30,7 +29,6 @@ import { Sonifier } from '../audio/sonifier';
 
 import { executeParaActions, parseActions } from '../paraactions/paraactions';
 import { populateNavMap } from '../navigation/nav_map_builder';
-import { clusterObject } from '@fizz/clustering';
 
 export const ORIENTATION_SENTENCES = [
   '$.datasets[0].axes.dependent',
@@ -101,6 +99,7 @@ export abstract class BaseChartInfo {
     this._summarizer = summarizerFromModel(this.model!);
   }
 
+  // Called in ParaState.setManifest() immediately after chartInfo creation
   async setup() {
     this._conciseSummary = await this._summarizer.getConciseSummary();
   }
@@ -210,6 +209,7 @@ export abstract class BaseChartInfo {
       }
     } else if (key === 'manifestSet') {
       this._populateNavMap();
+      this._paraState.sparkBrailleInfo = this._sparkBrailleInfo();
     }
   }
 
@@ -230,6 +230,14 @@ export abstract class BaseChartInfo {
     const topLayer = this._navMap!.layer('top', 0)!;
     // Chart landing (visits no points)
     topLayer.newNode('top', {});
+  }
+
+  protected _shouldDrawLegend(): boolean {
+    const config = SettingsManager.getGroupLinkForInstance<LegendConfig>(
+      'legend', this._paraState.config, `legend-${0}`) ?? this._paraState.config.legend;
+    const should = config.isDrawLegend
+      && (config.isAlwaysDrawLegend || this._paraState.model!.multi);
+    return should;
   }
 
   legend(): LegendItemsWithPosition[] {
@@ -280,26 +288,6 @@ export abstract class BaseChartInfo {
     this._paraState.postNotice('navFail', { dir, from });
   }
 
-  // async moveIn() {
-  //   this._paraState.postNotice('moveIn', { options: this._navMap!.cursor!.options });
-  //   const from = this._navMap!.cursor;
-  //   if (await this._navMap!.cursor!.moveIn()) {
-  //     this._paraState.postNotice('navOkay', { from, to: this._navMap!.cursor });
-  //   } else {
-  //     this._paraState.postNotice('navFail', null);
-  //   }
-  // }
-
-  // async moveOut() {
-  //   this._paraState.postNotice('moveOut', { options: this._navMap!.cursor!.options });
-  //   const from = this._navMap!.cursor;
-  //   if (await this._navMap!.cursor!.moveOut()) {
-  //     this._paraState.postNotice('navOkay', { from, to: this._navMap!.cursor });
-  //   } else {
-  //     this._paraState.postNotice('navFail', null);
-  //   }
-  // }
-
   async jump(dir: HorizDirection) {
     this._paraState.postNotice('jump', { dir, options: this._navMap!.cursor!.options });
     const from = this._navMap!.cursor;
@@ -309,10 +297,6 @@ export abstract class BaseChartInfo {
       this._paraState.postNotice('navFail', null);
     }
   }
-
-  // chooseNavOutNode(nodes: readonly NavNode[]): NavNode {
-  //   return nodes[0];
-  // }
 
   pointerClick(datasetIndex: number, seriesKey: string, datapointIndex: number, isShift: boolean) {
     // Set quiet = true so that the visit announcement doesn't overwrite
@@ -574,6 +558,7 @@ export abstract class BaseChartInfo {
           highlights: [...(chartSummary.highlights ?? []), ...(orientationSentences.highlights ?? [])]
         });
       }
+      this._paraState.sparkBrailleInfo = this._sparkBrailleInfo();
     } else if (cursor.isNodeType('series')) {
       await this._playCurrentRiff();
       if (!quiet) {

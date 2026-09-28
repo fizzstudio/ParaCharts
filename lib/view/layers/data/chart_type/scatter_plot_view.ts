@@ -1,6 +1,6 @@
 import { svg } from 'lit';
 import { ClassInfo } from 'lit/directives/class-map.js';
-import { Datapoint, enumerate, PlaneModel } from '@fizz/paramodel';
+import { Datapoint, enumerate, PlaneModel } from '@fizz/chartsignal-internal';
 import { DataSymbol, DataSymbols } from '../../../symbol';
 import { View } from '../../../base_view';
 import { PlaneChartInfo, type ScatterChartInfo } from '../../../../chart_types';

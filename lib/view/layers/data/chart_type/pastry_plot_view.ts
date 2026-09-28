@@ -1,5 +1,5 @@
 import { ClassInfo } from 'lit/directives/class-map.js';
-import { enumerate } from '@fizz/paramodel';
+import { enumerate } from '@fizz/chartsignal-internal';
 import { formatBox } from '@fizz/parasummary';
 import { type BaseChartInfo } from '../../../../chart_types';
 import { ConfigSetting, DeepReadonly } from '../../../../config/config_types';

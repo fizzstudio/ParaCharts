@@ -25,13 +25,11 @@ export const chartTypeDefaults: Partial<{ [Property in ChartType]: SettingsInput
     'axis.horiz.ticks.isDrawTicks': false,
     'grid.isDrawHorizLines': false,
     'legend.position': 'south',
-    'legend.isAlwaysDrawLegend': true
   },
   column: {
     'axis.horiz.ticks.isDrawTicks': true,
     'axis.vert.line.isDrawOverhang': true,
     'grid.isDrawVertLines': false,
-    'legend.isAlwaysDrawLegend': true
   },
   line: {
     'grid.isDrawVertLines': false

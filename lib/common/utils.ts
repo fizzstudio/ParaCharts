@@ -14,7 +14,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { type Datapoint, type Model } from "@fizz/paramodel";
+import { type Datapoint, type Model } from "@fizz/chartsignal-internal";
 import { type ParaState } from "../state/parastate";
 import { type BboxAnchor, type View } from '../view/base_view';
 import { type DatapointView } from "../view/data";

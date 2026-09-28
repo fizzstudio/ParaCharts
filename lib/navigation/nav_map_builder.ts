@@ -1,12 +1,10 @@
 
-import { Datapoint, Model, Series } from '@fizz/paramodel';
+import { Datapoint, Model, Series, clusterObject } from '@fizz/chartsignal-internal';
 import { NavLevel, NavSchema, navSchemas } from '.';
 import { DatapointNavNodeType, NavLayer, NavNode, NavNodeType, type NavMap } from '../view/layers';
 import { ChartType } from '@fizz/chartsignal-internal';
 import { Direction, PlaneDirection } from '../config/config_types';
 import { ParaState } from '../state';
-import { clusterObject } from '@fizz/clustering';
-import { mapn } from '@fizz/chart-classifier-utils';
 
 export interface NavMapBuilderContext {
   get type(): ChartType;
@@ -86,11 +84,11 @@ export function populateNavMap(navMap: NavMap, ctx: NavMapBuilderContext) {
         });
       });
     } else if (transition.mode === 'trendPointToTrend') {
-      const analysis = ctx.paraState.seriesAnalyses[ctx.model!.seriesKeys[0]]!;
       if (ctx.model!.multi) {
         ctx.seriesInNavOrder().forEach((series, i) => {
           const datapointLayer = navMap.layer(transition.from, i)!;
           const datapointNodes = datapointLayer.query('datapoint');
+          const analysis = ctx.paraState.seriesAnalyses[series.key]!;
           analysis.sequences.forEach((seqInfo, j) => {
             datapointNodes.slice(seqInfo.start, seqInfo.end).forEach((datapointNode) => {
               datapointNode.connect('in', nodes.get(`sequences-${i}-${j}`)!);
@@ -100,6 +98,7 @@ export function populateNavMap(navMap: NavMap, ctx: NavMapBuilderContext) {
       } else {
         const datapointLayer = navMap.layer(transition.from, 0)!;
         const datapointNodes = datapointLayer.query('datapoint');
+        const analysis = ctx.paraState.seriesAnalyses[ctx.model!.seriesKeys[0]]!;
         analysis.sequences.forEach((seqInfo, i) => {
           datapointNodes.slice(seqInfo.start, seqInfo.end).forEach((datapointNode) => {
             datapointNode.connect('in', nodes.get(`sequences-${i}`)!);

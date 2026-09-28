@@ -35,7 +35,6 @@ import { type ViewContext } from '../view/view_context';
 import { loopParaviewRefresh, fixed, SVGNS } from '../common';
 import { ParaViewController } from '.';
 import { CSS_DPI, MM_PER_INCH, PAPER_INFO } from '../common/paper';
-import { Interval } from '@fizz/chart-classifier-utils';
 
 /**
  * Data provided for the on focus callback
@@ -1339,7 +1338,7 @@ export class ParaView extends ParaComponent implements ViewContext {
     <svg
         role="application"
         tabindex=${this.disableFocus ? -1 : 0}
-        aria-label=${this._documentView ? `${this._documentView.titleText}, accessible chart` : 'loading...'}
+        aria-label=${this._documentView ? `${this._documentView.titleText}, accessible chart. Use the arrow keys to navigate.` : 'loading...'}
         ${ref(this._rootRef)}
         xmlns=${SVGNS}
         data-charttype=${this.paraChart.type ?? this.type}

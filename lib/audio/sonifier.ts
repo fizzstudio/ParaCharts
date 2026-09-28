@@ -26,7 +26,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-import { type PlaneDatapoint, type Model } from '@fizz/paramodel';
+import { type PlaneDatapoint, type Model } from '@fizz/chartsignal-internal';
 import { OscillatorAudioEngine, type AudioEngine } from '.';
 import { AudioNotificationType } from './AudioEngine';
 import { type ParaState } from '../state';

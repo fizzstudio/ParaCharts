@@ -2,7 +2,7 @@ import { classMap } from "lit/directives/class-map.js";
 import { ref } from "lit/directives/ref.js";
 import { StyleInfo, styleMap } from "lit/directives/style-map.js";
 import { nothing, svg } from "lit";
-import { enumerate } from "@fizz/paramodel";
+import { enumerate } from "@fizz/chartsignal-internal";
 import { fixed } from "../../../../common/utils";
 import { RectShape } from "../../../shape/rect";
 import { Shape } from "../../../shape/shape";

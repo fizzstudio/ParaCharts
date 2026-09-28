@@ -6,7 +6,7 @@ import {
 import { customElement } from 'lit/decorators.js';
 import { datapointIdToCursor, type PointAnnotation } from '../../state/parastate';
 import { formatXYDatapointX } from '@fizz/parasummary';
-import { type PlaneDatapoint } from '@fizz/paramodel';
+import { type PlaneDatapoint } from '@fizz/chartsignal-internal';
 
 @customElement('para-annotation-panel')
 export class AnnotationPanel extends ControlPanelTabPanel {

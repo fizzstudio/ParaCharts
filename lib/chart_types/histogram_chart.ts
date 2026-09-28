@@ -1,8 +1,7 @@
-import { type ChartType } from "@fizz/chartsignal-internal";
+import { type ChartType, enumerate } from "@fizz/chartsignal-internal";
 import { PlaneChartInfo } from './plane_chart';
 import { SettingsManager, type ParaState } from '../state';
 import { DeepReadonly, LegendConfig, type TypeHistogramConfig } from "../config/config_types";
-import { enumerate } from "@fizz/paramodel";
 import { LegendItemsWithPosition } from "../view/legend";
 import { type NavNode } from '../view/layers';
 import { populateNavMap } from '../navigation/nav_map_builder';
@@ -143,7 +142,7 @@ export class HistogramChartInfo extends PlaneChartInfo {
     }));
     const legendItems = [];
     const position = config.position;
-    if (config.isAlwaysDrawLegend) {
+    if (this._shouldDrawLegend()) {
       legendItems.push({ position: position, items: items });
     }
     return legendItems;

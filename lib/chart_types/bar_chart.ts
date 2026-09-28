@@ -16,8 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { Logger, getLogger } from '@fizz/logger';
 
-import { ChartType, strToId } from '@fizz/chartsignal-internal';
-import { enumerate, Box, Series } from '@fizz/paramodel';
+import { ChartType, strToId, enumerate, Box, Series } from '@fizz/chartsignal-internal';
 import { formatBox, formatXYDatapoint, formatXYDatapointX } from '@fizz/parasummary';
 import { interpolate } from '@fizz/templum';
 import { PlaneChartInfo, computeAxisRange, AxisRangeInfo } from './plane_chart';
@@ -320,7 +319,8 @@ export class BarChartInfo extends PlaneChartInfo {
 
   legend(): LegendItemsWithPosition[] {
     const model = this._paraState.model!;
-    const config = SettingsManager.getGroupLinkForInstance<LegendConfig>('legend', this._paraState.config, `legend-${0}`) ?? this._paraState.config.legend;
+    const config = SettingsManager.getGroupLinkForInstance<LegendConfig>(
+      'legend', this._paraState.config, `legend-${0}`) ?? this._paraState.config.legend;
     const seriesKeys = enumerate([...model.seriesKeys]);
     if (config.itemOrder === 'alphabetical') {
       seriesKeys.sort((a, b) => a[0].localeCompare(b[0]));
@@ -335,7 +335,7 @@ export class BarChartInfo extends PlaneChartInfo {
     }));
     const legendItems = [];
     const position = config.position;
-    if (config.isAlwaysDrawLegend) {
+    if (this._shouldDrawLegend()) {
       legendItems.push({ position: position, items: items });
     }
     return legendItems;

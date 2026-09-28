@@ -1,5 +1,5 @@
 import { svg, TemplateResult } from 'lit';
-import { Datapoint } from '@fizz/paramodel';
+import { Datapoint } from '@fizz/chartsignal-internal';
 import { type BaseChartInfo } from '../../../../chart_types';
 import { ConfigSetting } from '../../../../config/config_types';
 import { Label, type LabelTextAnchor } from '../../../label';

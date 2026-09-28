@@ -1,6 +1,5 @@
 import Decimal from 'decimal.js';
-import { type Facet } from '@fizz/chartsignal-internal';
-import { type AxisOrientation, type PlaneModel } from '@fizz/paramodel';
+import { type Facet,  type AxisOrientation, type PlaneModel } from '@fizz/chartsignal-internal';
 import { type ParaState } from '../state/parastate';
 
 export type Tier = string[];

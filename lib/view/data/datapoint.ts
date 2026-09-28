@@ -1,7 +1,7 @@
 import { svg, TemplateResult } from 'lit';
 import { type ClassInfo, classMap } from 'lit/directives/class-map.js';
 import { type StyleInfo } from 'lit/directives/style-map.js';
-import { Datapoint } from '@fizz/paramodel';
+import { Datapoint } from '@fizz/chartsignal-internal';
 import { DataSymbol } from '../symbol';
 import { makeDatapointId } from '../../state';
 import { Shape } from '../shape/shape';
