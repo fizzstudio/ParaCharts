@@ -21,7 +21,8 @@ enablePatches();
 
 import { Logger, getLogger } from '@fizz/logger';
 import {
-  dataFromManifest, type AllSeriesData, type ChartType, isPastryType, isVennType
+  dataFromManifest, type AllSeriesData, type ChartType, isPastryType, isVennType,
+  Facet
 } from '@fizz/chartsignal-internal';
 import { Jimerator } from '@fizz/jimerator';
 import {
@@ -136,6 +137,12 @@ export interface HighlightAxisOptions {
   labelIndex: number;
   orientation: "horiz" | "vert";
 }
+export interface ThresholdData {
+  align: number;
+  label: string;
+  orientation: 'vert' | 'horiz';
+  polarity?: 'below-is-better' | 'above-is-better';
+}
 
 const synchronizedSettings = [
   'ui.isFullscreenEnabled',
@@ -243,6 +250,7 @@ export class ParaState extends BaseState {
   @property() protected _userTrendLines: TrendLine[] = [];
   @property() protected _clusterShellViews: ClusterShellView[] = [];
 
+  @property() protected _thresholdData: ThresholdData[] = [];
   @property() protected _thresholds: Threshold[] = [];
   protected _data: AllSeriesData | null = null;
   protected _dataState: DataState = 'initial';
@@ -395,6 +403,10 @@ export class ParaState extends BaseState {
 
   get thresholds() {
     return this._thresholds;
+  }
+
+  get thresholdData() {
+    return this._thresholdData;
   }
 
   async setCaption(summary?: HighlightedSummary): Promise<void> {
@@ -697,8 +709,10 @@ export class ParaState extends BaseState {
     resetSettings = true,
     inputSettings?: SettingsInput,
   ) {
+
     this._originalManifest = structuredClone(manifest);
     this._manifest = manifest;
+    this.checkManifestFacets(manifest);
     manifest = this.augmentManifest(manifest);
     const datasets = manifest.jim.datasets;
     const dataset = firstDataset(this._manifest);
@@ -800,6 +814,23 @@ export class ParaState extends BaseState {
     const maxError = this.config.chart.maxError;
     const maxSegments = this.config.chart.maxSegments;
     const extremumWeight = this.config.chart.extremumWeight;
+    if (this.manifest?.jim.annotations) {
+      for (let annotation of this.manifest.jim.annotations) {
+        //@ts-ignore
+        if (annotation.content?.kind == "threshold") {
+          //@ts-ignore
+          let orientation: 'vert' | 'horiz' = annotation.target.marker.selector.axis == 'y' ? 'horiz' : 'vert'
+          //@ts-ignore
+          let value = annotation.target.marker.selector.value;
+          //@ts-ignore
+          let label = annotation.content.label.en ?? String(value);
+          //@ts-ignore 
+          let polarity = annotation.content.polarity;
+          this._thresholdData.push({ align: value, orientation: orientation, label: label, polarity: polarity })
+        }
+      }
+    }
+
     if (this._model instanceof PlaneModel) {
       await Promise.all(
         this._model.seriesKeys.map(async (seriesKey) => {
@@ -828,31 +859,97 @@ export class ParaState extends BaseState {
     else if (dataset.representation.subtype == 'bubble') {
       return this.augmentBubbleManifest(manifest);
     }
+    else if (dataset.representation.subtype == 'scatter') {
+      return this.augmentScatterManifest(manifest);
+    }
     else {
       return manifest;
     }
   }
 
+  checkManifestFacets(manifest: Manifest): string[] {
+    for (let dataset of manifest.jim.datasets) {
+      const facets = structuredClone(dataset.facets);
+      const dataType = dataset.representation.subtype;
+      const findFacet = (facets: { [k: string]: Facet }, acceptableType: Array<"string" | "number" | "date" | "boolean">) => {
+        let keys = Object.keys(facets);
+        for (let key of keys) {
+          if (acceptableType.includes(facets[key].datatype)) {
+            delete facets[key];
+            return key;
+          }
+        }
+      }
+      if (['histogram'].includes(dataType)) {
+        let xFacetKey: string | undefined = findFacet(facets, ['number']);
+        if (xFacetKey == undefined) {
+          throw new Error(`Histogram dataset must have at least one numeric facets.`);
+        }
+        return [xFacetKey];
+      }
+      else if (['scatter', 'heatmap'].includes(dataType)) {
+        let xFacetKey: string | undefined = findFacet(facets, ['number']);
+        let yFacetKey: string | undefined = findFacet(facets, ['number']);
+        const chartKind = dataType == 'scatter' ? 'Scatter chart' : 'Heatmap'
+        if (xFacetKey == undefined || yFacetKey == undefined) {
+          throw new Error(`${chartKind} dataset must have at least two numeric facets.`);
+        }
+        return [xFacetKey, yFacetKey];
+      }
+      else if (['bubble'].includes(dataType)) {
+        let xFacetKey: string | undefined = findFacet(facets, ['number']);
+        let yFacetKey: string | undefined = findFacet(facets, ['number']);
+        let bubbleFacetKey: string | undefined = findFacet(facets, ['number']);
+        if (xFacetKey == undefined || yFacetKey == undefined || bubbleFacetKey == undefined) {
+          throw new Error("Bubble chart dataset must have at least three numeric facets.");
+        }
+        return [xFacetKey, yFacetKey, bubbleFacetKey]
+      }
+      else if (['line', 'bar', 'column', 'stepline', 'waterfall', 'lollipop', 'combo'].includes(dataset.representation.subtype)) {
+        let yFacetKey: string | undefined = findFacet(facets, ['number']);
+        let xFacetKey: string | undefined = findFacet(facets, ['number', 'string', 'date']);
+        const chartKind = dataType == 'line' ? 'Line chart' :
+          (dataType == 'bar' || dataType == 'column') ? 'Bar chart' :
+            dataType == 'stepline' ? 'Stepline chart' :
+              dataType == 'waterfall' ? 'Waterfall chart' :
+                dataType == 'lollipop' ? 'Lollipop chart' : 'Combo chart'
+        if (xFacetKey == undefined || yFacetKey == undefined) {
+          throw new Error(`${chartKind} dataset must have at least one independent facet and one numeric dependent facet.`);
+        }
+        return [xFacetKey, yFacetKey]
+      }
+      else if (['pie', 'donut', 'pastry'].includes(dataset.representation.subtype)) {
+        let xFacetKey: string | undefined = findFacet(facets, ['number']);
+        let yFacetKey: string | undefined = findFacet(facets, ['number', 'string']);
+        const chartKind = dataType == 'pie' ? 'Pie chart' :
+          (dataType == 'donut') ? 'Donut chart' : 'Pastry Chart'
+        if (xFacetKey == undefined || yFacetKey == undefined) {
+          throw new Error(`${chartKind} dataset must have at least one independent facet and one numeric dependent facet.`);
+        }
+        return [xFacetKey, yFacetKey]
+      }
+      else if (['venn'].includes(dataset.representation.subtype)) {
+        let itemFacetKey: string | undefined = findFacet(facets, ['string']);
+        let membershipFacetKey: string | undefined = findFacet(facets, ['string']);
+        if (itemFacetKey == undefined || membershipFacetKey == undefined) {
+          throw new Error(`Venn diagram dataset must have at least one independent facet and one numeric dependent facet.`);
+        }
+        return [itemFacetKey, membershipFacetKey]
+      }
+      throw new Error(`Unknown dataset type ${dataset.representation.subtype}`)
+    }
+    throw new Error(`Manifest does not contain any datasets`)
+  }
+
   augmentHistogramManifest(manifest: Manifest): Manifest {
     const dataset = manifest.jim.datasets[0];
     const bins = this.config.type.histogram.bins ?? 20;
-    const facetKeys = Object.keys(dataset.facets);
-    let targetFacetKey: string | undefined = undefined;
-    for (let i = 0; i < facetKeys.length; i++) {
-      if (dataset.facets[facetKeys[i]].datatype == 'number') {
-        targetFacetKey = facetKeys[i];
-        break;
-      }
-    }
-    if (targetFacetKey == undefined) {
-      throw new Error("Histogram manifest must have at least one numeric facet.");
-    }
+    let [targetFacetKey] = this.checkManifestFacets(manifest);
     if (this.config.type.histogram.groupingFacet) {
       targetFacetKey = Object.entries(manifest.jim.datasets[0].facets).filter(f =>
         f[1].label == this.config.type.histogram.groupingFacet)![0][0];
     }
     const targetFacet = dataset.facets[targetFacetKey];
-
     const xValues: number[] = []
     const seriesList = dataset.series;
     for (let series of seriesList) {
@@ -924,32 +1021,13 @@ export class ParaState extends BaseState {
 
   augmentHeatmapManifest(manifest: Manifest): Manifest {
     const dataset = manifest.jim.datasets[0];
-    const facetKeys = Object.keys(dataset.facets);
     const config = this.config.type.heatmap;
     const resolution = config.resolution ?? 20;
     const allData = [];
     const x: Array<number> = [];
     const y: Array<number> = [];
-    let index1 = 0;
     let seriesList = dataset.series;
-    let xFacetKey: string | undefined = undefined;
-    let yFacetKey: string | undefined = undefined;
-    for (let i = 0; i < facetKeys.length; i++) {
-      if (dataset.facets[facetKeys[i]].datatype == 'number') {
-        xFacetKey = facetKeys[i];
-        index1 = i;
-        break;
-      }
-    }
-    for (let j = index1 + 1; j < facetKeys.length; j++) {
-      if (dataset.facets[facetKeys[j]].datatype == 'number') {
-        yFacetKey = facetKeys[j];
-        break;
-      }
-    }
-    if (xFacetKey == undefined || yFacetKey == undefined) {
-      throw new Error("Heatmap manifest must have at least two numeric facets.");
-    }
+    let [xFacetKey, yFacetKey] = this.checkManifestFacets(manifest);
     if (config.xFacet) {
       xFacetKey = Object.entries(manifest.jim.datasets[0].facets).filter(f =>
         f[1].label == config.xFacet)![0][0];
@@ -982,14 +1060,11 @@ export class ParaState extends BaseState {
     const yRange = yMax - yMin;
 
     const grid: Array<Array<number>> = [];
-    const datapointGrid: Array<Array<Array<Datapoint>>> = [];
 
     for (let i = 0; i < resolution; i++) {
       grid.push([]);
-      datapointGrid.push([]);
       for (let j = 0; j < resolution; j++) {
         grid[i].push(0);
-        datapointGrid[i].push([]);
       }
     }
     for (let i = 0; i < allData.length; i++) {
@@ -1059,35 +1134,10 @@ export class ParaState extends BaseState {
     const config = this.config.type.bubble;
     const facetKeys = Object.keys(dataset.facets);
     let seriesList = dataset.series;
-    let index1 = 0;
-    let index2 = 0;
-    let xFacetKey: string | undefined = undefined
-    let yFacetKey: string | undefined = undefined
-    let bubbleFacetKey: string | undefined = undefined
-    for (let i = 0; i < facetKeys.length; i++) {
-      if (dataset.facets[facetKeys[i]].datatype == 'number') {
-        xFacetKey = facetKeys[i];
-        index1 = i;
-        break;
-      }
-    }
-    for (let j = index1 + 1; j < facetKeys.length; j++) {
-      if (dataset.facets[facetKeys[j]].datatype == 'number') {
-        yFacetKey = facetKeys[j];
-        index2 = j;
-        break;
-      }
-    }
-    for (let k = index2 + 1; k < facetKeys.length; k++) {
-      if (dataset.facets[facetKeys[k]].datatype == 'number') {
-        bubbleFacetKey = facetKeys[k];
-        break;
-      }
-    }
-
-    if (xFacetKey == undefined || yFacetKey == undefined || bubbleFacetKey == undefined) {
-      throw new Error("Bubble chart manifest must have at least three numeric facets.");
-    }
+    let [xFacetKey, yFacetKey, bubbleFacetKey] = this.checkManifestFacets(manifest)
+    //console.log("xFacetKey", xFacetKey)
+    //console.log("yFacetKey", yFacetKey)
+    //console.log("bubbleFacetKey", bubbleFacetKey)
     if (config.xFacet) {
       xFacetKey = Object.entries(manifest.jim.datasets[0].facets).filter(f =>
         f[1].label == config.xFacet)![0][0];
@@ -1135,7 +1185,6 @@ export class ParaState extends BaseState {
     const storeXFacet = structuredClone(xFacet);
     const storeYFacet = structuredClone(yFacet);
     const storeBubbleFacet = structuredClone(bubbleFacet);
-    //dataset.facets = {};
     for (let i = 0; i < facetKeys.length; i++) {
       if (!['number', 'date', 'string'].includes(dataset.facets[facetKeys[i]].datatype)) {
         delete dataset.facets[facetKeys[i]];
@@ -1168,6 +1217,70 @@ export class ParaState extends BaseState {
     manifest.extensions!.paracharts!.settings!["type.bubble.xFacet"] = xFacet.label;
     manifest.extensions!.paracharts!.settings!["type.bubble.yFacet"] = yFacet.label;
     manifest.extensions!.paracharts!.settings!["type.bubble.bubbleFacet"] = bubbleFacet.label;
+    return manifest;
+  }
+
+  augmentScatterManifest(manifest: Manifest): Manifest {
+    const dataset = manifest.jim.datasets[0];
+    const config = this.config.type.scatter;
+    const allData = [];
+    const x: Array<number> = [];
+    const y: Array<number> = [];
+    let seriesList = dataset.series;
+    let [xFacetKey, yFacetKey] = this.checkManifestFacets(manifest);
+    if (config.xFacet) {
+      xFacetKey = Object.entries(manifest.jim.datasets[0].facets).filter(f =>
+        f[1].label == config.xFacet)![0][0];
+    }
+    if (config.yFacet) {
+      yFacetKey = Object.entries(manifest.jim.datasets[0].facets).filter(f =>
+        f[1].label == config.yFacet)![0][0];
+    }
+    const xFacet = dataset.facets[xFacetKey];
+    const yFacet = dataset.facets[yFacetKey];
+    //console.log("seriesList before", JSON.parse(JSON.stringify(seriesList)))
+    for (let series of seriesList) {
+      for (let datapoint of series.records!) {
+        //console.log("datapoint", datapoint)
+        const keys = Object.keys(datapoint)
+        for (let key of keys){
+          if (![xFacetKey, yFacetKey].includes(key)){
+            //console.log("sneed")
+            delete datapoint[key]
+          }
+        }
+      }
+
+    }
+    //console.log("seriesList after", JSON.parse(JSON.stringify(seriesList)))
+    if (seriesList.length > 1) {
+      let combinedKey = '';
+      for (let i = 0; i < seriesList.length - 1; i++) {
+        const series = seriesList[i];
+        combinedKey = combinedKey.concat(`${series.key ?? ''}, `);
+      }
+      combinedKey = combinedKey.concat(`${seriesList[seriesList.length - 1].key ?? ''}`);
+      dataset.series[0].key = combinedKey;
+      dataset.series = [seriesList[0]];
+    }
+ dataset.series = seriesList
+    const storeXFacet = structuredClone(xFacet);
+    const storeYFacet = structuredClone(yFacet);
+    dataset.facets = {};
+    dataset.facets["x"] = storeXFacet;
+    dataset.facets["x"].variableType = 'independent';
+    dataset.facets["x"].displayType.orientation = 'horizontal';
+    dataset.facets["y"] = storeYFacet;
+    dataset.facets["y"].variableType = 'dependent';
+    dataset.facets["y"].displayType.orientation = 'vertical';
+    //console.log("manifest", manifest)
+    /*
+    manifest.extensions ??= {};
+    manifest.extensions.paracharts ??= {};
+    manifest.extensions.paracharts.settings ??= {};
+    manifest.extensions!.paracharts!.settings!["type.heatmap.xFacet"] = xFacet.label;
+    manifest.extensions!.paracharts!.settings!["type.heatmap.yFacet"] = yFacet.label;
+    */
     return manifest;
   }
 

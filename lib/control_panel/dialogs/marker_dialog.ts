@@ -43,7 +43,7 @@ export class MarkerSettingsDialog extends SettingControlContainer {
         const sortedHorizThresholds = this._paraState.thresholds.filter(t => t.orientation == 'horiz').sort((a, b) => b.align - a.align);
         const sortedVertThresholds = this._paraState.thresholds.filter(t => t.orientation == 'vert').sort((a, b) => a.align - b.align);
         const getLabel = (t: Threshold) => {
-            return t.text ?? t.align;
+            return t.text ? `${t.text}: ${t.align}` : t.align;
         }
         const addGroupLabel = (labelText: string) => {
             this.settingGroupLabels.push(html`<div style="font-weight: bold">${labelText}</div>`);
