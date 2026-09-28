@@ -24,7 +24,8 @@ import {
   dataFromManifest, type AllSeriesData, type ChartType, isPastryType, isVennType, type Point,
   numberToScaledNumberRounded, SequenceInfo, SeriesAnalysis, clusterObject, facetsFromDataset, 
   Model, modelFromExternalData, modelFromInlineData, FacetSignature, PlaneDatapoint, 
-  planeModelFromInlineData, planeModelFromExternalData, PlaneModel, type Datapoint
+  planeModelFromInlineData, planeModelFromExternalData, PlaneModel, type Datapoint,
+  Facet
 } from '@fizz/chartsignal-internal';
 import { Jimerator } from '@fizz/jimerator';
 import {
