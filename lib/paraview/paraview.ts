@@ -47,9 +47,15 @@ export type c2mCallbackType = {
 
 const BRAILLE_FONT_SIZE_PT = 36;
 
+export interface SVGView {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
 @customElement('para-view')
 export class ParaView extends ParaComponent implements ViewContext {
-
   paraChart!: ParaChart;
 
   @property() type: ChartType = 'bar';
@@ -92,7 +98,7 @@ export class ParaView extends ParaComponent implements ViewContext {
   protected _jimReadyPromise: Promise<void>;
   protected _jimReadyResolver!: (() => void);
   protected _jimReadyRejector!: (() => void);
-
+  @state() protected _svgViews = new Map<string, SVGView>();
 
   static styles = [
     //styles,
@@ -1211,6 +1217,18 @@ export class ParaView extends ParaComponent implements ViewContext {
     this._registeredPatternKeys = [];
   }
 
+  addSVGView(id: string, svgView: SVGView) {
+    this._svgViews.set(id, svgView);
+  }
+
+  hasSVGView(id: string): boolean {
+    return this._svgViews.has(id);
+  }
+
+  removeSVGView(id: string) {
+    this._svgViews.delete(id);
+  }
+
   protected _rootStyle() {
     const fontFamilyClasses: Record<string, string> = {
       'Helvetica': 'sans-serif',
@@ -1294,7 +1312,6 @@ export class ParaView extends ParaComponent implements ViewContext {
   navToDatapoint(seriesKey: string, index: number) {
     this._paraState.chartInfo.navToDatapoint(seriesKey, index);
   }
-
 
   clipTo(seriesKey: string, index: number) {
     const fraction = this.documentView!.chartLayers.dataLayer.datapointView(seriesKey.toLowerCase(), index)!.x / this.documentView!.chartLayers.width;
@@ -1394,6 +1411,12 @@ export class ParaView extends ParaComponent implements ViewContext {
           @pointerleave=${(ev: PointerEvent) => { this.paraState.clearPopups() }}
         >
         </rect>
+        ${this._svgViews.keys().toArray().sort().map(id => {
+          const svgView = this._svgViews.get(id)!;
+          return svg`
+            <view id=${id} viewBox="${fixed`${svgView.x} ${svgView.y} ${svgView.width} ${svgView.height}`}"/>
+          `;
+        })}
         ${this._paraState.model ? (this._documentView?.render() ?? '') : ''}
       </svg>
       <para-aria-live-region
