@@ -785,23 +785,6 @@ export class ParaState extends BaseState {
     const maxError = this.config.chart.maxError;
     const maxSegments = this.config.chart.maxSegments;
     const extremumWeight = this.config.chart.extremumWeight;
-    if (this.manifest?.jim.annotations) {
-      for (let annotation of this.manifest.jim.annotations) {
-        //@ts-ignore
-        if (annotation.content?.kind == "threshold") {
-          //@ts-ignore
-          let orientation: 'vert' | 'horiz' = annotation.target.marker.selector.axis == 'y' ? 'horiz' : 'vert'
-          //@ts-ignore
-          let value = annotation.target.marker.selector.value;
-          //@ts-ignore
-          let label = annotation.content.label.en ?? String(value);
-          //@ts-ignore 
-          let polarity = annotation.content.polarity;
-          this._thresholdData.push({ align: value, orientation: orientation, label: label, polarity: polarity })
-        }
-      }
-    }
-
     if (this._model instanceof PlaneModel) {
       await Promise.all(
         this._model.seriesKeys.map(async (seriesKey) => {
@@ -921,7 +904,7 @@ export class ParaState extends BaseState {
         f[1].label == this.config.type.histogram.groupingFacet)![0][0];
     }
     const targetFacet = dataset.facets[targetFacetKey];
-    const xValues: number[] = []
+    const xValues: number[] = [];
     const seriesList = dataset.series;
     for (let series of seriesList) {
       for (let datapoint of series.records!) {
@@ -960,7 +943,7 @@ export class ParaState extends BaseState {
       else {
         series.records = grid.map((g, i) => { return { y: xVals[i], x: yVals[i] } });
       }
-    }
+    };
     targetFacet.measure = 'interval';
     targetFacet.variableType = 'independent';
     const storeFacet = structuredClone(targetFacet);
@@ -1105,10 +1088,7 @@ export class ParaState extends BaseState {
     const config = this.config.type.bubble;
     const facetKeys = Object.keys(dataset.facets);
     let seriesList = dataset.series;
-    let [xFacetKey, yFacetKey, bubbleFacetKey] = this.checkManifestFacets(manifest)
-    //console.log("xFacetKey", xFacetKey)
-    //console.log("yFacetKey", yFacetKey)
-    //console.log("bubbleFacetKey", bubbleFacetKey)
+    let [xFacetKey, yFacetKey, bubbleFacetKey] = this.checkManifestFacets(manifest);
     if (config.xFacet) {
       xFacetKey = Object.entries(manifest.jim.datasets[0].facets).filter(f =>
         f[1].label == config.xFacet)![0][0];
