@@ -22,8 +22,8 @@ enablePatches();
 import { Logger, getLogger } from '@fizz/logger';
 import {
   dataFromManifest, type AllSeriesData, type ChartType, isPastryType, isVennType, type Point,
-  numberToScaledNumberRounded, SequenceInfo, SeriesAnalysis, clusterObject, facetsFromDataset, 
-  Model, modelFromExternalData, modelFromInlineData, FacetSignature, PlaneDatapoint, 
+  numberToScaledNumberRounded, SequenceInfo, SeriesAnalysis, clusterObject, facetsFromDataset,
+  Model, modelFromExternalData, modelFromInlineData, FacetSignature, PlaneDatapoint,
   planeModelFromInlineData, planeModelFromExternalData, PlaneModel, type Datapoint,
   Facet
 } from '@fizz/chartsignal-internal';
@@ -1147,9 +1147,6 @@ export class ParaState extends BaseState {
           series.records![i]['label'] = labelData[i]
           delete series.records![i][labelFacetKey];
         }
-        for (let j = 0; j < series.records!.length - 3; j++) {
-          //let otherFacet = datas
-        }
       }
     }
 
@@ -1194,11 +1191,9 @@ export class ParaState extends BaseState {
   augmentScatterManifest(manifest: Manifest): Manifest {
     const dataset = manifest.jim.datasets[0];
     const config = this.config.type.scatter;
-    const allData = [];
-    const x: Array<number> = [];
-    const y: Array<number> = [];
+    const facetKeys = Object.keys(dataset.facets);
     let seriesList = dataset.series;
-    let [xFacetKey, yFacetKey] = this.checkManifestFacets(manifest);
+    let [xFacetKey, yFacetKey] = this.checkManifestFacets(manifest)
     if (config.xFacet) {
       xFacetKey = Object.entries(manifest.jim.datasets[0].facets).filter(f =>
         f[1].label == config.xFacet)![0][0];
@@ -1209,49 +1204,39 @@ export class ParaState extends BaseState {
     }
     const xFacet = dataset.facets[xFacetKey];
     const yFacet = dataset.facets[yFacetKey];
-    //console.log("seriesList before", JSON.parse(JSON.stringify(seriesList)))
     for (let series of seriesList) {
-      for (let datapoint of series.records!) {
-        //console.log("datapoint", datapoint)
-        const keys = Object.keys(datapoint)
-        for (let key of keys){
-          if (![xFacetKey, yFacetKey].includes(key)){
-            //console.log("sneed")
-            delete datapoint[key]
-          }
-        }
+      const xData = series.records!.map(r => r[xFacetKey]);
+      const yData = series.records!.map(r => r[yFacetKey]);
+      for (let i = 0; i < series.records!.length; i++) {
+        series.records![i].x = xData[i];
+        series.records![i].y = yData[i];
       }
+    }
 
-    }
-    //console.log("seriesList after", JSON.parse(JSON.stringify(seriesList)))
-    if (seriesList.length > 1) {
-      let combinedKey = '';
-      for (let i = 0; i < seriesList.length - 1; i++) {
-        const series = seriesList[i];
-        combinedKey = combinedKey.concat(`${series.key ?? ''}, `);
-      }
-      combinedKey = combinedKey.concat(`${seriesList[seriesList.length - 1].key ?? ''}`);
-      dataset.series[0].key = combinedKey;
-      dataset.series = [seriesList[0]];
-    }
- dataset.series = seriesList
     const storeXFacet = structuredClone(xFacet);
     const storeYFacet = structuredClone(yFacet);
-    dataset.facets = {};
+    for (let i = 0; i < facetKeys.length; i++) {
+      if (!['number', 'date', 'string'].includes(dataset.facets[facetKeys[i]].datatype)) {
+        delete dataset.facets[facetKeys[i]];
+        for (let series of seriesList) {
+          for (let j = 0; j < series.records!.length; j++) {
+            delete series.records![j][facetKeys[i]];
+          }
+        }
+
+      }
+    }
     dataset.facets["x"] = storeXFacet;
     dataset.facets["x"].variableType = 'independent';
     dataset.facets["x"].displayType.orientation = 'horizontal';
     dataset.facets["y"] = storeYFacet;
     dataset.facets["y"].variableType = 'dependent';
     dataset.facets["y"].displayType.orientation = 'vertical';
-    //console.log("manifest", manifest)
-    /*
     manifest.extensions ??= {};
     manifest.extensions.paracharts ??= {};
     manifest.extensions.paracharts.settings ??= {};
-    manifest.extensions!.paracharts!.settings!["type.heatmap.xFacet"] = xFacet.label;
-    manifest.extensions!.paracharts!.settings!["type.heatmap.yFacet"] = yFacet.label;
-    */
+    manifest.extensions!.paracharts!.settings!["type.scatter.xFacet"] = xFacet.label;
+    manifest.extensions!.paracharts!.settings!["type.scatter.yFacet"] = yFacet.label;
     return manifest;
   }
 

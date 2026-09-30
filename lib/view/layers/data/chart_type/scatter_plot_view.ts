@@ -36,6 +36,11 @@ export class ScatterPlotView extends PointPlotView {
     if (['type.scatter.isShowOutliers'].includes(path)) {
       this.updateOutliers();
     }
+    else if (['type.scatter.xFacet', 'type.scatter.yFacet'].includes(path)) {
+      this.paraview.paraState.setManifest(this.paraview.paraState.originalManifest!, undefined, false);
+      this.paraview.paraState.setCaption();
+      this.paraview.paraState.clearSelected();
+    }
     super.settingDidChange(path, oldValue, newValue);
   }
 
@@ -114,7 +119,7 @@ export class ScatterPlotView extends PointPlotView {
   dimOtherClusters(seriesKey: string, index: number) {
     const chartInfo = this.chartInfo as ScatterChartInfo;
     const otherDatapoints = chartInfo._clustering!.filter(c => c.id !== index).map(
-      c => { return [...c.dataPointIDs, ...c.outlierIDs] }).flat();
+      c => { return [...c.dataPointIDs] }).flat();
     otherDatapoints.map(id => this.paraview.paraState.lowlightDatapoint(seriesKey, id))
     this.paraview.paraState.refreshParaView();
   }
@@ -152,7 +157,7 @@ export class ScatterPlotView extends PointPlotView {
     let backDatapoints: Datapoint[] = [];
     const points = this.model!.allPoints;
     for (let point of points) {
-      if ([...this.paraview.paraState.clusterAnalyses![index].dataPointIDs, ...this.paraview.paraState.clusterAnalyses![index].outlierIDs].includes(point.datapointIndex)) {
+      if ([...this.paraview.paraState.clusterAnalyses![index].dataPointIDs].includes(point.datapointIndex)) {
         frontDatapoints.push(point);
       }
       else {
