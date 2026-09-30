@@ -362,36 +362,36 @@ describe('paraloader', () => {
       it('should parse line-single-manifest-128.json', () => {
         const content = readFileSync(resolve(DEMO_DATA_DIR, 'line-single-manifest-128.json'), 'utf-8');
         const manifest = JSON.parse(content);
-        
-        expect(manifest.datasets[0].representation.subtype).toBe('line');
-        expect(manifest.datasets[0].title).toBe('Cattle population worldwide 2012 to 2019');
-        expect(manifest.datasets[0].series).toHaveLength(1);
+        const datasets = manifest.jim.datasets;
+        expect(datasets[0].representation.subtype).toBe('line');
+        expect(datasets[0].title).toBe('Cattle population worldwide 2012 to 2019');
+        expect(datasets[0].series).toHaveLength(1);
       });
 
       it('should parse donut-manifest-dark-matter.json', () => {
         const content = readFileSync(resolve(DEMO_DATA_DIR, 'donut-manifest-dark-matter.json'), 'utf-8');
         const manifest = JSON.parse(content);
-        
-        expect(manifest.datasets[0].representation.subtype).toBe('donut');
-        expect(manifest.datasets[0].title).toBe('Division of energy in the Universe');
-        expect(manifest.datasets[0].facets.x.datatype).toBe('string');
+        const datasets = manifest.jim.datasets;
+        expect(datasets[0].representation.subtype).toBe('donut');
+        expect(datasets[0].title).toBe('Division of energy in the Universe');
+        expect(datasets[0].facets.x.datatype).toBe('string');
       });
 
       it('should parse china-gdp-line-1.manifest.json', () => {
         const content = readFileSync(resolve(DEMO_DATA_DIR, 'china-gdp-line-1.manifest.json'), 'utf-8');
         const manifest = JSON.parse(content);
-        
-        expect(manifest.jim.datasets[0].representation.subtype).toBe('line');
-        expect(manifest.jim.datasets[0].title).toContain('China');
-        expect(manifest.jim.datasets[0].facets.x.label).toBe('Year');
+        const datasets = manifest.jim.datasets;
+        expect(datasets[0].representation.subtype).toBe('line');
+        expect(datasets[0].title).toContain('China');
+        expect(datasets[0].facets.x.label).toBe('Year');
       });
 
       it('should parse bar-multi-manifest-48-external.json (external data source)', () => {
         const content = readFileSync(resolve(DEMO_DATA_DIR, 'bar-multi-manifest-48-external.json'), 'utf-8');
         const manifest = JSON.parse(content);
-        
-        expect(manifest.datasets[0].data.source).toBe('external');
-        expect(manifest.datasets[0].data.path).toBeDefined();
+        const datasets = manifest.jim.datasets;
+        expect(datasets[0].data.source).toBe('external');
+        expect(datasets[0].data.path).toBeDefined();
       });
     });
 
