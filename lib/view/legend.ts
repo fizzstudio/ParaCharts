@@ -12,6 +12,12 @@ import { type CardinalDirection, type LegendConfig } from '../config/config_type
 import { BubblePlotView } from './layers/data/chart_type/bubble_plot_view';
 import { ScatterPlotView } from './layers';
 
+const DEFAULT_WRAP_WIDTH = 100;
+const DEFAULT_SYMBOL_SCALE = 1;
+const TACTILE_SYMBOL_SCALE = 8;
+const DEFAULT_SYMBOL_LABEL_GAP_MULTIPLIER = 1;
+const TACTILE_SYMBOL_LABEL_GAP_MULTIPLIER = 3;
+
 export type SeriesAttrs = {
   color: string;
   symbol: DataSymbolType;
@@ -76,7 +82,7 @@ export class Legend extends Container(View) {
   get options() {
     return this._options;
   }
-  
+
 
   get classInfo() {
     return { legend: true };
@@ -96,7 +102,10 @@ export class Legend extends Container(View) {
         {
           colorIndex: item.colorIndex,
           lighten: item.symbolOptions?.lighten ?? false,
-          baseSize: item.symbolOptions?.baseSize ?? 1,
+          baseSize: item.symbolOptions?.baseSize ??
+            (this.paraview.paraState.config.chart.isTactileEnabled
+              ? TACTILE_SYMBOL_SCALE
+              : DEFAULT_SYMBOL_SCALE),
           dashed: item.symbolOptions?.dashed ?? false,
           pointerEnter: (e) => {
             this.pointerEnterActions(item);
@@ -116,7 +125,8 @@ export class Legend extends Container(View) {
         text: item.label,
         x: 0,
         y: 0,
-        //textAnchor: 'start',
+        // textAnchor: 'start',
+        wrapWidth: this._options.wrapWidth ?? DEFAULT_WRAP_WIDTH,
         classList: ['legend-label'],
         pointerEnter: (e) => {
           this.pointerEnterActions(item);
@@ -131,7 +141,10 @@ export class Legend extends Container(View) {
     });
     this.symbols = symbols;
     this.labels = labels;
-    const symLabelGap = this.paraview.paraState.config.legend.symbolLabelGap;
+    const symLabelGap = this.paraview.paraState.config.legend.symbolLabelGap *
+      (this.paraview.paraState.config.chart.isTactileEnabled
+        ? TACTILE_SYMBOL_LABEL_GAP_MULTIPLIER
+        : DEFAULT_SYMBOL_LABEL_GAP_MULTIPLIER);
     const pairGap = this.paraview.paraState.config.legend.pairGap;
     let labelsPerRow = labels.length;
     if (this._options.orientation === 'vert') {

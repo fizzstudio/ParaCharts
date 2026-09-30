@@ -158,14 +158,24 @@ export class DocumentView extends Container(View) {
 
     // Initially create axes to compute the size of each axis
     // along the shorter dimension
+
     if (this._paraState.config.axis.horiz.isDrawAxis && horizFacet) {
-      this._createHorizAxis(horizFacet, this.paraview.paraState.chartInfo as PlaneChartInfo, this._width);
+      this._createHorizAxis(horizFacet, this.paraview.paraState.chartInfo as PlaneChartInfo, this._width
+        - (this._legends.east?.reduce((accum, lgnd) => accum + lgnd.width, 0) ?? 0)
+        - (this._legends.west?.reduce((accum, lgnd) => accum + lgnd.width, 0) ?? 0)
+      );
     }
     if (this._paraState.config.axis.vert.isDrawAxis && vertFacet) {
-      this._createVertAxis(vertFacet, this.paraview.paraState.chartInfo as PlaneChartInfo, this._height);
+      this._createVertAxis(vertFacet, this.paraview.paraState.chartInfo as PlaneChartInfo, this._height
+        - (this._legends.north?.reduce((accum, lgnd) => accum + lgnd.height, 0) ?? 0)
+        - (this._legends.south?.reduce((accum, lgnd) => accum + lgnd.height, 0) ?? 0)
+      );
     }
     if (comboFacet) {
-      this._createSecondaryVertAxis(comboFacet, this.paraview.paraState.comboChartInfo as PlaneChartInfo, this._height);
+      this._createSecondaryVertAxis(comboFacet, this.paraview.paraState.comboChartInfo as PlaneChartInfo, this._height
+        - (this._legends.north?.reduce((accum, lgnd) => accum + lgnd.height, 0) ?? 0)
+        - (this._legends.south?.reduce((accum, lgnd) => accum + lgnd.height, 0) ?? 0)
+      );
     }
 
     // Initially create the direct label strip so the horiz axis can use its size
