@@ -409,6 +409,8 @@ export const defaultConfig: Config = {
         maxYValue: "unset",
         isShowTrendLine: false,
         isShowOutliers: false,
+        xFacet: "",
+        yFacet: "",
       },
       venn: {
         orientationAngleOffset: 0,

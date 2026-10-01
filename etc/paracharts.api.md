@@ -1119,6 +1119,8 @@ export interface TypePlaneConfig extends ConfigGroup {
 export interface TypeScatterConfig extends TypePlaneConfig {
     isShowOutliers: boolean;
     isShowTrendLine: boolean;
+    xFacet: string;
+    yFacet: string;
 }
 
 // @public

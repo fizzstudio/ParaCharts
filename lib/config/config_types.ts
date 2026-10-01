@@ -1060,6 +1060,10 @@ export interface TypeScatterConfig extends TypePlaneConfig {
   isShowTrendLine: boolean;
   /** Highlight statistical outliers */
   isShowOutliers: boolean;
+  /** Axis to display on the X axis */
+  xFacet: string;
+  /** Axis to display on the Y axis */
+  yFacet: string;
 }
 /**
  * Venn diagram settings.
