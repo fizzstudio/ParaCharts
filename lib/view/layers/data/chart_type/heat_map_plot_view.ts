@@ -124,7 +124,7 @@ export class HeatmapTileView extends PlaneDatapointView {
           return d.datapointIndex + jimIndex;
         })
         const clusterIds = indices.map(
-          id => cA.findIndex(c => [...c.dataPointIDs, ...c.outlierIDs].includes(id)));
+          id => cA.findIndex(c => [...c.dataPointIDs].includes(id)));
         const mostCommonCluster = getMostCommonReduce(clusterIds);
         this._fillColorIndex = mostCommonCluster;
         */

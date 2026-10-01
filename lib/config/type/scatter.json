@@ -18,6 +18,22 @@
             "default": false,
             "control": "checkbox",
             "parentView": "controlPanel.tabs.chart.chart"
+        },
+        "xFacet": {
+            "label": "cpanel.tabs.chart.scatter_x_facet",
+            "description": "Axis to display on the X axis",
+            "type": "string",
+            "default": "",
+            "control": "dropdown",
+            "parentView": "controlPanel.tabs.chart.chart"
+        },
+        "yFacet": {
+            "label": "cpanel.tabs.chart.scatter_y_facet",
+            "description": "Axis to display on the Y axis",
+            "type": "string",
+            "default": "",
+            "control": "dropdown",
+            "parentView": "controlPanel.tabs.chart.chart"
         }
     }
 }
