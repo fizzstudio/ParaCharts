@@ -16,7 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { type Datapoint, type Model } from "@fizz/chartsignal-internal";
 import { type ParaState } from "../state/parastate";
-import { type BboxAnchor, type View } from '../view/base_view';
+import { Collision, type BboxAnchor, type View } from '../view/base_view';
 import { type DatapointView } from "../view/data";
 import { type ParaView } from "../paraview";
 import { type Popup } from "../view/popup";
@@ -173,6 +173,25 @@ export function bboxOfBboxes(...bboxes: DOMRect[]) {
     bottom - top
   );
 }
+
+export function rectsIntersect(a: DOMRect, b: DOMRect): Collision | null {
+  const aCenterX = a.x + a.width/2;
+  const bCenterX = b.x + b.width/2;
+  const centerDiffX = aCenterX - bCenterX;
+  const rSumX = a.width/2 + b.width/2;
+  if (Math.abs(centerDiffX) >= rSumX) {
+    return null;
+  }
+  const aCenterY = a.y + a.height/2;
+  const bCenterY = b.y + b.height/2;
+  const centerDiffY = aCenterY - bCenterY;
+  const rSumY = a.height/2 + b.height/2;
+  if (Math.abs(centerDiffY) >= rSumY) {
+    return null;
+  }
+  return new Collision(centerDiffX, centerDiffY, rSumX, rSumY);
+}
+
 
 /*export function boxToNumber(box: Box<Datatype>, allBoxes: Box<Datatype>[]): number {
     if (box.isNumber()) {

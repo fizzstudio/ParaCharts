@@ -131,7 +131,9 @@ export class Collision {
 export class BaseView {
   public log: Logger = getLogger("BaseView");
 
-  readonly isContainer: boolean = false;
+  isContainer(): this is ContainableI {
+    return false;
+  }
 
   get id() {
     return '';
@@ -212,13 +214,14 @@ export class BaseView {
 
 }
 
+let _viewCount = 0;
+
 /**
  * Something that is drawn within a rectangular bounding box
  * in the SVG element.
  * @public
  */
 export class View extends BaseView {
-
   protected _id!: string;
   protected _parent: View | null = null;
   protected _prev: View | null = null;
@@ -233,9 +236,6 @@ export class View extends BaseView {
   protected _canHeightFlex = false;
   protected _isBubbleSizeChange = false;
   protected _currFocus: View | null = null;
-  //protected _eventActionManager: EventActionManager<this> | null = null;
-  //protected _hotkeyActionManager!: HotkeyActionManager<this>;
-  //protected _keymapManager: KeymapManager | null = null;
   protected _padding: Padding = { top: 0, bottom: 0, left: 0, right: 0 };
   protected _hidden = false;
   protected _styleInfo: StyleInfo = {};
@@ -285,6 +285,7 @@ export class View extends BaseView {
         }
         this._prev = null;
         this._next = null;
+        this.paraview.unregisterView(this);
         this._removedFromParent();
         parent._didRemoveChild(this);
       }
@@ -313,10 +314,11 @@ export class View extends BaseView {
       // and register their ID
       this.id = this._createId();
     }
+    this.paraview.registerView(this);
   }
 
   protected _createId(..._args: any[]) {
-    return '';
+    return `view${_viewCount++}`;
   }
 
   protected _addedToParent() {
@@ -364,6 +366,21 @@ export class View extends BaseView {
 
   set locOffset(locOffset: Vec2) {
     this._locOffset = locOffset;
+  }
+
+  get absoluteLoc(): Vec2 {
+    let cursor: View | null = this._parent;
+    const absLoc = this.loc;
+    while (cursor) {
+      if (cursor.isContainer()) {
+        // console.log('CURSOR', cursor.id ?? cursor.constructor.name);
+        // console.log('ADDING', cursor.tx, cursor.ty);
+        absLoc.x += cursor.tx;
+        absLoc.y += cursor.ty;
+      }
+      cursor = cursor._parent;
+    }
+    return absLoc;
   }
 
   // XXX These next 4 accessors are for legacy compatibility
@@ -559,6 +576,10 @@ export class View extends BaseView {
     this.x = paddedLeft + this._padding.left + this._locOffset.x;
   }
 
+  get absoluteLeft(): number {
+    return this.absoluteLoc.x - this._locOffset.x;
+  }
+
   get right() {
     return this.x + (this.width - this._locOffset.x);
   }
@@ -573,6 +594,10 @@ export class View extends BaseView {
 
   set paddedRight(paddedRight: number) {
     this.x = paddedRight - this._padding.right - this.width + this._locOffset.x;
+  }
+
+  get absoluteRight(): number {
+    return this.absoluteLoc.x + (this.width - this._locOffset.x);
   }
 
   get centerX() {
@@ -599,6 +624,10 @@ export class View extends BaseView {
     this.y = paddedTop + this._padding.top + this._locOffset.y;
   }
 
+  get absoluteTop(): number {
+    return this.absoluteLoc.y - this._locOffset.y;
+  }
+
   get bottom() {
     return this.top + this.height;
   }
@@ -615,6 +644,10 @@ export class View extends BaseView {
     this.y = paddedBottom - this._padding.bottom - this.height + this._locOffset.y;
   }
 
+  get absoluteBottom(): number {
+    return this.absoluteTop + this.height;
+  }
+
   get centerY() {
     return this.top + this.height / 2;
   }
@@ -625,6 +658,10 @@ export class View extends BaseView {
 
   get bbox(): DOMRect {
     return new DOMRect(this.left, this.top, this.width, this.height);
+  }
+
+  get absoluteBbox(): DOMRect {
+    return new DOMRect(this.absoluteLeft, this.absoluteTop, this.width, this.height);
   }
 
   /**
@@ -1060,6 +1097,8 @@ export interface ContainableI {
   get role(): string;
   get roleDescription(): string;
   get ref(): ReturnType<typeof ref> | null;
+  get tx(): number;
+  get ty(): number;
 }
 
 type GConstructor<T = {}> = new (...args: any[]) => T;
@@ -1071,14 +1110,28 @@ type Containable = GConstructor<BaseView & Partial<ContainableI>>;
 export function Container<TBase extends Containable>(Base: TBase) {
   return class _Container extends Base {
 
-    readonly isContainer = true;
+    constructor(...args: any[]) {
+      super(...args);
+    }
+
+    isContainer(): this is ContainableI {
+      return true;
+    }
+
+    get tx(): number {
+      return this.x + this.padding.left;
+    }
+
+    get ty(): number {
+      return this.y + this.padding.top;
+    }
 
     render() {
       if (this.hidden) {
         return svg``;
       }
-      const tx = this.x + this.padding.left;
-      const ty = this.y + this.padding.top;
+      // this.tx = this.x + this.padding.left;
+      // this.ty = this.y + this.padding.top;
       return staticSvg`
         <g
           ${this.ref}
@@ -1087,7 +1140,7 @@ export function Container<TBase extends Containable>(Base: TBase) {
           style=${Object.keys(this.styleInfo).length ? styleMap(this.styleInfo) : nothing}
           role=${this.role || nothing}
           aria-roledescription=${this.roleDescription || nothing}
-          transform=${(tx || ty) ? fixed`translate(${tx},${ty})` : nothing}
+          transform=${(this.tx || this.ty) ? fixed`translate(${this.tx},${this.ty})` : nothing}
         >
           ${this.content()}
         </g>
