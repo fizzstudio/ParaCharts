@@ -29,6 +29,7 @@ import { DirectLabelStrip } from './direct_label_strip';
 import { type ParaView } from '../paraview';
 import { CloseXView } from './close_x';
 import { BANA_MARGIN_PX, CSS_DPI, MM_PER_INCH, PAPER_INFO } from '../common/paper';
+import { bboxOfBboxes } from '../common';
 
 export type Legends = Partial<{ [dir in CardinalDirection]: Legend[] }>;
 
@@ -316,6 +317,41 @@ export class DocumentView extends Container(View) {
         }
       }
     }
+    this._createSVGViews();
+  }
+
+  protected _createSVGViews() {
+    if (!this._paraState.config.chart.isTactileEnabled) return;
+    const paperInfo = PAPER_INFO[this._paraState.config.chart.pageSize];
+    const pageWidth = (paperInfo.widthMm / MM_PER_INCH) * CSS_DPI;
+    const pageHeight = (paperInfo.heightMm / MM_PER_INCH) * CSS_DPI;
+    if (this._legends.south?.length && this._legends.south[0].numRows > 1) {
+      const marginTop = this._paraState.config.chart.pageMarginTop * CSS_DPI;
+      const marginBottom = this._paraState.config.chart.pageMarginBottom * CSS_DPI;
+      const southLegendsBbox = bboxOfBboxes(...this._legends.south.map(legend => legend.bbox));
+      const legendViewHeight = southLegendsBbox.height + marginBottom + this._padding.bottom;
+      const legendViewY = pageHeight - legendViewHeight;
+      this.paraview.addSVGView('legend', {
+        x: 0,
+        y: legendViewY,
+        width: pageWidth,
+        height: legendViewHeight
+      });
+      this.paraview.addSVGView('chart', {
+        x: 0,
+        y: 0,
+        width: pageWidth,
+        height: pageHeight - legendViewHeight
+      });
+    } else {
+      this.paraview.addSVGView('chart', {
+        x: 0,
+        y: 0,
+        width: pageWidth,
+        height: pageHeight
+      });
+      this.paraview.removeSVGView('legend');
+    }
   }
 
   protected _positionLegends() {
@@ -350,7 +386,7 @@ export class DocumentView extends Container(View) {
       }
     }
     if (this._legends.south?.length) {
-      const firstLegend = this._legends.south[0]
+      const firstLegend = this._legends.south[0];
       firstLegend.bottom = this.bottom;
       firstLegend.centerX = this.centerX;
       for (let i = 1; i < this._legends.south?.length; i++) {
@@ -777,7 +813,6 @@ export class DocumentView extends Container(View) {
         this.append(northLegend);
         this._paraState._legends.push(northLegend);
       }
-
     }
   }
 

@@ -88,6 +88,10 @@ export class Legend extends Container(View) {
     return { legend: true };
   }
 
+  get numRows(): number {
+    return this._grid.numRows;
+  }
+
   protected _addedToParent() {
     this.id = `legend-${this.paraview.paraState.nextLegendID()}`
     const symbols: View[] = [];
