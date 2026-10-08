@@ -20,6 +20,7 @@ import type { ParaChart } from '../parachart/parachart';
 import type { ParaState } from '../state';
 import type { DocumentView } from './document_view';
 import type { BrailleGrade } from '../braille/braille_translation_provider';
+import { View } from './base_view';
 
 /**
  * Narrow host interface used by View and its subclasses.
@@ -38,6 +39,8 @@ export interface ViewContext {
   computeViewBox(): void;
   addDef(key: string, template: SVGTemplateResult): void;
   translateBraille(text: string, grade: BrailleGrade): string;
+  registerView(view: View): void;
+  unregisterView(view: View): void;
 }
 
 /**

@@ -29,6 +29,7 @@ import { DirectLabelStrip } from './direct_label_strip';
 import { type ParaView } from '../paraview';
 import { CloseXView } from './close_x';
 import { BANA_MARGIN_PX, CSS_DPI, MM_PER_INCH, PAPER_INFO } from '../common/paper';
+import { rectsIntersect } from '../common';
 import { bboxOfBboxes } from '../common';
 
 export type Legends = Partial<{ [dir in CardinalDirection]: Legend[] }>;
@@ -162,20 +163,26 @@ export class DocumentView extends Container(View) {
 
     if (this._paraState.config.axis.horiz.isDrawAxis && horizFacet) {
       this._createHorizAxis(horizFacet, this.paraview.paraState.chartInfo as PlaneChartInfo, this._width
-        - (this._legends.east?.reduce((accum, lgnd) => accum + lgnd.width, 0) ?? 0)
-        - (this._legends.west?.reduce((accum, lgnd) => accum + lgnd.width, 0) ?? 0)
+        - (this._legends.east?.reduce((accum, lgnd) => accum + lgnd.paddedWidth, 0) ?? 0)
+        - (this._legends.west?.reduce((accum, lgnd) => accum + lgnd.paddedWidth, 0) ?? 0)
       );
     }
     if (this._paraState.config.axis.vert.isDrawAxis && vertFacet) {
       this._createVertAxis(vertFacet, this.paraview.paraState.chartInfo as PlaneChartInfo, this._height
-        - (this._legends.north?.reduce((accum, lgnd) => accum + lgnd.height, 0) ?? 0)
-        - (this._legends.south?.reduce((accum, lgnd) => accum + lgnd.height, 0) ?? 0)
+        - (this._titleLabel?.paddedHeight ?? 0)
+        - (this._subtitleLabel?.paddedHeight ?? 0)
+        - (this._legends.north?.reduce((accum, lgnd) => accum + lgnd.paddedHeight, 0) ?? 0)
+        - (this._legends.south?.reduce((accum, lgnd) => accum + lgnd.paddedHeight, 0) ?? 0)
+        - (this._horizAxis?.height ?? 0)
       );
     }
     if (comboFacet) {
       this._createSecondaryVertAxis(comboFacet, this.paraview.paraState.comboChartInfo as PlaneChartInfo, this._height
-        - (this._legends.north?.reduce((accum, lgnd) => accum + lgnd.height, 0) ?? 0)
-        - (this._legends.south?.reduce((accum, lgnd) => accum + lgnd.height, 0) ?? 0)
+        - (this._titleLabel?.paddedHeight ?? 0)
+        - (this._subtitleLabel?.paddedHeight ?? 0)
+        - (this._legends.north?.reduce((accum, lgnd) => accum + lgnd.paddedHeight, 0) ?? 0)
+        - (this._legends.south?.reduce((accum, lgnd) => accum + lgnd.paddedHeight, 0) ?? 0)
+        - (this._horizAxis?.height ?? 0)
       );
     }
 
@@ -195,17 +202,19 @@ export class DocumentView extends Container(View) {
         - (this._vertAxis?.width ?? 0)
         - (this._secondaryVertAxis?.width ?? 0)
         - (this._directLabelStrip?.width ?? 0)
+        - (this._legends.east?.reduce((accum, lgnd) => accum + lgnd.paddedWidth, 0) ?? 0)
+        - (this._legends.west?.reduce((accum, lgnd) => accum + lgnd.paddedWidth, 0) ?? 0)
       );
       this.append(this._horizAxis!);
     }
 
     if (this._paraState.config.axis.vert.isDrawAxis && vertFacet) {
       this._createVertAxis(vertFacet, this.paraview.paraState.chartInfo as PlaneChartInfo, this._height
-        - (this._titleLabel?.paddedHeight || 0)
-        - (this._subtitleLabel?.paddedHeight || 0)
-        - (this._legends.north?.map(l => l.paddedHeight).reduce((acc, curr) => acc + curr, 0) || 0)
-        - (this._legends.south?.map(l => l.paddedHeight).reduce((acc, curr) => acc + curr, 0) || 0)
-        - (this._horizAxis?.height || 0)
+        - (this._titleLabel?.paddedHeight ?? 0)
+        - (this._subtitleLabel?.paddedHeight ?? 0)
+        - (this._legends.north?.map(l => l.paddedHeight).reduce((acc, curr) => acc + curr, 0) ?? 0)
+        - (this._legends.south?.map(l => l.paddedHeight).reduce((acc, curr) => acc + curr, 0) ?? 0)
+        - (this._horizAxis?.height ?? 0)
       );
       this.append(this._vertAxis!);
     }
@@ -231,11 +240,14 @@ export class DocumentView extends Container(View) {
       - (this._horizAxis?.height ?? 0)
       - (this._legends.north?.map(l => l.paddedHeight).reduce((acc, curr) => acc + curr, 0) ?? 0)
       - (this._legends.south?.map(l => l.paddedHeight).reduce((acc, curr) => acc + curr, 0) ?? 0);
-
-    if (this._paraState.config.axis.horiz.isDrawAxis && horizFacet) {
-      this._createHorizAxis(horizFacet, this.paraview.paraState.chartInfo as PlaneChartInfo, plotWidth);
-      this.append(this._horizAxis!);
+    if (plotWidth <= 0 || plotHeight <= 0) {
+      console.warn('chart layout error');
     }
+
+    // if (this._paraState.config.axis.horiz.isDrawAxis && horizFacet) {
+    //   this._createHorizAxis(horizFacet, this.paraview.paraState.chartInfo as PlaneChartInfo, plotWidth);
+    //   this.append(this._horizAxis!);
+    // }
 
     if (comboFacet) {
       this._createSecondaryVertAxis(comboFacet, this.paraview.paraState.comboChartInfo as PlaneChartInfo, plotHeight);
@@ -317,7 +329,25 @@ export class DocumentView extends Container(View) {
         }
       }
     }
+
+    // this._checkForLabelOverlap();
     this._createSVGViews();
+  }
+
+  protected _checkForLabelOverlap() {
+    const views = Array.from(this.paraview.views.values()).filter(v => v instanceof Label);
+    console.log('NUM VIEWS', views.length);
+    for (let i = 0; i < views.length; i++) {
+      for (let j = i + 1; j < views.length; j++) {
+        const iAbsBbox = views[i].absoluteBbox;
+        const jAbsBbox = views[j].absoluteBbox;
+        const collis = rectsIntersect(iAbsBbox, jAbsBbox);
+        if (collis) {
+          console.log('chart contains overlapping views', views[i].id, views[j].id, collis, iAbsBbox, jAbsBbox, collis.escapeVector());
+          break;
+        }
+      }
+    }
   }
 
   protected _createSVGViews() {
@@ -325,7 +355,7 @@ export class DocumentView extends Container(View) {
     const paperInfo = PAPER_INFO[this._paraState.config.chart.pageSize];
     const pageWidth = (paperInfo.widthMm / MM_PER_INCH) * CSS_DPI;
     const pageHeight = (paperInfo.heightMm / MM_PER_INCH) * CSS_DPI;
-    if (this._legends.south?.length && this._legends.south[0].numRows > 1) {
+    if (this._legends.south?.length && this._legends.south[0].height > pageHeight * 0.1) {
       const marginTop = this._paraState.config.chart.pageMarginTop * CSS_DPI;
       const marginBottom = this._paraState.config.chart.pageMarginBottom * CSS_DPI;
       const southLegendsBbox = bboxOfBboxes(...this._legends.south.map(legend => legend.bbox));
@@ -457,6 +487,10 @@ export class DocumentView extends Container(View) {
   }
 
   protected _createHorizAxis(facet: Facet, chartInfo: PlaneChartInfo, length: number) {
+    if (length <= 0) {
+      console.warn('invalid horiz axis length');
+      length = 0;
+    }
     while (true) {
       try {
         this._horizAxis?.remove();
@@ -480,6 +514,10 @@ export class DocumentView extends Container(View) {
   }
 
   protected _createVertAxis(facet: Facet, chartInfo: PlaneChartInfo, length: number) {
+    if (length <= 0) {
+      console.warn('invalid vert axis length');
+      length = 0;
+    }
     this._vertAxis?.remove();
     this._vertAxis = new VertAxis(this.paraview, facet, chartInfo, length);
     const vertAxisFacet = this.paraview.paraState.chartInfo.vertFacet!;

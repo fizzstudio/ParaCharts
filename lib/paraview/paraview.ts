@@ -99,6 +99,8 @@ export class ParaView extends ParaComponent implements ViewContext {
   protected _jimReadyResolver!: (() => void);
   protected _jimReadyRejector!: (() => void);
   @state() protected _svgViews = new Map<string, SVGView>();
+  protected _viewRegistry = new Map<string, View>();
+
 
   static styles = [
     //styles,
@@ -479,6 +481,18 @@ export class ParaView extends ParaComponent implements ViewContext {
       this._jimReadyResolver = resolve;
       this._jimReadyRejector = reject;
     });
+  }
+
+  registerView(view: View) {
+    this._viewRegistry.set(view.id, view);
+  }
+
+  unregisterView(view: View) {
+    this._viewRegistry.delete(view.id);
+  }
+
+  get views(): ReadonlyMap<string, View> {
+    return this._viewRegistry;
   }
 
   get ariaLiveRegion() {
