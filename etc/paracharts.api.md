@@ -36,6 +36,7 @@ import { Point as Point_2 } from '@fizz/chartsignal-internal';
 import { PropertyValueMap } from 'lit';
 import { PropertyValues } from 'lit';
 import { Ref } from 'lit/directives/ref.js';
+import { ref } from 'lit/directives/ref.js';
 import { Ref as Ref_2 } from 'lit-html/directives/ref.js';
 import { RefDirective } from 'lit-html/directives/ref.js';
 import * as sb from '@fizz/sparkbraille-component';
