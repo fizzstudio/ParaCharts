@@ -14,6 +14,7 @@ export class DataPanel extends ControlPanelTabPanel {
 
   @property({type: Boolean}) isSparkBrailleVisible = false;
 
+  protected _sparkBrailleButtonRef = createRef<HTMLButtonElement>();
   protected _sparkBrailleRef = createRef<sb.SparkBraille>();
   protected _sparkBrailleWrapperRef = createRef<HTMLDivElement>();
 
@@ -70,6 +71,10 @@ export class DataPanel extends ControlPanelTabPanel {
     `
   ];
 
+  toggleSparkBraille() {
+    this._sparkBrailleButtonRef.value!.click();
+  }
+
   render() {
     const paraView = this.controlPanel.parentElement!.firstElementChild as ParaView;
     return html`
@@ -87,13 +92,21 @@ export class DataPanel extends ControlPanelTabPanel {
           ${this.controlPanel.config.isSparkBrailleControlVisible
             ? html`
               <button
+                ${ref(this._sparkBrailleButtonRef)}
                 @click=${() => {
                   this.isSparkBrailleVisible = !this.isSparkBrailleVisible;
                   // XXX Does this work?
                   paraView.paraState.updateConfig(draft => {
                     draft.controlPanel.isSparkBrailleVisible = this.isSparkBrailleVisible;
                   })
-                  //this.controlPanel.requestUpdate();
+                  // In order to set focus on the sparkbraille element, it needs to
+                  // be currently visible, which is why we remove the hidden attribute
+                  // here rather than letting Lit do so on a re-render.
+                  if (this._sparkBrailleWrapperRef.value!.hasAttribute('hidden')) {
+                    this._sparkBrailleWrapperRef.value!.removeAttribute('hidden');
+                  } else {
+                    this._sparkBrailleWrapperRef.value!.setAttribute('hidden', '');
+                  }
                   this._sparkBrailleRef.value!.focus();
                 }}
               >
@@ -146,9 +159,8 @@ export class DataPanel extends ControlPanelTabPanel {
       <div
         ${ref(this._sparkBrailleWrapperRef)}
         id="sparkbraille"
-        class=${this.isSparkBrailleVisible ? nothing : 'hidden'}
-        ?hidden=${!this.isSparkBrailleVisible}
-    >
+        hidden
+      >
         <!--
           What should happen when a braille cell is selected?
         -->
