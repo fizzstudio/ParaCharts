@@ -3,8 +3,8 @@ import {
 } from 'lit';
 import { property, customElement } from 'lit/decorators.js';
 import { ref, createRef } from 'lit/directives/ref.js';
-import * as sb from '@fizz/sparkbraille-component';
-import '@fizz/sparkbraille-component';
+import * as sb from '../../components/sparkbraille';
+import '../../components/sparkbraille';
 import { ControlPanelTabPanel } from './tab_panel';
 import { type ParaView } from '../../paraview';
 import '../datatable';

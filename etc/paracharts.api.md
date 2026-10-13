@@ -39,7 +39,6 @@ import { Ref } from 'lit/directives/ref.js';
 import { ref } from 'lit/directives/ref.js';
 import { Ref as Ref_2 } from 'lit-html/directives/ref.js';
 import { RefDirective } from 'lit-html/directives/ref.js';
-import * as sb from '@fizz/sparkbraille-component';
 import { SequenceInfo } from '@fizz/chartsignal-internal';
 import { Series } from '@fizz/chartsignal-internal';
 import { SeriesAnalysis } from '@fizz/chartsignal-internal';
