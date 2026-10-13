@@ -570,6 +570,10 @@ export class ParaView extends ParaComponent implements ViewContext {
     return this._paraState;
   }
 
+  get controller(): ParaViewController {
+    return this._controller;
+  }
+
   translateBraille(text: string, grade: 1 | 2): string {
     return this.paraChart.translateBraille(text, grade);
   }

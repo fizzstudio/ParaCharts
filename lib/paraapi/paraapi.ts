@@ -270,6 +270,21 @@ export class ParaAPI {
       toggleDataTable() {
         _paraChart.isDataTableVisible = ! _paraChart.isDataTableVisible;
       },
+      /** Toggle SparkBraille */
+      toggleSparkBraille() {
+        if (paraView.paraState.config.controlPanel.isSparkBrailleVisible) {
+          _paraChart.controlPanel.dataPanel.toggleSparkBraille();
+        } else if (_paraChart.controlPanel.isTabActive(1)) {
+          _paraChart.controlPanel.dataPanel.toggleSparkBraille();
+        } else {
+          // We can't just select the tab and then click the button;
+          // the tab is hidden until Lit re-renders, so we can't
+          // focus on the SparkBraille field.
+          _paraChart.controlPanel.activateTab(1).then(() => {
+            _paraChart.controlPanel.dataPanel.toggleSparkBraille();
+          });
+        }
+      },
       /** Play or pause audio. */
       playPauseMedia() {
 

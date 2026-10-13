@@ -151,6 +151,10 @@ export class ParaControlPanel extends ParaComponent {
     return this._descriptionPanelRef.value!;
   }
 
+  get dataPanel() {
+    return this._dataPanelRef.value!;
+  }
+
   get chartPanel() {
     return this._chartPanelRef.value!;
   }
@@ -272,6 +276,15 @@ export class ParaControlPanel extends ParaComponent {
     }
   }
 
+  activateTab(tabIndex: number): Promise<void> {
+    this._tabsRef.value!.selectedTab = tabIndex;
+    return this._tabsRef.value!.activatePromise(tabIndex)!;
+  }
+
+  isTabActive(tabIndex: number): boolean {
+    return this._tabsRef.value!.selectedTab === tabIndex;
+  }
+
   externalizeCaptionBox() {
     this.after(this.paraChart.captionBox);
   }
@@ -357,6 +370,19 @@ export class ParaControlPanel extends ParaComponent {
           tablabelmode=${tabLabelModes[this.config.tabLabelStyle]}
 		      openbuttonarialabel="ParaCharts control panel"
           style="--tab-text-transform: capitalize"
+          @keydown=${(event: KeyboardEvent) => {
+            this.paraChart.paraView.controller.handleKeyEvent(new KeyboardEvent('keydown', {
+              key: event.key,
+              code: event.code,
+              location: event.location,
+              repeat: event.repeat,
+              isComposing: event.isComposing,
+              ctrlKey: event.ctrlKey,
+              shiftKey: event.shiftKey,
+              altKey: event.altKey,
+              metaKey: event.metaKey
+            }));
+          }}
           @open=${
             () => {
               this.paraChart.isControlPanelOpen = true;
