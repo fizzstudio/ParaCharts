@@ -15,8 +15,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { Logger, getLogger } from '@fizz/logger';
-import { ChartType, Facet, Datapoint, clusterObject } from '@fizz/chartsignal-internal';
-import { Summarizer, formatBox, Highlight, summarizerFromModel, HighlightedSummary } from '@fizz/parasummary';
+import { ChartType, Facet, Datapoint, clusterObject, Highlight, formatBox, ExtendedSummarizer, HighlightedSummary, extendedSummarizerFromModelAndLang } from '@fizz/chartsignal-internal';
 import { ConfigSetting, DeepReadonly, LegendConfig, PlaneDirection } from '../config/config_types';
 import { ConfigGroup, Direction, HorizDirection } from '../config/config_types';
 import { ParaView } from '../paraview/paraview';
@@ -59,7 +58,7 @@ export type RiffOrder = 'normal' | 'sorted' | 'reversed';
 export abstract class BaseChartInfo {
   protected log: Logger = getLogger("BaseChartInfo");
   protected _navMap: NavMap | null = null;
-  protected _summarizer!: Summarizer;
+  protected _summarizer!: ExtendedSummarizer;
   protected _chordPrevSeriesKey = '';
   protected _sonifier!: Sonifier;
   protected _soniInterval: ReturnType<typeof setTimeout> | null = null;
@@ -96,19 +95,19 @@ export abstract class BaseChartInfo {
   }
 
   protected _createSummarizer(): void {
-    this._summarizer = summarizerFromModel(this.model!);
+    this._summarizer = extendedSummarizerFromModelAndLang(this.model!, 'en');
   }
 
   // Called in ParaState.setManifest() immediately after chartInfo creation
   async setup() {
-    this._conciseSummary = await this._summarizer.getConciseSummary();
+    this._conciseSummary = await this._summarizer.getConciseSummaryHighlighted();
   }
 
   get type(): ChartType {
     return this._type;
   }
 
-  get summarizer(): Summarizer {
+  get summarizer(): ExtendedSummarizer {
     return this._summarizer;
   }
 
@@ -116,7 +115,7 @@ export abstract class BaseChartInfo {
     return this._conciseSummary;
   }
 
-  // Overriden by LineChartInfo for combo charts
+  // Overridden by LineChartInfo for combo charts
   get model() {
     return this._paraState.model;
   }
@@ -551,7 +550,7 @@ export abstract class BaseChartInfo {
         } else {
           orientationSentences = await this._summarizer.getRequestedSummaries(ORIENTATION_SENTENCES);
         }
-        const chartSummary = await this._summarizer.getChartSummary();
+        const chartSummary = await this._summarizer.getChartSummaryHighlighted();
         this._paraState.announce({
           text: chartSummary.text + ' ' + orientationSentences.text,
           html: chartSummary.html + ' ' + orientationSentences.html,

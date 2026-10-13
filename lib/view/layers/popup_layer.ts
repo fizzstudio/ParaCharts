@@ -1,4 +1,4 @@
-import { formatBox } from "@fizz/parasummary";
+import { formatBox } from "@fizz/chartsignal-internal";
 import { type ViewContext } from '../view_context';
 import { datapointIdToCursor, makeSequenceId } from "../../state";
 import { Container, View } from "../base_view";

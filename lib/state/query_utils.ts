@@ -1,8 +1,6 @@
 import Decimal from 'decimal.js';
 import { Logger, getLogger } from '@fizz/logger';
-import { capitalize, join, interpolate } from '@fizz/templum';
-import { type Model } from '@fizz/chartsignal-internal';
-import { formatXYDatapoint } from '@fizz/parasummary';
+import { type Model, formatXYDatapoint, wrappedTemplumFromLang, capitalize } from '@fizz/chartsignal-internal';
 import { type DatapointView } from '../view/data';
 
 // TODO (@simonvarey): This is a redefined from the `ComparisonRelationship` in @fizz/dataframe. I should
@@ -17,11 +15,13 @@ interface ComparisonResult {
     percentage: number;
 }
 
+// TODO (@simonvarey): localize this text output by moving it to the summarizer. See #1427
 export function describeSelections(
   visitedDatapoint: DatapointView,
   selectedDatapoints: DatapointView[]
 ): string[] {
   const msgArray: string[] = [];
+  const templum = wrappedTemplumFromLang('en');
 
   // if there are selected datapoints other than the focused datapoint (which may or may not be
   // selected), compare the current datapoint against each of those
@@ -29,7 +29,7 @@ export function describeSelections(
   const othersSelected = selectedDatapoints.length >= (selfSelected ? 2 : 1);
   if (othersSelected) {
     const other = selfSelected ? queryMessages.other : undefined;
-    msgArray.push(interpolate(queryMessages.comparisonSelectedDatapoints, { other }));
+    msgArray.push(templum.replace(queryMessages.comparisonSelectedDatapoints, { other }));
     const sortedDatapoints = selectedDatapoints.toSorted((a, b) =>
       a.datapoint.facetValueNumericized('y')! > b.datapoint.facetValueNumericized('y')! ? -1 : 1);
     for (const view of sortedDatapoints) {
@@ -38,8 +38,8 @@ export function describeSelections(
         const targetValue = visitedDatapoint.datapoint.facetValueNumericized('y')!;
         const result = compare(viewValue, targetValue);
         const comparatorMsg = comparisonMsgs[result.relationship].msg;
-        const diff = result.diff! !== 0 ? interpolate('${diff:number} ', { diff: result.diff! }) : undefined;
-        msgArray.push(capitalize(interpolate(
+        const diff = result.diff! !== 0 ? templum.replace('${diff:number} ', { diff: result.diff! }) : undefined;
+        msgArray.push(capitalize(templum.replace(
           '${diff:string?}${comparatorMsg:string} ${seriesLabel:string} ${datapointXY:string}',
           { diff, comparatorMsg, seriesLabel: view.series.getLabel(), datapointXY: formatXYDatapoint(view.datapoint, 'raw') }
         )));
@@ -84,7 +84,8 @@ export function getDatapointMinMax(model: Model, value: number, seriesKey: strin
     return msgArray;
 }
 
-export function /*for tests*/ describeAdjacentDatapoints(model: Model, targetView: DatapointView): string {
+export /*for tests*/ function describeAdjacentDatapoints(model: Model, targetView: DatapointView): string {
+    const templum = wrappedTemplumFromLang('en');
     const comparisons: string[] = [];
     let comparisonPrev, comparisonNext;
     if (comparisonPrev = describeAdjacentDatapointComparison(model, targetView, 'prev')) {
@@ -93,7 +94,7 @@ export function /*for tests*/ describeAdjacentDatapoints(model: Model, targetVie
     if (comparisonNext = describeAdjacentDatapointComparison(model, targetView, 'next')) {
         comparisons.push(comparisonNext);
     }
-    return join(comparisons);
+    return templum.join(comparisons);
 }
 
 export function /*for tests*/ describeAdjacentDatapointComparison(
@@ -101,6 +102,7 @@ export function /*for tests*/ describeAdjacentDatapointComparison(
     self: DatapointView, 
     direction: 'prev' | 'next'
 ): string | null {
+    const templum = wrappedTemplumFromLang('en');
     let log: Logger = getLogger("describeAdjacentDatapointComparison");
 	const other = self[direction];
     if (!other) {
@@ -130,10 +132,10 @@ export function /*for tests*/ describeAdjacentDatapointComparison(
     console.log('r', result, result.relationship, direction)
     const comparator = comparisonMsgs[result.relationship][direction];
     if (result.diff === 0) {
-        return interpolate('${comparator:string} ${otherLabel:string}', { comparator, otherLabel });
+        return templum.replace('${comparator:string} ${otherLabel:string}', { comparator, otherLabel });
     }
     const preposition = direction === 'prev' ? 'from' : 'in';
-    return interpolate('${comparator:string} ${diff:number} (${percent:number#.1}%) ${preposition:string} ${otherLabel:string}',
+    return templum.replace('${comparator:string} ${diff:number} (${percent:number#.1}%) ${preposition:string} ${otherLabel:string}',
         { comparator, diff: result.diff!, percent: result.percentage, preposition, otherLabel });
 }
 

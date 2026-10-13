@@ -24,14 +24,10 @@ import {
   dataFromManifest, type AllSeriesData, type ChartType, isPastryType, isVennType, type Point,
   numberToScaledNumberRounded, SequenceInfo, SeriesAnalysis, clusterObject, facetsFromDataset, 
   Model, modelFromExternalData, modelFromInlineData, FacetSignature, PlaneDatapoint, 
-  planeModelFromInlineData, planeModelFromExternalData, PlaneModel, type Datapoint
-} from '@fizz/chartsignal-internal';
+  planeModelFromInlineData, planeModelFromExternalData, PlaneModel, type Datapoint, FormatType, 
+  formatXYDatapointX, formatXYDatapointY, HighlightedSummary, type Highlight, formatBox
+  } from '@fizz/chartsignal-internal';
 import { Jimerator } from '@fizz/jimerator';
-import {
-  FormatType, formatXYDatapointX, formatXYDatapointY,
-  HighlightedSummary, type Highlight,
-  formatBox
-} from '@fizz/parasummary';
 
 import { BaseState, SettingObserver } from './base_state';
 import {
@@ -392,8 +388,8 @@ export class ParaState extends BaseState {
       } else {
         const shouldGetConcise = this.config.description.captionFormat === 'concise';
         const generatedSummary = await (shouldGetConcise
-          ? this._chartInfo.summarizer.getConciseSummary()
-          : this._chartInfo.summarizer.getChartSummary()
+          ? this._chartInfo.summarizer.getConciseSummaryHighlighted()
+          : this._chartInfo.summarizer.getChartSummaryHighlighted()
         );
         if (generatedSummary !== undefined) {
           this._caption = generatedSummary;

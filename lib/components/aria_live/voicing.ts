@@ -1,4 +1,4 @@
-import { Highlight } from '@fizz/parasummary';
+import { Highlight } from '@fizz/chartsignal-internal';
 import { Logger, getLogger } from '@fizz/logger';
 import { ParaState } from '../../state';
 

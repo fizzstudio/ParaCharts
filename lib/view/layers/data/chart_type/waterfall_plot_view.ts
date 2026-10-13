@@ -15,7 +15,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { StyleInfo } from 'lit/directives/style-map.js';
-import { formatXYDatapointY } from '@fizz/parasummary';
+import { formatXYDatapointY } from '@fizz/chartsignal-internal';
 import { type DataLayerContext } from '../../../view_context';
 import { WaterfallChartInfo } from '../../../../chart_types/waterfall_chart';
 import { Label } from '../../../label';

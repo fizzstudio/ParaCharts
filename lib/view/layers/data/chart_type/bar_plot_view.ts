@@ -14,7 +14,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { formatBox } from '@fizz/parasummary';
+import { formatBox } from '@fizz/chartsignal-internal';
 import { getLogger } from '@fizz/logger';
 import { type DataLayerContext } from '../../../view_context';
 import { RectShape } from '../../../shape/rect';

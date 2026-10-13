@@ -409,7 +409,7 @@ export class ParaAPI {
     if (!this._liveUpdateWaiting) {
       while (this._liveUpdateRecordCount) {
         this._liveUpdateWaiting = true;
-        const concise = await this._paraChart.paraState.chartInfo.summarizer.getConciseSummary();
+        const concise = await this._paraChart.paraState.chartInfo.summarizer.getConciseSummaryHighlighted();
         const announcement = `Live update: ${this._liveUpdateRecordCount} record${this._liveUpdateRecordCount > 1 ? 's' : ''} added. ${concise.text}`;
         this._liveUpdateRecordCount = 0;
         if (this._paraChart.paraState.config.ui.isVoicingEnabled) {
@@ -494,7 +494,7 @@ export class ParaAPI {
 
   /** Get the chart description. */
   async getDescription(): Promise<string | undefined> {
-    const summary = await this._paraChart.globalState.paraState.chartInfo.summarizer.getChartSummary();
+    const summary = await this._paraChart.globalState.paraState.chartInfo.summarizer.getChartSummaryHighlighted();
     return summary?.text;
   }
 
