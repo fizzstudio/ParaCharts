@@ -6,6 +6,7 @@ import { property, state, queryAssignedNodes, customElement } from 'lit/decorato
 import {type Ref, ref, createRef} from 'lit/directives/ref.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { ProportionalDataBinner } from './propBinner';
+import { ParaComponent } from '../paracomponent';
 
 const brailleUnicodeBlock = 0x2800;
 
@@ -13,7 +14,7 @@ const brailleUnicodeBlock = 0x2800;
  * Converts an array of dot specifications to a string of (Unicode) braille.
  * Each dot specification is an array of integers (1-8); [] represents a braille space character.
  */
-function convertCells(cells: readonly (readonly number[])[]) {
+function convertCells(cells: readonly (readonly number[])[]): string {
   return cells.reduce((accumulator, cell) => {
     if (typeof(cell) === 'undefined' || cell === null)
       throw new Error("Invalid dot specification");
@@ -35,7 +36,7 @@ function convertCells(cells: readonly (readonly number[])[]) {
  * @public
  */
 @customElement('fizz-sparkbraille')
-export class SparkBraille extends LitElement {
+export class SparkBraille extends ParaComponent {
   static shadowRootOptions: ShadowRootInit = {
     mode: 'open',
     // This is necessary to set focus on regionRef when the custom element
@@ -50,13 +51,14 @@ export class SparkBraille extends LitElement {
   @property() labeledData?: string;
   /** Use with labeled data to produce a proportional chart. */
   @property({ type: Boolean }) isProp = false;
+  @property() currentSeries = '';
 
   @state() private cells?: readonly (readonly number[])[];
 
   @queryAssignedNodes() private slotNodes!: Node[];
 
-  private regionRef: Ref<HTMLDivElement> = createRef();
-  private preRef: Ref<HTMLPreElement> = createRef();
+  private _regionRef: Ref<HTMLDivElement> = createRef();
+  private _preRef: Ref<HTMLPreElement> = createRef();
   private onSelectionChange: () => void;
   private _binnedData!: readonly number[];
 
@@ -81,7 +83,7 @@ export class SparkBraille extends LitElement {
     this.onSelectionChange = () => {
       const selection = document.getSelection();
       // Only respond to events from the current interactive region.
-      if (selection?.anchorNode?.parentNode?.parentNode !== this.regionRef.value) {
+      if (selection?.anchorNode?.parentNode?.parentNode !== this._regionRef.value) {
         return;
       }
       const offset = selection?.anchorOffset;
@@ -95,7 +97,6 @@ export class SparkBraille extends LitElement {
           }
         )
       );
-
     };
   }
 
@@ -152,19 +153,24 @@ export class SparkBraille extends LitElement {
         )
       );
     }}*/
+    const series = this._paraState.model?.series.find((s) => s.key === this.currentSeries);
     return html`
       <div
-        ${ref(this.regionRef)}
+        ${ref(this._regionRef)}
         role="textbox"
         contenteditable="true"
-        @focus=${() => console.log('div focus')}
+        @keydown=${(e: KeyboardEvent) => {
+          // Prevent the user from entering text when initially focused on the div
+          if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+            e.preventDefault();
+          }
+        }}
       >
         <pre
-          ${ref(this.preRef)}
+          ${ref(this._preRef)}
           contenteditable="false"
-          @focus=${() => console.log('pre focus')}
         >${
-          brailleContent
+          brailleContent + ' ' +  (series ? this.toBraille(series.label) : '')
         }</pre>
         <div class="data" style="display: none">
           <slot
