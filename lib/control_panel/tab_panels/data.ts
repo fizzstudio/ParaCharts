@@ -166,6 +166,7 @@ export class DataPanel extends ControlPanelTabPanel {
         -->
         <fizz-sparkbraille
           ${ref(this._sparkBrailleRef)}
+          .globalState=${this._controlPanel.paraChart.globalState}
           ?bar=${this._paraState.sparkBrailleInfo?.isBar}
           ?isProp=${this._paraState.sparkBrailleInfo?.isProportional}
           data=${this._paraState.sparkBrailleInfo?.isProportional
@@ -174,6 +175,7 @@ export class DataPanel extends ControlPanelTabPanel {
           labeledData=${this._paraState.sparkBrailleInfo?.isProportional
             ? this._paraState.sparkBrailleInfo?.data ?? ''
             : ''}
+          currentSeries=${this._paraState.sparkBrailleInfo?.currentSeries ?? ''}
           @select=${(e: CustomEvent) => {
             const index = e.detail*2;
             //chart.hiliteSegmentRangeById('series', `${index}`, `${index + 1}`);
