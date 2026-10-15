@@ -1770,6 +1770,10 @@ export class ParaState extends BaseState {
     this._selectedDatapoints = new Set();
   }
 
+  removeSelectedAnnotation(id: string) {
+    this._selectedAnnotations = this._selectedAnnotations.filter(a => a !== id);
+  }
+
   getFormatType(context: FormatContext): FormatType {
     return context === 'domId' ? 'domId'
       : SettingsManager.get(FORMAT_CONTEXT_SETTINGS[context], this.config) as FormatType;

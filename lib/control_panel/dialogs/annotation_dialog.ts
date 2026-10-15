@@ -50,7 +50,7 @@ export class AnnotationDialog extends ParaDialog {
     protected _options: AnnotationDialogOptions = {};
 
   render() {
-    const buttons = [{ tag: 'add', text: this.addBtnText }, { tag: 'close', text: this.cancelBtnText }];
+    const buttons = [{ tag: 'add', text: this.addBtnText }, { tag: 'cancel', text: this.cancelBtnText }];
     if (this._options.showRemove){
       buttons.push({ tag: 'remove', text: this.removeBtnText });
     }
@@ -75,7 +75,7 @@ export class AnnotationDialog extends ParaDialog {
     if (options) {
       this._options = options;
     }
-    const result = await this._dialogRef.value!.show(() => this._dialogRef.value!.button('close')!.focus());
+    const result = await this._dialogRef.value!.show(() => this._dialogRef.value!.button('cancel')!.focus());
     const returnText = this._dialogRef.value!.getElementsByTagName("input").namedItem("annot")!.value;
     this._dialogRef.value!.getElementsByTagName("input").namedItem("annot")!.value = ''
     return {result: result, text: returnText}

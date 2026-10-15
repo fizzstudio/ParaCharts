@@ -60,6 +60,8 @@ export class AnnotationPanel extends ControlPanelTabPanel {
         ${this._paraState.model.annotations.map(item => html`
             <li
               id="${item.id}"
+              data-series="${(item as DatapointAnnotation).seriesIndex}"
+              data-index="${(item as DatapointAnnotation).datapointIndex}"
               @click=${(event: Event) => {
                 this._selectAnnotation(event);
                 }}
@@ -81,7 +83,7 @@ export class AnnotationPanel extends ControlPanelTabPanel {
       const seriesLabel = this._paraState.model?.series[datapointAnnot.seriesIndex].label
       return `${seriesLabel}, datapoint ${datapointAnnot.datapointIndex}: ${datapointAnnot.text}`
     }
-    else if (annot.type == 'axis-annotation'){
+    else if (annot.type == 'axis-annotation') {
       const axisAnnot = annot as AxisAnnotation;
       const cap = axisAnnot.axis == 'y' ? "Y" : "X"
       const isThreshold = axisAnnot.kind == 'threshold' ? "Threshold" : ""
@@ -94,8 +96,14 @@ export class AnnotationPanel extends ControlPanelTabPanel {
     const target = (event?.target as HTMLElement);
     if (target) {
       this._highlightAnnotation(target);
+      if (this._paraState._selectedAnnotations.includes(target.id)) {
+        this._paraState.removeSelectedAnnotation(target.id);
+      }
+      else {
+        this._paraState._selectedAnnotations.push(target.id);
+      }
       if (target.dataset.series && target.dataset.index!) {
-        const seriesKey = target.dataset.series!;
+        const seriesKey = this._paraState.model!.seriesKeys[parseInt(target.dataset.series!)];
         const index = parseInt(target.dataset.index!);
         this._navToAnnotation(seriesKey, index);
       }
@@ -130,16 +138,18 @@ export class AnnotationPanel extends ControlPanelTabPanel {
         continue;
       }
       const annotationText = text;
+      const id = `${series}-${recordLabel}-${this._paraState.model?.nextAnnotID(seriesKey, index, annotationText)}`;
       if (annotationText) {
         newAnnotationList.push({
-          type: "datapoint",
+          type: "datapoint-annotation",
           datasetIndex: 0,
           seriesIndex,
           datapointIndex: index,
           text: annotationText,
-          id: `${series}-${recordLabel}-${this._paraState.model?.nextAnnotID(seriesKey, index, annotationText)}`,
+          id: id,
         });
       }
+      this._paraState._selectedAnnotations.push(id);
     }
     for (let annot of newAnnotationList) {
       this._paraState.model?.addAnnotation(annot);
