@@ -99,6 +99,7 @@ export interface SparkBrailleInfo {
   data: string;
   isProportional?: boolean;
   isBar?: boolean;
+  currentSeries: string;
 }
 
 export interface HighlightAxisOptions {

@@ -44,6 +44,11 @@
       "email": "julie.langston@gmail.com",
       "url": "https://github.com/julianna-langston/chart2music",
       "affiliation": "Chart2Music"
+    },
+    {
+      "name": "Jason White",
+      "email": "jason@jasonjgw.net",
+      "url": "http://jasonjgw.net"
     }
   ],
   "license": "AGPL-3.0-or-later",
@@ -136,9 +141,8 @@
     "@fizz/jimerator": "^0.20.2",
     "@fizz/logger": "^0.1.0",
     "@fizz/parasummary": "^0.17.9",
-    "@fizz/sparkbraille-component": "^0.5.0",
     "@fizz/templum": "^0.5.9",
-    "@fizz/ui-components": "^0.73.0",
+    "@fizz/ui-components": "^0.74.1",
     "@lit-app/state": "^1.0.1",
     "decimal.js": "^10.4.3",
     "immer": "^10.1.1",

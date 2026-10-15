@@ -22,6 +22,7 @@ export default defineConfig({
       fileName: 'paracharts',
       formats: ['es']
     },
+    sourcemap: true,
     rollupOptions: {
       output: {
         intro: `window.process = {

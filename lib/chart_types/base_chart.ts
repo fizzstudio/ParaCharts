@@ -209,7 +209,7 @@ export abstract class BaseChartInfo {
       }
     } else if (key === 'manifestSet') {
       this._populateNavMap();
-      this._paraState.sparkBrailleInfo = this._sparkBrailleInfo();
+      this._paraState.sparkBrailleInfo = this._sparkBrailleInfo('');
     }
   }
 
@@ -558,14 +558,14 @@ export abstract class BaseChartInfo {
           highlights: [...(chartSummary.highlights ?? []), ...(orientationSentences.highlights ?? [])]
         });
       }
-      this._paraState.sparkBrailleInfo = this._sparkBrailleInfo();
+      this._paraState.sparkBrailleInfo = this._sparkBrailleInfo('');
     } else if (cursor.isNodeType('series')) {
       await this._playCurrentRiff();
       if (!quiet) {
         this._paraState.announce(
           await this._summarizer.getSeriesSummary(cursor.options.seriesKey));
       }
-      this._paraState.sparkBrailleInfo = this._sparkBrailleInfo();
+      this._paraState.sparkBrailleInfo = this._sparkBrailleInfo(cursor.options.seriesKey);
     } else if (cursor.isNodeType(this.navDatapointType)) {
       // NOTE: this needs to be done before the datapoint is visited, to check whether the series has
       //   ever been visited before this point
@@ -591,7 +591,7 @@ export abstract class BaseChartInfo {
       if (this._paraState.config.sonification.isSonificationEnabled) { // && !isNewComponentFocus) {
         await this.playDatapoints([datapoint]);
       }
-      this._paraState.sparkBrailleInfo = this._sparkBrailleInfo();
+      this._paraState.sparkBrailleInfo = this._sparkBrailleInfo(cursor.options.seriesKey);
 
       // this._paraState.highlight(`datapoint-${cursor.options.seriesKey}-${cursor.options.index}`);
 
@@ -608,7 +608,7 @@ export abstract class BaseChartInfo {
       if (!quiet) {
         this._paraState.announce(this._composeChordAnnouncement());
       }
-      this._paraState.sparkBrailleInfo = this._sparkBrailleInfo();
+      this._paraState.sparkBrailleInfo = this._sparkBrailleInfo('');
     } else if (cursor.isNodeType('sequence')) {
       await this._playCurrentRiff();
       if (!quiet) {
@@ -693,5 +693,5 @@ export abstract class BaseChartInfo {
     //todo().controller.voice.shutUp();
   }
 
-  protected abstract _sparkBrailleInfo(): SparkBrailleInfo | null;
+  protected abstract _sparkBrailleInfo(currentSeries: string): SparkBrailleInfo | null;
 }

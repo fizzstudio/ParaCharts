@@ -424,10 +424,11 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
     }, SONI_PLAY_SPEEDS.at(this._soniSpeedRateIndex));
   }
 
-  protected _sparkBrailleInfo() {
+  protected _sparkBrailleInfo(currentSeries: string) {
     return {
       data: this._sparkBrailleData(),
-      isBar: this._type === 'bar' || this._type === 'column'
+      isBar: this._type === 'bar' || this._type === 'column',
+      currentSeries: this._paraState.model!.multi ? currentSeries : ''
     };
   }
 
