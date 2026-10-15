@@ -25,7 +25,7 @@ import {
   numberToScaledNumberRounded, SequenceInfo, SeriesAnalysis, clusterObject, facetsFromDataset,
   Model, modelFromExternalData, modelFromInlineData, FacetSignature, PlaneDatapoint,
   planeModelFromInlineData, planeModelFromExternalData, PlaneModel, type Datapoint,
-  Facet
+  Facet, type DatapointAnnotation
 } from '@fizz/chartsignal-internal';
 import { Jimerator } from '@fizz/jimerator';
 import {
@@ -58,8 +58,7 @@ import { type BaseChartInfo, chartInfoClasses, ComboChartInfo, LineChartInfo, Sc
 import { firstDataset, type Manifest } from '../loader/common';
 import { ClusterShellView } from '../view/layers';
 import { computeLabels } from '../common/axisinfo';
-import { Legend, LegendItem } from '../view/legend';
-import { type BubbleChartInfo } from '../chart_types/bubble_chart';
+import { Legend } from '../view/legend';
 import { Threshold } from '../view/layers/annotation/threshold';
 
 export type DataState = 'initial' | 'pending' | 'complete' | 'error';
@@ -75,28 +74,6 @@ export interface Announcement {
   clear?: boolean;
   startFrom: number;
   target: AnnounceTarget;
-}
-
-export interface BaseAnnotation {
-  type: string;
-  annotation: string;
-  id: string;
-  seriesKey?: string;
-  index?: number;
-  isSelected?: boolean;
-}
-
-export interface PointAnnotation extends BaseAnnotation {
-  type: "datapoint";
-  seriesKey: string;
-  index: number;
-  annotation: string;
-  text: string;
-  timestamp?: Date;
-}
-
-export interface MDRAnnotation extends BaseAnnotation {
-  annotation: string;
 }
 
 export interface RangeHighlight {
@@ -189,7 +166,6 @@ export class ParaState extends BaseState {
 
   @property() darkMode = false;
   @property() announcement: Announcement = { text: '', html: '', highlights: [], startFrom: 0, target: 'all' };
-  @property() annotations: BaseAnnotation[] = [];
   @property() popups: Popup[] = [];
   @property() focusPopups: Popup[] = [];
   @property() selectPopups: Popup[] = [];
@@ -244,6 +220,7 @@ export class ParaState extends BaseState {
 
   @property() protected _thresholdData: ThresholdData[] = [];
   @property() protected _thresholds: Threshold[] = [];
+  @property() _selectedAnnotations: string[] = [];
   protected _data: AllSeriesData | null = null;
   protected _dataState: DataState = 'initial';
   protected _settingControls = new SettingControlManager(this);
@@ -414,10 +391,6 @@ export class ParaState extends BaseState {
         }
       }
     }
-  }
-
-  nextAnnotID(): number {
-    return this._annotID++;
   }
 
   nextLegendID(): number {
@@ -1801,22 +1774,23 @@ export class ParaState extends BaseState {
       : SettingsManager.get(FORMAT_CONTEXT_SETTINGS[context], this.config) as FormatType;
   }
 
-  annotatePoint(seriesKey: string, index: number, text: string) {
-    if (this.annotations.find((annot: PointAnnotation) =>
-      annot.seriesKey === seriesKey && annot.index === index && annot.text === text)) {
+  annotatePoint(seriesKey: string, datapointIndex: number, text: string) {
+    if (this.model?.annotations.find((annot: DatapointAnnotation) =>
+      this.model!.seriesKeys[annot.seriesIndex] === seriesKey && annot.datapointIndex === datapointIndex && annot.text === text)) {
       return;
     }
     const recordLabel = formatXYDatapointX(
-      this._model!.atKeyAndIndex(seriesKey, index) as PlaneDatapoint, 'raw');
-    this.annotations = [...this.annotations, {
+      this._model!.atKeyAndIndex(seriesKey, datapointIndex) as PlaneDatapoint, 'raw');
+    const annot = {
       type: 'datapoint',
       seriesKey,
-      index,
+      datapointIndex,
       annotation: `${seriesKey}, ${recordLabel}: ${text}`,
       text,
       id: `${seriesKey}-${recordLabel}-${this._annotID}`,
       isSelected: true
-    } as PointAnnotation];
+    }
+    this.model!.addAnnotation(annot);
     this._annotID++;
   }
 
@@ -1859,15 +1833,13 @@ export class ParaState extends BaseState {
           message += ` ${start} to ${end} (${trendTranslation[seq.slopeInfo.classes[0]]}),`;
         }
         message = message.slice(0, -1) + ".";
-        if (this.annotations.some(a => a.id == "trend-analysis-annotation")) {
-          const index = this.annotations.findIndex(a => a.id == "trend-analysis-annotation");
-          this.annotations.splice(index, 1);
-        }
-        this.annotations.push({
+        this.model?.removeAnnotation("trend-analysis-annotation")
+        const annot = {
           type: 'trend',
-          annotation: message,
-          id: `trend-analysis-annotation`
-        });
+          id: `trend-analysis-annotation`,
+          text: message
+        };
+        this.model?.addAnnotation(annot);
       } else {
         this.removeMDRAnnotations();
       }
@@ -1908,11 +1880,7 @@ export class ParaState extends BaseState {
       this.removeModelLineBreaks(seriesAnalysis!.sequences, seriesKey);
       this.removeModelTrendLines(seriesAnalysis!.sequences, seriesKey);
     }
-
-    if (this.annotations.some(a => a.id == "trend-analysis-annotation")) {
-      const index = this.annotations.findIndex(a => a.id == "trend-analysis-annotation");
-      this.annotations.splice(index, 1);
-    }
+    this.model?.removeAnnotation("trend-analysis-annotation")
   }
 
   protected _getUrlAnnotations() {
@@ -2028,16 +1996,18 @@ export class ParaState extends BaseState {
     for (const datapointId of this.selectedDatapoints) {
       //const [seriesKey, index] = keyIdx.split('-');
       const { seriesKey, index } = datapointIdToCursor(datapointId);
-      const series = this.model!.series.filter(s => s[0].seriesKey === seriesKey)[0];
+      const seriesIndex = this.model!.seriesKeys.indexOf(seriesKey);
+      const series = this.model!.series[seriesIndex];
       const length = series.length - 1;
       this.addLineBreak(index / length, index, seriesKey, false)
-      this.annotations.push({
-        type: "lineBreak",
-        seriesKey,
+      const annot = {
+        type: "linebreak-annotation",
+        seriesIndex,
         index,
-        annotation: `${series.key}, ${series.rawData[index].x}: Added line break`,
-        id: `line-break-${index}`
-      })
+        id: `line-break-${index}`,
+        text: `${series.label}, ${series.rawData[index].x}: Added line break`
+      };
+      this.model?.addAnnotation(annot);
       this.postNotice('addLineBreak', { seriesKey, index });
     }
     if (this.userLineBreaks.length) {
@@ -2102,7 +2072,7 @@ export class ParaState extends BaseState {
 
   clearUserLineBreaks() {
     this._userLineBreaks = [];
-    this.annotations = this.annotations.filter(a => !/line-break/.test(a.id));
+    this.model!.annotations.filter(a => a.type == 'linebreak-annotation').forEach(a => this.model?.removeAnnotation(a.id))
     this.postNotice('clearLineBreaks', null);
   }
 

@@ -50,7 +50,7 @@ export class AnnotationDialog extends ParaDialog {
     protected _options: AnnotationDialogOptions = {};
 
   render() {
-    const buttons = [{ tag: 'add', text: this.addBtnText }, { tag: 'cancel', text: this.cancelBtnText }];
+    const buttons = [{ tag: 'add', text: this.addBtnText }, { tag: 'close', text: this.cancelBtnText }];
     if (this._options.showRemove){
       buttons.push({ tag: 'remove', text: this.removeBtnText });
     }

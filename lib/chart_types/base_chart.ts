@@ -23,7 +23,7 @@ import { ParaView } from '../paraview/paraview';
 import { LegendItemsWithPosition, type LegendItem } from '../view/legend';
 import { AxisOrientation } from '../view/axis';
 import { NavMap, type NavNode, NavNodeType, DatapointNavNodeType, ChordNavNodeOptions } from '../view/layers/data/navigation';
-import { type ParaState, PointAnnotation, type SparkBrailleInfo, datapointIdToCursor, SettingsManager } from '../state';
+import { type ParaState, type SparkBrailleInfo, datapointIdToCursor, SettingsManager } from '../state';
 import { Sonifier } from '../audio/sonifier';
 
 
@@ -572,9 +572,7 @@ export abstract class BaseChartInfo {
       const seriesPreviouslyVisited = this._paraState.everVisitedSeries(cursor.options.seriesKey);
       const datapoint = this.model!.atKeyAndIndex(cursor.options.seriesKey, cursor.options.index)!;
       const announcements = [this._summarizer.getDatapointSummary(datapoint, 'statusBar')];
-      const annotations = this._paraState.annotations.filter(
-        (a) => a.type === 'datapoint' && a.seriesKey === datapoint.seriesKey && a.index === datapoint.datapointIndex
-      ) as PointAnnotation[];
+      const annotations = datapoint.annotations;
       if (annotations.length > 0) {
         const annotationsText = annotations.map((a) => a.text).join(', ');
         announcements.push(`Annotation${annotations.length > 1 ? 's' : ''}: ${annotationsText}`);

@@ -220,6 +220,16 @@ export class Threshold extends View {
             if (checkIntersect(label)) {
                 label.x = this.dataLayer.width - (label.width / 2);
             }
+            const startX = this.dataLayer.width
+            if (checkIntersect(label)) {
+                label.y = this.clipHeight - 7;
+                for (let x = startX; x > label.width; x -= 1) {
+                    label.x -= 1;
+                    if (!checkIntersect(label)) {
+                        break;
+                    }
+                }       
+            }
         }
         else if (this.orientation == 'vert') {
             if (this.clipWidth < 0) {

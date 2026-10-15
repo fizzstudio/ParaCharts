@@ -223,7 +223,6 @@ export class PlotLayerManager extends View {
       throw new Error(`no class found for chart type '${this.paraview.paraState.type}'`);
     }
     this._dataLayers = [dataLayer];
-    this.paraview.paraState.postNotice('dataLayerSet', {})
   }
 
   updateLoc() {
