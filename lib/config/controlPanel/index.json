@@ -50,6 +50,11 @@
             "type": "boolean",
             "default": false
         },
+        "isSparkBrailleCompact": {
+            "description": "Whether to use a single braille dot per datapoint",
+            "type": "boolean",
+            "default": false
+        },
         "isDataTabVisible": {
             "description": "Show data table tab",
             "type": "boolean",
