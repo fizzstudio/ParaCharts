@@ -85,9 +85,9 @@ export class AnnotationPanel extends ControlPanelTabPanel {
     }
     else if (annot.type == 'axis-annotation') {
       const axisAnnot = annot as AxisAnnotation;
-      const cap = axisAnnot.axis == 'y' ? "Y" : "X"
-      const isThreshold = axisAnnot.kind == 'threshold' ? "Threshold" : ""
-      return `${isThreshold} ${cap} - ${axisAnnot.value}: ${axisAnnot.text}`
+      const cap = axisAnnot.axis == 'y' ? "Y axis" : "X axis";
+      const isThreshold = axisAnnot.kind == 'threshold' ? "threshold" : "marker";
+      return `${cap} ${isThreshold} - ${axisAnnot.value}: ${axisAnnot.text}`;
     }
     return annot.text;
   }
@@ -174,7 +174,7 @@ export class AnnotationPanel extends ControlPanelTabPanel {
         return;
       }
       else {
-        this._paraState.model?.editAnnotation(annot.id, text);
+        this._paraState.model?.editAnnotationText(annot.id, text);
         this._paraState.refreshParaView();
       }
     }

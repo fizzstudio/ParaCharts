@@ -26,6 +26,9 @@ export class AnnotationLayer extends PlotLayer {
     super(paraview, width, height);
     document.addEventListener('paranotice', (e: CustomEvent<any>) => {
       if (e.detail.key == 'dataLayerSet') {
+        for (let annot of this.paraview.paraState.model!.annotations) {
+          this.paraview.paraState._selectedAnnotations.push(annot.id);
+        }
         const thresholdAnnotations = this.paraview.paraState.model!.allThresholdAnnotations;
         this.paraview.paraState.clearThresholds();
         for (let i = 0; i < thresholdAnnotations.length; i++) {
@@ -33,8 +36,8 @@ export class AnnotationLayer extends PlotLayer {
             continue;
           }
           const threshold = thresholdAnnotations[i] as ThresholdAnnotation;
-          const orientation = threshold.axis == 'x' ? 'vert' : 'horiz'
-          this.paraview.paraState.thresholds.push(new Threshold(this.paraview, orientation, threshold.value, threshold.text))
+          const orientation = threshold.axis == 'x' ? 'vert' : 'horiz';
+          this.paraview.paraState.thresholds.push(new Threshold(this.paraview, orientation, threshold.value, threshold.id, threshold.text));
           if (threshold.polarity == 'below-is-better') {
             this.paraview.paraState.updateConfig(draft => { draft.marker.isChangeThresholdHighlightColor = true; }, undefined, `threshold-${i}`);
           }

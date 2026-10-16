@@ -609,7 +609,8 @@ export class ParaState extends BaseState {
     }
 
     // Sync to manifest (we still want the changed paths recorded)
-    this._syncPatchesToManifest(patches);
+    // TODO: Fix this to work with instanced settings
+    //this._syncPatchesToManifest(patches);
 
     const observedInst: { [path: string]: Partial<{ oldValue: ConfigSetting, newValue: ConfigSetting }> } = {};
     for (const patch of patches) {
