@@ -388,6 +388,7 @@ export interface ControlpanelConfig extends ConfigGroup {
     isDataTabVisible: boolean;
     isExplorationBarVisible: boolean;
     isMDRAnnotationsVisible: boolean;
+    isSparkBrailleCompact: boolean;
     isSparkBrailleControlVisible: boolean;
     isSparkBrailleVisible: boolean;
     tabLabelStyle: TabLabelStyle;
