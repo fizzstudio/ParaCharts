@@ -14,7 +14,7 @@ export class Threshold extends View {
     protected label?: Label;
     protected line?: PathShape;
     protected slider?: CircleShape;
-    constructor(paraview: ViewContext, public orientation: 'horiz' | 'vert', public align: number, public text?: string) {
+    constructor(paraview: ViewContext, public orientation: 'horiz' | 'vert', public align: number, public annotID: string, public text?: string) {
         super(paraview);
         this.id = `threshold-${this.paraview.paraState.nextMarkerID()}`;
         this._createShapes(orientation, align);
@@ -45,6 +45,7 @@ export class Threshold extends View {
                     let newPos = (1 - (this.slider.centerY / this.dataLayer.height)) * (interval.end - interval.start) + interval.start;
                     newPos = Math.floor(newPos * 100) / 100
                     this.align = newPos;
+                    this.paraview.paraState.model!.editAnnotationValue(this.annotID, newPos);
                     this._createShapes(this.orientation, this.align);
                     this._createLabel()
                     return;
@@ -219,6 +220,16 @@ export class Threshold extends View {
             }
             if (checkIntersect(label)) {
                 label.x = this.dataLayer.width - (label.width / 2);
+            }
+            const startX = this.dataLayer.width
+            if (checkIntersect(label)) {
+                label.y = this.clipHeight - 7;
+                for (let x = startX; x > label.width; x -= 1) {
+                    label.x -= 1;
+                    if (!checkIntersect(label)) {
+                        break;
+                    }
+                }
             }
         }
         else if (this.orientation == 'vert') {

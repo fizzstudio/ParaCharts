@@ -275,6 +275,7 @@ export class DocumentView extends Container(View) {
     this.append(this._chartLayers);
     this._chartLayers.createLayers();
     this._chartLayers.dataLayer.init();
+    this.paraview.paraState.postNotice('dataLayerSet', {});
 
     // At this point, we're fully connected to the root of the view tree,
     // so we can safely observe

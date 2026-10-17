@@ -3,7 +3,7 @@ import { View, Container } from '../../base_view';
 import { DataLayerContext, type ViewContext } from '../../view_context';
 import { RectShape, PathShape } from '../../shape';
 import { Vec2 } from '../../../common/vector';
-import { type PointAnnotation, datapointIdToCursor } from '../../../state/parastate';
+import { datapointIdToCursor } from '../../../state/parastate';
 import { Popup } from '../../popup';
 import { PlaneChartInfo } from '../../../chart_types';
 import { type ScatterPlotView } from '../data/chart_type/scatter_plot_view';
@@ -15,6 +15,7 @@ import { SettingsManager } from '../../../state';
 import { LinePlotView, LineSection } from '../data';
 import { Threshold } from './threshold';
 import { ParaChart } from '../../../parachart/parachart';
+import { ThresholdAnnotation } from '@fizz/chartsignal-internal';
 
 export type AnnotationType = 'foreground' | 'background';
 
@@ -25,14 +26,22 @@ export class AnnotationLayer extends PlotLayer {
     super(paraview, width, height);
     document.addEventListener('paranotice', (e: CustomEvent<any>) => {
       if (e.detail.key == 'dataLayerSet') {
+        for (let annot of this.paraview.paraState.model!.annotations) {
+          this.paraview.paraState._selectedAnnotations.push(annot.id);
+        }
+        const thresholdAnnotations = this.paraview.paraState.model!.allThresholdAnnotations;
         this.paraview.paraState.clearThresholds();
-        for (let i = 0; i < this.paraview.paraState.thresholdData.length; i++) {
-          const threshold =this.paraview.paraState.thresholdData[i];
-          this.paraview.paraState.thresholds.push(new Threshold(this.paraview, threshold.orientation, threshold.align, threshold.label))
-          if (threshold.polarity == 'below-is-better'){
+        for (let i = 0; i < thresholdAnnotations.length; i++) {
+          if (this.paraview.paraState.model!.annotations[i].type !== 'axis-annotation') {
+            continue;
+          }
+          const threshold = thresholdAnnotations[i] as ThresholdAnnotation;
+          const orientation = threshold.axis == 'x' ? 'vert' : 'horiz';
+          this.paraview.paraState.thresholds.push(new Threshold(this.paraview, orientation, threshold.value, threshold.id, threshold.text));
+          if (threshold.polarity == 'below-is-better') {
             this.paraview.paraState.updateConfig(draft => { draft.marker.isChangeThresholdHighlightColor = true; }, undefined, `threshold-${i}`);
           }
-          else if (threshold.polarity == 'above-is-better'){
+          else if (threshold.polarity == 'above-is-better') {
             this.paraview.paraState.updateConfig(draft => { draft.marker.isChangeThresholdHighlightColor = true; }, undefined, `threshold-${i + 1}`);
           }
         }
@@ -76,9 +85,7 @@ export class AnnotationLayer extends PlotLayer {
   settingDidChange(path: string, oldValue?: ConfigSetting, newValue?: ConfigSetting): void {
     if (['ui.isLowVisionModeEnabled'].includes(path)) {
       if (!oldValue) {
-        for (let annot of this.paraview.paraState.annotations) {
-          annot.isSelected = false;
-        }
+        this.paraview.paraState._selectedAnnotations = [];
       }
     }
   }
@@ -386,7 +393,7 @@ export class AnnotationLayer extends PlotLayer {
           const endHeight = this.height - (series.datapoints[tl.endIndex - 1].facetValueNumericized("y")! - minValue) / (maxValue - minValue) * this.height;
           const startPx = this.width * tl.startPortion;
           const endPx = this.width * tl.endPortion;
-          const colorValue = this.paraview.paraState.colors.colorValue('highlight');
+          const colorValue = this.paraview.paraState.colors.colorValueAt(-1);
           const trendLine = new PathShape(this.paraview, {
             x: this._x,
             y: this._y,
@@ -434,10 +441,11 @@ export class AnnotationLayer extends PlotLayer {
         }
       }
 
-      if (this.paraview.paraState.annotations) {
+      if (this.paraview.paraState.model?.allDatapointAnnotations) {
         this.addGroup('annotation-popups', true);
         this.group('annotation-popups')!.clearChildren();
-        let annots = structuredClone(this.paraview.paraState.annotations.filter(a => a.type == 'datapoint' && a.isSelected == true) as unknown as PointAnnotation[]);
+        const annots = structuredClone(this.paraview.paraState.model?.allDatapointAnnotations.filter(a =>
+          this.paraview.paraState._selectedAnnotations.includes(a.id)));
         /*
         for (let dp of this.paraview.paraState.visitedDatapoints){
           let cursor = datapointIdToCursor(dp)
@@ -450,8 +458,9 @@ export class AnnotationLayer extends PlotLayer {
         }
           */
         for (const annot of annots) {
-          const seriesKey = this.paraview.paraState.model!.series.filter(s => s[0].seriesKey == annot.seriesKey)[0].key
-          const dpView = this.paraview.documentView?.chartLayers.dataLayer.datapointViews.filter(d => d.seriesKey == seriesKey && d.index == annot.index)[0]
+          const seriesKey = this.paraview.paraState.model!.series[annot.seriesIndex].key;
+          const dpView = this.paraview.documentView?.chartLayers.dataLayer.datapointViews.filter(d =>
+            d.seriesKey == seriesKey && d.index == annot.datapointIndex)[0]
           if (!dpView) {
             break
           }

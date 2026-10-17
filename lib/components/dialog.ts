@@ -93,7 +93,7 @@ export class ParaDialog extends ParaComponent {
   `;
 
   render() {
-    const buttons = [{tag: 'cancel', text: this.btnText}];
+    const buttons = [{tag: 'close', text: this.btnText}];
     return html`
       <fizz-dialog
         ${ref(this._dialogRef)}

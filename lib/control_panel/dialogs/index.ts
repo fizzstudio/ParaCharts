@@ -8,3 +8,4 @@ export * from './legend_dialog';
 export * from './color_prefs_dialog';
 export * from './low_vision_dialog';
 export * from './marker_dialog'
+export * from './line_break_controls_dialog'
