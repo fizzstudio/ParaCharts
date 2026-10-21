@@ -34,6 +34,7 @@ export interface AvailableActions {
   addAnnotation(): void;
   toggleNarrativeHighlightMode(noSelfVoicing: boolean): void;
   toggleDataTable(): void;
+  toggleSparkBraille(): void;
   playPauseMedia(): void;
   reset(): void;
 }

@@ -457,7 +457,7 @@ function _createSingleSeriesClusterLayer(
         seriesKey: ctx.model!.seriesKeys[0],
         start: 0,
         end: cluster.dataPointIDs.length - 1,
-        datapoints: [...cluster.dataPointIDs, ...cluster.outlierIDs].map(id => ctx.paraState.model?.allPoints[id]).filter(p => p != undefined),
+        datapoints: [...cluster.dataPointIDs].map(id => ctx.paraState.model?.allPoints[id]).filter(p => p != undefined),
         clustering: cluster,
         index: clusterIndex
       });
@@ -485,7 +485,7 @@ function _createMultiSeriesClusterLayer(
         seriesKey: series.key,
         start: 0,
         end: cluster.dataPointIDs.length - 1,
-        datapoints: [...cluster.dataPointIDs, ...cluster.outlierIDs].map(id => ctx.paraState.model?.allPoints[id]).filter(p => p != undefined),
+        datapoints: [...cluster.dataPointIDs].map(id => ctx.paraState.model?.allPoints[id]).filter(p => p != undefined),
         clustering: cluster,
         index: clusterIndex
       });

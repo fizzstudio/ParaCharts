@@ -195,7 +195,7 @@ export class VennDiagramInfo extends BaseChartInfo {
     return Promise.resolve();
   }
 
-  protected _sparkBrailleInfo() {
+  protected _sparkBrailleInfo(currentSeries: string) {
     return {
       data: (this._navMap!.cursor!.isNodeType('datapoint')
         || this._navMap!.cursor!.isNodeType('series'))
@@ -205,7 +205,8 @@ export class VennDiagramInfo extends BaseChartInfo {
             value: dp.facetValueAsNumber('y')
           })))
         : '0',
-      isProportional: true
+      isProportional: true,
+      currentSeries
     };
   }
 

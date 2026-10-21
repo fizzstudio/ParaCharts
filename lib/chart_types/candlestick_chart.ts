@@ -91,7 +91,7 @@ export class CandlestickChartInfo extends PointChartInfo {
       if (!quiet) {
         this._paraState.announce(this._composeVisitAnnouncement());
       }
-      this._paraState.sparkBrailleInfo = this._sparkBrailleInfo();
+      this._paraState.sparkBrailleInfo = this._sparkBrailleInfo('');
     }
   }
 

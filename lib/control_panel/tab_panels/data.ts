@@ -3,8 +3,8 @@ import {
 } from 'lit';
 import { property, customElement } from 'lit/decorators.js';
 import { ref, createRef } from 'lit/directives/ref.js';
-import * as sb from '@fizz/sparkbraille-component';
-import '@fizz/sparkbraille-component';
+import * as sb from '../../components/sparkbraille';
+import '../../components/sparkbraille';
 import { ControlPanelTabPanel } from './tab_panel';
 import { type ParaView } from '../../paraview';
 import '../datatable';
@@ -14,6 +14,7 @@ export class DataPanel extends ControlPanelTabPanel {
 
   @property({type: Boolean}) isSparkBrailleVisible = false;
 
+  protected _sparkBrailleButtonRef = createRef<HTMLButtonElement>();
   protected _sparkBrailleRef = createRef<sb.SparkBraille>();
   protected _sparkBrailleWrapperRef = createRef<HTMLDivElement>();
 
@@ -70,6 +71,10 @@ export class DataPanel extends ControlPanelTabPanel {
     `
   ];
 
+  toggleSparkBraille() {
+    this._sparkBrailleButtonRef.value!.click();
+  }
+
   render() {
     const paraView = this.controlPanel.parentElement!.firstElementChild as ParaView;
     return html`
@@ -87,13 +92,21 @@ export class DataPanel extends ControlPanelTabPanel {
           ${this.controlPanel.config.isSparkBrailleControlVisible
             ? html`
               <button
+                ${ref(this._sparkBrailleButtonRef)}
                 @click=${() => {
                   this.isSparkBrailleVisible = !this.isSparkBrailleVisible;
                   // XXX Does this work?
                   paraView.paraState.updateConfig(draft => {
                     draft.controlPanel.isSparkBrailleVisible = this.isSparkBrailleVisible;
                   })
-                  //this.controlPanel.requestUpdate();
+                  // In order to set focus on the sparkbraille element, it needs to
+                  // be currently visible, which is why we remove the hidden attribute
+                  // here rather than letting Lit do so on a re-render.
+                  if (this._sparkBrailleWrapperRef.value!.hasAttribute('hidden')) {
+                    this._sparkBrailleWrapperRef.value!.removeAttribute('hidden');
+                  } else {
+                    this._sparkBrailleWrapperRef.value!.setAttribute('hidden', '');
+                  }
                   this._sparkBrailleRef.value!.focus();
                 }}
               >
@@ -146,14 +159,14 @@ export class DataPanel extends ControlPanelTabPanel {
       <div
         ${ref(this._sparkBrailleWrapperRef)}
         id="sparkbraille"
-        class=${this.isSparkBrailleVisible ? nothing : 'hidden'}
-        ?hidden=${!this.isSparkBrailleVisible}
-    >
+        hidden
+      >
         <!--
           What should happen when a braille cell is selected?
         -->
         <fizz-sparkbraille
           ${ref(this._sparkBrailleRef)}
+          .globalState=${this._controlPanel.paraChart.globalState}
           ?bar=${this._paraState.sparkBrailleInfo?.isBar}
           ?isProp=${this._paraState.sparkBrailleInfo?.isProportional}
           data=${this._paraState.sparkBrailleInfo?.isProportional
@@ -162,6 +175,7 @@ export class DataPanel extends ControlPanelTabPanel {
           labeledData=${this._paraState.sparkBrailleInfo?.isProportional
             ? this._paraState.sparkBrailleInfo?.data ?? ''
             : ''}
+          currentSeries=${this._paraState.sparkBrailleInfo?.currentSeries ?? ''}
           @select=${(e: CustomEvent) => {
             const index = e.detail*2;
             //chart.hiliteSegmentRangeById('series', `${index}`, `${index + 1}`);

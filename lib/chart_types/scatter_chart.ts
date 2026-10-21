@@ -34,6 +34,13 @@ export class ScatterChartInfo extends PointChartInfo {
     super._addSettingControls();
     this._paraState.settingControls.insert('type.scatter.isShowTrendLine');
     this._paraState.settingControls.insert('type.scatter.isShowOutliers');
+    const variables = Object.entries(this._paraState.originalManifest!.jim.datasets[0].facets).map(f => f[1].label);
+    this._paraState.settingControls.insert('type.scatter.xFacet', {
+      options: variables
+    });
+    this._paraState.settingControls.insert('type.scatter.yFacet', {
+      options: variables
+    });
   }
 
   get clustering() {

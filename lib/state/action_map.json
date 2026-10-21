@@ -3,8 +3,8 @@
     "label": "Add an annotation",
     "hotkeys": ["a"]
   },
-  "toggleAnnouncementMode": {
-    "label": "Toggle screen reader announcements",
+  "toggleSparkBraille": {
+    "label": "Toggle SparkBraille",
     "hotkeys": ["b"]
   },
   "jumpToChordLanding": {
@@ -14,6 +14,10 @@
   "toggleDataTable": {
     "label": "Toggle data table",
     "hotkeys": ["d"]
+  },
+  "toggleAnnouncementMode": {
+    "label": "Toggle screen reader announcements",
+    "hotkeys": ["e"]
   },
   "openHelp": {
     "label": "Show the help dialog",

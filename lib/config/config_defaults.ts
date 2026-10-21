@@ -178,6 +178,7 @@ export const defaultConfig: Config = {
       isCaptionVisible: true,
       isExplorationBarVisible: true,
       isSparkBrailleVisible: false,
+      isSparkBrailleCompact: false,
       isDataTabVisible: true,
       isColorsTabVisible: true,
       isAudioTabVisible: true,
@@ -409,6 +410,8 @@ export const defaultConfig: Config = {
         maxYValue: "unset",
         isShowTrendLine: false,
         isShowOutliers: false,
+        xFacet: "",
+        yFacet: "",
       },
       venn: {
         orientationAngleOffset: 0,

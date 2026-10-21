@@ -540,6 +540,8 @@ export interface ControlpanelConfig extends ConfigGroup {
   isExplorationBarVisible: boolean;
   /** Show spark braille display */
   isSparkBrailleVisible: boolean;
+  /** Whether to use a single braille dot per datapoint */
+  isSparkBrailleCompact: boolean;
   /** Show data table tab */
   isDataTabVisible: boolean;
   /** Show colors/appearance tab */
@@ -1060,6 +1062,10 @@ export interface TypeScatterConfig extends TypePlaneConfig {
   isShowTrendLine: boolean;
   /** Highlight statistical outliers */
   isShowOutliers: boolean;
+  /** Axis to display on the X axis */
+  xFacet: string;
+  /** Axis to display on the Y axis */
+  yFacet: string;
 }
 /**
  * Venn diagram settings.

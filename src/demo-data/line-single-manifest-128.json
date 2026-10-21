@@ -1,89 +1,121 @@
 {
-  "datasets": [
-    {
-      "representation": {
-        "type": "chart",
-        "subtype": "line"
-      },
-      "title": "Cattle population worldwide 2012 to 2019",
-      "facets": {
-        "x": {
-          "label": "Year",
-          "variableType": "independent",
-          "measure": "interval",
-          "datatype": "date",
-          "units": "year",
-          "displayType": {
-            "type": "axis",
-            "orientation": "horizontal"
+  "jim": {
+    "datasets": [
+      {
+        "representation": {
+          "type": "chart",
+          "subtype": "line"
+        },
+        "title": "Cattle population worldwide 2012 to 2019",
+        "facets": {
+          "x": {
+            "label": "Year",
+            "variableType": "independent",
+            "measure": "interval",
+            "datatype": "date",
+            "units": "year",
+            "displayType": {
+              "type": "axis",
+              "orientation": "horizontal"
+            }
+          },
+          "y": {
+            "label": "Cattle population in million head",
+            "variableType": "dependent",
+            "measure": "ratio",
+            "datatype": "number",
+            "multiplier": 1000000,
+            "displayType": {
+              "type": "axis",
+              "orientation": "vertical"
+            }
           }
         },
-        "y": {
-          "label": "Cattle population in million head",
-          "variableType": "dependent",
-          "measure": "ratio",
-          "datatype": "number",
-          "multiplier": 1000000,
-          "displayType": {
-            "type": "axis",
-            "orientation": "vertical"
+        "series": [
+          {
+            "key": "Cattle population in million head",
+            "theme": {
+              "baseQuantity": "cattle",
+              "baseKind": "number",
+              "locale": "the world"
+            },
+            "records": [
+              {
+                "x": "2012",
+                "y": "1001.72"
+              },
+              {
+                "x": "2013",
+                "y": "1005.29"
+              },
+              {
+                "x": "2014",
+                "y": "1008.57"
+              },
+              {
+                "x": "2015",
+                "y": "969.26"
+              },
+              {
+                "x": "2016",
+                "y": "978.77"
+              },
+              {
+                "x": "2017",
+                "y": "984.53"
+              },
+              {
+                "x": "2018",
+                "y": "996.36"
+              },
+              {
+                "x": "2019**",
+                "y": "1007.26"
+              }
+            ]
           }
+        ],
+        "data": {
+          "source": "inline"
+        },
+        "settings": {
+          "controlPanel.isControlPanelDefaultOpen": false,
+          "controlPanel.caption.isCaptionExternalWhenControlPanelClosed": true,
+          "chart.isShowPopups": true,
+          "popup.activation": "onSelect",
+          "animation.isAnimationEnabled": false
         }
-      },
-      "series": [
-        {
-          "key": "Cattle population in million head",
-          "theme": {
-            "baseQuantity": "cattle",
-            "baseKind": "number",
-            "locale": "the world"
-          },
-          "records": [
-            {
-              "x": "2012",
-              "y": "1001.72"
-            },
-            {
-              "x": "2013",
-              "y": "1005.29"
-            },
-            {
-              "x": "2014",
-              "y": "1008.57"
-            },
-            {
-              "x": "2015",
-              "y": "969.26"
-            },
-            {
-              "x": "2016",
-              "y": "978.77"
-            },
-            {
-              "x": "2017",
-              "y": "984.53"
-            },
-            {
-              "x": "2018",
-              "y": "996.36"
-            },
-            {
-              "x": "2019**",
-              "y": "1007.26"
-            }
-          ]
-        }
-      ],
-      "data": {
-        "source": "inline"
-      },
-      "settings": {
-        "controlPanel.isControlPanelDefaultOpen": false,
-        "controlPanel.caption.isCaptionExternalWhenControlPanelClosed": true,
-        "chart.isShowPopups": true,
-        "popup.activation": "onSelect",
-        "animation.isAnimationEnabled": false
       }
-    }
-  ]
+    ],
+    "annotations": [
+      {
+        "target": {
+          "element": {
+            "source": "https://example.org/chart1.svg",
+            "selector": {
+              "type": "https://example.org/selectors/css/1",
+              "value": "#maximum-emissions"
+            }
+          },
+          "marker": {
+            "source": "https://example.org/chart1",
+            "selector": {
+              "type": "https://paracharts.example/selectors/chart-value/1",
+              "axis": "y",
+              "value": 995
+            }
+          }
+        },
+        "content": {
+          "kind": "threshold",
+          "role": "upper-limit",
+          "polarity": "below-is-better",
+          "label": {
+            "en": "Maximum allowed emissions"
+          }
+        },
+        "relationship": "https://example.org/relationships/marker/1"
+      }
+    ]
+  }
 }

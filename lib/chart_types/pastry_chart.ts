@@ -78,10 +78,11 @@ export class PastryChartInfo extends BaseChartInfo {
     return Promise.resolve();
   }
 
-  protected _sparkBrailleInfo() {
+  protected _sparkBrailleInfo(currentSeries: string) {
     return {
       data: this._sparkBrailleData(),
-      isProportional: true
+      isProportional: true,
+      currentSeries: this._paraState.model!.multi ? currentSeries : ''
     };
   }
 

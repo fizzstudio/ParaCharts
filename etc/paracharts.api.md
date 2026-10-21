@@ -37,9 +37,9 @@ import { Point as Point_2 } from '@fizz/chartsignal-internal';
 import { PropertyValueMap } from 'lit';
 import { PropertyValues } from 'lit';
 import { Ref } from 'lit/directives/ref.js';
+import { ref } from 'lit/directives/ref.js';
 import { Ref as Ref_2 } from 'lit-html/directives/ref.js';
 import { RefDirective } from 'lit-html/directives/ref.js';
-import * as sb from '@fizz/sparkbraille-component';
 import { SequenceInfo } from '@fizz/chartsignal-internal';
 import { Series } from '@fizz/chartsignal-internal';
 import { SeriesAnalysis } from '@fizz/chartsignal-internal';
@@ -388,6 +388,7 @@ export interface ControlpanelConfig extends ConfigGroup {
     isDataTabVisible: boolean;
     isExplorationBarVisible: boolean;
     isMDRAnnotationsVisible: boolean;
+    isSparkBrailleCompact: boolean;
     isSparkBrailleControlVisible: boolean;
     isSparkBrailleVisible: boolean;
     tabLabelStyle: TabLabelStyle;
@@ -1119,6 +1120,8 @@ export interface TypePlaneConfig extends ConfigGroup {
 export interface TypeScatterConfig extends TypePlaneConfig {
     isShowOutliers: boolean;
     isShowTrendLine: boolean;
+    xFacet: string;
+    yFacet: string;
 }
 
 // @public

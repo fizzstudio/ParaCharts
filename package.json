@@ -44,6 +44,11 @@
       "email": "julie.langston@gmail.com",
       "url": "https://github.com/julianna-langston/chart2music",
       "affiliation": "Chart2Music"
+    },
+    {
+      "name": "Jason White",
+      "email": "jason@jasonjgw.net",
+      "url": "http://jasonjgw.net"
     }
   ],
   "license": "AGPL-3.0-or-later",
@@ -64,6 +69,7 @@
     "dev": "storybook dev --no-open -p 5180",
     "go": "npm i && storybook dev --no-open -p 5180",
     "demo:headless": "vite --port 5177 --open src/demo/headless/vite/headless.html",
+    "demo:basic": "vite --port 5178 --open src/demo/basic.html",
     "demo:short": "vite --port 5183 --open src/demo/short-desc/short.html",
     "demo:poll": "vite --port 5199 --config src/demo/poll/vite.config.ts",
     "demo:live_update": "vite --port 5200 --open src/demo/live_update/index.html",
@@ -134,8 +140,7 @@
     "@fizz/dataframe": "^0.27.2",
     "@fizz/jimerator": "^0.20.2",
     "@fizz/logger": "^0.1.0",
-    "@fizz/sparkbraille-component": "^0.5.0",
-    "@fizz/ui-components": "^0.73.0",
+    "@fizz/ui-components": "^0.74.1",
     "@lit-app/state": "^1.0.1",
     "decimal.js": "^10.4.3",
     "immer": "^10.1.1",

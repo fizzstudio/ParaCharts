@@ -358,8 +358,8 @@ export class LinePath extends PathShape {
       return super.render();
     }
     const group = [] as ReturnType<typeof svg>[];
-    const sortedHorizThresholds = this.paraview.paraState.thresholds.filter(t => t.orientation == 'horiz').sort((a, b) => b.align - a.align);
-    const sortedVertThresholds = this.paraview.paraState.thresholds.filter(t => t.orientation == 'vert').sort((a, b) => a.align - b.align);
+    const sortedHorizThresholds = this.paraview.paraState.thresholds.filter(t => t.orientation == 'horiz').sort((a, b) => b.clipHeight - a.clipHeight);
+    const sortedVertThresholds = this.paraview.paraState.thresholds.filter(t => t.orientation == 'vert').sort((a, b) => a.clipWidth - b.clipWidth);
     for (let i = 0; i < (sortedHorizThresholds.length + 1) * (sortedVertThresholds.length + 1); i++) {
       const altStyleInfo: Record<string, string> = {};
       const config = SettingsManager.getGroupLinkForInstance<MarkerConfig>('marker', this.paraview.paraState.config, `threshold-${i}`);
