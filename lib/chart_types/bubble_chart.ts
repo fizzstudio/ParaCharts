@@ -1,4 +1,4 @@
-import { formatBox } from "@fizz/parasummary";
+import { formatBox } from "@fizz/chartsignal-internal";
 import { datapointIdToCursor, SettingsManager } from "../state";
 import { PointChartInfo } from "./point_chart";
 import { LegendItem, LegendItemsWithPosition } from "../view/legend";

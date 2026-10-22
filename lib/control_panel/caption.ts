@@ -4,7 +4,7 @@ import { type Unsubscribe } from '@lit-app/state';
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 import { Logger, getLogger } from '@fizz/logger';
-import { Highlight, HighlightedSummary } from '@fizz/parasummary';
+import { Highlight, HighlightedSummary } from '@fizz/chartsignal-internal';
 import { ParaComponent } from '../components';
 import { ParaChart } from '../parachart/parachart';
 import { ConfigSetting } from '../config/config_types';

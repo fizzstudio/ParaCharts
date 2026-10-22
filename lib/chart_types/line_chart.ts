@@ -15,9 +15,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { getLogger } from '@fizz/logger';
-import { interpolate } from '@fizz/templum';
-import { formatXYDatapoint } from '@fizz/parasummary';
-import { type ChartType, enumerate, PlaneDatapoint, PlaneModel } from '@fizz/chartsignal-internal';
+import { type ChartType, enumerate, PlaneDatapoint, PlaneModel, formatXYDatapoint } from '@fizz/chartsignal-internal';
 import { PointChartInfo } from './point_chart';
 import { datapointIdToCursor, type ParaState, queryMessages, describeSelections, describeAdjacentDatapoints, getDatapointMinMax, SettingsManager } from '../state';
 import { NavMap, type NavNode } from '../view/layers';
@@ -168,7 +166,7 @@ export class LineChartInfo extends PointChartInfo {
     return legendItems;
   }
 
-  // TODO: localize this text output
+  // TODO (@simonvarey): localize this text output by moving it to the summarizer. See #1427
   // focused view: e.options!.focus
   // all visited datapoint views: e.options!.visited
   queryData(): void {
@@ -190,7 +188,7 @@ export class LineChartInfo extends PointChartInfo {
       const series = this.model!.atKey(seriesKey)!;
       const datapointCount = series.length;
       const seriesLabel = series.getLabel();
-      msgArray.push(interpolate(
+      msgArray.push(this.summarizer.templum.replace(
         queryMessages.seriesLabelLength,
         { seriesLabel, datapointCount }
       ));
@@ -214,7 +212,7 @@ export class LineChartInfo extends PointChartInfo {
       const datapoint = series.datapoints[index];
       const seriesLabel = series.getLabel();
       const datapointView = this._paraView.documentView!.chartLayers.dataLayer.datapointView(seriesKey, index)!;
-      msgArray.push(interpolate(
+      msgArray.push(this.summarizer.templum.replace(
         queryMessages.datapointLabelLength,
         {
           seriesLabel,

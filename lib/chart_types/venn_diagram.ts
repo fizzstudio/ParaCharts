@@ -14,9 +14,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { formatXYDatapointX } from '@fizz/parasummary';
-import { interpolate } from '@fizz/templum';
-import { ChartType, type Datapoint, type PlaneDatapoint } from '@fizz/chartsignal-internal';
+import { ChartType, type Datapoint, type PlaneDatapoint, formatXYDatapointX } from '@fizz/chartsignal-internal';
 import { BaseChartInfo, RiffOrder } from './base_chart';
 import { type ParaState, datapointIdToCursor, queryMessages, describeSelections, getDatapointMinMax } from '../state';
 import { directions, type HorizDirection, type Direction } from '../config/config_types';
@@ -212,6 +210,7 @@ export class VennDiagramInfo extends BaseChartInfo {
     };
   }
 
+  // TODO (@simonvarey): localize this text output by moving it to the summarizer. See #1427
   queryData(): void {
     const msgArray: string[] = [];
 
@@ -232,7 +231,7 @@ export class VennDiagramInfo extends BaseChartInfo {
       const series = this._paraState.model!.atKey(seriesKey)!;
       const datapointCount = series.length;
       const seriesLabel = series.getLabel();
-      msgArray.push(interpolate(
+      msgArray.push(this.summarizer.templum.replace(
         queryMessages.seriesLabelLength,
         { seriesLabel, datapointCount }
       ));
@@ -255,7 +254,7 @@ export class VennDiagramInfo extends BaseChartInfo {
         msgArray.push(...selectionMsgArray);
       } else {
         const series = this._paraState.model!.atKey(seriesKey)!;
-        msgArray.push(interpolate(
+        msgArray.push(this.summarizer.templum.replace(
           queryMessages.percentageOfChart,
           {
             datapointX: formatXYDatapointX(datapoint, 'raw'),
@@ -264,7 +263,7 @@ export class VennDiagramInfo extends BaseChartInfo {
           }
         ));
         if (this._paraState.model!.multi) {
-          msgArray.push(interpolate(
+          msgArray.push(this.summarizer.templum.replace(
             queryMessages.percentageOfSeries,
             {
               seriesLabel: series.getLabel(),

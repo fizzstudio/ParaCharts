@@ -1,6 +1,6 @@
 import { ParaCaptionBox } from '../control_panel/caption';
 import { ParaState } from '../state';
-import { Highlight } from '@fizz/parasummary';
+import { Highlight } from '@fizz/chartsignal-internal';
 
 interface CaptureRequest {
   target: string;
@@ -123,7 +123,7 @@ export class TourBus {
   }
 
   protected async _getContextPayload(): Promise<ContextPayload> {
-    const summary = await this._paraState.chartInfo.summarizer.getChartSummary();
+    const summary = await this._paraState.chartInfo.summarizer.getChartSummaryHighlighted();
     // const caption = this._caption.caption;
     const div = document.createElement('div');
     div.innerHTML = summary.html;

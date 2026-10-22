@@ -14,9 +14,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { ChartType, type PlaneDatapoint, Datapoint } from '@fizz/chartsignal-internal';
-import { formatBox, formatXYDatapointX } from '@fizz/parasummary';
-import { interpolate } from '@fizz/templum';
+import { ChartType, type PlaneDatapoint, Datapoint, formatBox, formatXYDatapointX } from '@fizz/chartsignal-internal';
 import { BaseChartInfo, RiffOrder } from './base_chart';
 import { type ParaState, datapointIdToCursor, queryMessages, describeSelections, getDatapointMinMax, SettingsManager } from '../state';
 import { HorizDirection, LegendConfig } from '../config/config_types';
@@ -104,7 +102,7 @@ export class PastryChartInfo extends BaseChartInfo {
     }
   }
 
-  // TODO: localize this text output
+  // TODO (@simonvarey): localize this text output by moving it to the summarizer. See #1427
   // focused view: e.options!.focus
   // all visited datapoint views: e.options!.visited
   queryData(): void {
@@ -119,7 +117,7 @@ export class PastryChartInfo extends BaseChartInfo {
       const series = this._paraState.model!.atKey(seriesKey)!;
       const datapointCount = series.length;
       const seriesLabel = series.getLabel();
-      msgArray.push(interpolate(
+      msgArray.push(this.summarizer.templum.replace(
         queryMessages.seriesLabelLength,
         { seriesLabel, datapointCount }
       ));
@@ -158,7 +156,7 @@ export class PastryChartInfo extends BaseChartInfo {
       } else {
         // If no selected datapoints, compare the current datapoint to previous and next datapoints in this series
         const series = this._paraState.model!.atKey(seriesKey)!;
-        msgArray.push(interpolate(
+        msgArray.push(this.summarizer.templum.replace(
           queryMessages.percentageOfChart,
           {
             datapointX: formatXYDatapointX(datapoint, 'raw'),
@@ -167,7 +165,7 @@ export class PastryChartInfo extends BaseChartInfo {
           }
         ));
         if (this._paraState.model!.multi) {
-          msgArray.push(interpolate(
+          msgArray.push(this.summarizer.templum.replace(
             queryMessages.percentageOfSeries,
             {
               seriesLabel: series.getLabel(),
