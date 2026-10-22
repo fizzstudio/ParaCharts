@@ -13,7 +13,6 @@ import { ref, createRef } from 'lit/directives/ref.js';
 
 @customElement('para-controls-panel')
 export class ControlsPanel extends ControlPanelTabPanel {
-
   protected _advancedControlDialogRef = createRef<AdvancedControlSettingsDialog>();
   protected _animationDialogRef = createRef<AnimationDialog>();
 
@@ -115,8 +114,8 @@ export class ControlsPanel extends ControlPanelTabPanel {
           ${this._paraState.settingControls.getContent('controlPanel.tabs.controls.animation')}
           <button
             @click=${() => {
-        this._animationDialogRef.value?.show()
-      }}
+              this._animationDialogRef.value?.show()
+            }}
           >
             ${this._globalState.l10n.localize('cpanel.tabs.controls.animation_settings')}
           </button>
@@ -137,7 +136,7 @@ export class ControlsPanel extends ControlPanelTabPanel {
           <button
             @click=${() => this._advancedControlDialogRef.value?.show()}
           >
-          ${this._globalState.l10n.localize('cpanel.tabs.controls.advanced_controls')}
+            ${this._globalState.l10n.localize('cpanel.tabs.controls.advanced_controls')}
           </button>
         </section>
       </div>

@@ -78,6 +78,7 @@
                     "popup_settings": "popup settings",
                     "font_settings": "font settings",
                     "tactile_settings": "tactile settings",
+                    "sparkbraille_settings": "sparkbraille settings",
                     "pastry_orientation": "orientation",
                     "pastry_explode": "explode",
                     "pastry_inside_labels": "inside labels",
@@ -144,6 +145,9 @@
                         "highlight_datapoints": "Highlight datapoints",
                         "highlight_color": "Change highlight color",
                         "highlight_under_line": "Only highlight between line and threshold"
+                    },
+                    "sparkbraille_dialog": {
+                        "sb_compact": "compact mode"
                     }
                 },
                 "annotations": {
