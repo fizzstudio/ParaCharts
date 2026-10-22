@@ -176,6 +176,7 @@ export class DataPanel extends ControlPanelTabPanel {
             ? this._paraState.sparkBrailleInfo?.data ?? ''
             : ''}
           currentSeries=${this._paraState.sparkBrailleInfo?.currentSeries ?? ''}
+          ?compact=${this._paraState.config.controlPanel.isSparkBrailleCompact}
           @select=${(e: CustomEvent) => {
             const index = e.detail*2;
             //chart.hiliteSegmentRangeById('series', `${index}`, `${index + 1}`);

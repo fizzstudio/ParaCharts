@@ -51,9 +51,12 @@
             "default": false
         },
         "isSparkBrailleCompact": {
+            "label": "cpanel.tabs.chart.sparkbraille_dialog.sb_compact",
             "description": "Whether to use a single braille dot per datapoint",
             "type": "boolean",
-            "default": false
+            "default": false,
+            "control": "checkbox",
+            "parentView": "controlPanel.tabs.chart.sparkbraille.dialog"
         },
         "isDataTabVisible": {
             "description": "Show data table tab",

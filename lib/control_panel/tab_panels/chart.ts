@@ -7,7 +7,7 @@ import {
 import { customElement } from 'lit/decorators.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 import { FontSettingsDialog } from '../dialogs/font_dialog';
-import { TactileSettingsDialog } from '../dialogs';
+import { TactileSettingsDialog, SparkBrailleSettingsDialog } from '../dialogs';
 import { PopupSettingsDialog } from '../../view/popup';
 import { LegendSettingsDialog } from '../dialogs/legend_dialog';
 import { MarkerSettingsDialog } from '../dialogs/marker_dialog';
@@ -20,6 +20,7 @@ export class ChartPanel extends ControlPanelTabPanel {
   protected _popupDialogRef = createRef<PopupSettingsDialog>();
   protected _legendDialogRef = createRef<LegendSettingsDialog>();
   protected _markerDialogRef = createRef<MarkerSettingsDialog>();
+  protected _sparkBrailleDialogRef = createRef<SparkBrailleSettingsDialog>();
 
   static styles = [
     ...ControlPanelTabPanel.styles,
@@ -83,7 +84,7 @@ export class ChartPanel extends ControlPanelTabPanel {
   get markerDialogRef() {
     return this._markerDialogRef;
   }
-  
+
   connectedCallback() {
     super.connectedCallback();
     this._paraState.settingControls.insert('description.captionFormat');
@@ -142,6 +143,13 @@ export class ChartPanel extends ControlPanelTabPanel {
               Marker settings
             </button>
           </div>
+          <div>
+            <button
+              @click=${() => this._sparkBrailleDialogRef.value?.show()}
+            >
+              ${this._globalState.l10n.localize('cpanel.tabs.chart.sparkbraille_settings')}
+            </button>
+          </div>
           ${popupsContent.map(columnContent => html`
             <div id="popup-content">
               ${columnContent}
@@ -191,6 +199,11 @@ export class ChartPanel extends ControlPanelTabPanel {
         id="marker-settings-dialog"
         .globalState=${this._globalState}
       ></para-marker-settings-dialog>
+      <para-sparkbraille-settings-dialog
+        ${ref(this._sparkBrailleDialogRef)}
+        id="sparkbraille-settings-dialog"
+        .globalState=${this._globalState}
+      ></para-sparkbraille-settings-dialog>
     `;
   }
 
