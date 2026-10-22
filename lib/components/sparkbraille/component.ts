@@ -58,6 +58,8 @@ export class SparkBraille extends ParaComponent {
   /** Use with labeled data to produce a proportional chart. */
   @property({ type: Boolean }) isProp = false;
   @property() currentSeries = '';
+  /** Whether to display the chart in compact mode. */
+  @property({type: Boolean}) compact = false;
 
   @state() private _cells?: readonly (readonly number[])[];
   @state() private _braille = '';
@@ -121,7 +123,7 @@ export class SparkBraille extends ParaComponent {
   }
 
   protected willUpdate(changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {
-    if (changedProperties.has('data')) {
+    if (changedProperties.has('data') || changedProperties.has('compact')) {
       this._renderBraille(this.data!);
     }
   }
@@ -197,7 +199,7 @@ export class SparkBraille extends ParaComponent {
     const data = dataText.split(/ /).map(parseFloat);
     const binner = new DataBinner(data, 4);
     this._binnedData = binner.binnedData;
-    if (this._paraState.config.controlPanel.isSparkBrailleCompact) {
+    if (this.compact) {
       const brailleLine = new BinsToBraille(this._binnedData, this.bar);
       this._cells = brailleLine.cells;
       this._braille = convertCells(this._cells);
