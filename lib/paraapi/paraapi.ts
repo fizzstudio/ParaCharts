@@ -256,7 +256,7 @@ export class ParaAPI {
         _paraChart.controlPanel.annotationPanel.addAnnotation();
       },
       /** Toggle tour guide mode. */
-      toggleNarrativeHighlightMode: (args: ActionArgumentMap) => {
+      toggleTourGuide: (args: ActionArgumentMap) => {
         this._tourGuideNoSelfVoicing = args.noSelfVoicing as boolean;
         paraView.paraState.updateConfig(draft => {
           draft.ui.isTourGuideEnabled = true;
@@ -307,7 +307,7 @@ export class ParaAPI {
     this._tourGuideActions.goFirst = () => { };
     this._tourGuideActions.goLast = () => { };
     this._tourGuideActions.repeatLastAnnouncement = () => { };
-    this._tourGuideActions.toggleNarrativeHighlightMode = () => {
+    this._tourGuideActions.toggleTourGuide = () => {
       paraView.paraState.updateConfig(draft => {
         if (!this._tourGuideNoSelfVoicing) {
           draft.ui.isVoicingEnabled = this._tourGuideSelfVoicingState;

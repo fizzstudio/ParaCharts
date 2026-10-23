@@ -19,6 +19,23 @@
     "label": "Toggle screen reader announcements",
     "hotkeys": ["e"]
   },
+  "toggleTourGuide": {
+    "label": "Toggle Tour Guide",
+    "hotkeys": [
+      {
+        "keyID": "g",
+        "args": {
+          "noSelfVoicing": false
+        }
+      },
+      {
+        "keyID": "Shift+g",
+        "args": {
+          "noSelfVoicing": true
+        }
+      }
+    ]
+  },
   "openHelp": {
     "label": "Show the help dialog",
     "hotkeys": ["h"]
@@ -30,23 +47,6 @@
   "toggleLowVisionMode": {
     "label": "Toggle low-vision mode",
     "hotkeys": ["l"]
-  },
-  "toggleNarrativeHighlightMode": {
-    "label": "Toggle narrative highlight mode",
-    "hotkeys": [
-      {
-        "keyID": "n",
-        "args": {
-          "noSelfVoicing": false
-        }
-      },
-      {
-        "keyID": "Shift+n",
-        "args": {
-          "noSelfVoicing": true
-        }
-      }
-    ]
   },
   "switchToOtherData": {
     "label": "Switch to other data set",
