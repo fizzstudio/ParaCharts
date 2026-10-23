@@ -136,9 +136,9 @@
   },
   "dependencies": {
     "@elemental/localization": "^1.10.0",
-    "@fizz/chartsignal-internal": "^0.1.1",
+    "@fizz/chartsignal-internal": "^0.1.3",
     "@fizz/dataframe": "^0.27.2",
-    "@fizz/jimerator": "^0.20.5",
+    "@fizz/jimerator": "^0.20.6",
     "@fizz/logger": "^0.1.0",
     "@fizz/ui-components": "^0.74.1",
     "@lit-app/state": "^1.0.1",
