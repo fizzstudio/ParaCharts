@@ -709,10 +709,6 @@ export class ParaAPI {
     protected _standardActions: Actions;
     // (undocumented)
     protected _tourGuideActions: Actions;
-    // (undocumented)
-    protected _tourGuideNoSelfVoicing: boolean;
-    // (undocumented)
-    protected _tourGuideSelfVoicingState: boolean;
     unhideAllSeries(): void;
     waitForManifest(): Promise<void>;
 }

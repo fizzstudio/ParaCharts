@@ -100,6 +100,8 @@ export class ParaView extends ParaComponent implements ViewContext {
   protected _jimReadyRejector!: (() => void);
   @state() protected _svgViews = new Map<string, SVGView>();
   protected _viewRegistry = new Map<string, View>();
+  protected _tourGuideNoSelfVoicing = false;
+  protected _tourGuideSelfVoicingState = false;
 
 
   static styles = [
@@ -885,6 +887,29 @@ export class ParaView extends ParaComponent implements ViewContext {
 
   protected _handleTourGuidePaused() {
     this.ariaLiveRegion.voicing.togglePaused();
+  }
+
+  enableTourGuide(noSelfVoicing: boolean) {
+    this._tourGuideNoSelfVoicing = noSelfVoicing;
+    this._paraState.updateConfig(draft => {
+      draft.ui.isTourGuideEnabled = true;
+      if (!noSelfVoicing) {
+        this._tourGuideSelfVoicingState = draft.ui.isVoicingEnabled;
+        draft.ui.isVoicingEnabled = true;
+      }
+    });
+  }
+
+  disableTourGuide() {
+    this._paraState.updateConfig(draft => {
+      if (!this._tourGuideNoSelfVoicing) {
+        draft.ui.isVoicingEnabled = this._tourGuideSelfVoicingState;
+      }
+      this._tourGuideNoSelfVoicing = true;
+    });
+    this._paraState.updateConfig(draft => {
+      draft.ui.isTourGuideEnabled = false;
+    });
   }
 
   /*protected updated(changedProperties: PropertyValues) {
