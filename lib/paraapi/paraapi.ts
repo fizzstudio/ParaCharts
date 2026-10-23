@@ -34,8 +34,6 @@ export class ParaAPI {
   protected _actions: Actions;
   protected _standardActions: Actions;
   protected _tourGuideActions: Actions;
-  protected _tourGuideNoSelfVoicing = true;
-  protected _tourGuideSelfVoicingState!: boolean;
   protected _liveUpdateRecordCount = 0;
   protected _liveUpdateWaiting = false;
 
@@ -207,6 +205,7 @@ export class ParaAPI {
                 }, true);
                 _paraChart.styleManager.update();
                 paraView.createDocumentView();
+                paraView.enableTourGuide(false);
               });
             }
             else {
@@ -222,14 +221,16 @@ export class ParaAPI {
                 }, true);
                 _paraChart.styleManager.update();
                 paraView.createDocumentView();
+                paraView.enableTourGuide(false);
               });
             }
           } else {
             paraView.createDocumentView();
-            _paraChart.paraState.setCaption();
+            _paraChart.paraState.setCaption().then(() => paraView.enableTourGuide(false));
           }
         } else {
           // Close the explainer
+          paraView.disableTourGuide();
           _paraChart.globalState.enableParaState(_paraChart.globalState.paraStates[1]);
           paraView.createDocumentView();
           _paraChart.paraState.setCaption();
@@ -257,14 +258,7 @@ export class ParaAPI {
       },
       /** Toggle tour guide mode. */
       toggleTourGuide: (args: ActionArgumentMap) => {
-        this._tourGuideNoSelfVoicing = args.noSelfVoicing as boolean;
-        paraView.paraState.updateConfig(draft => {
-          draft.ui.isTourGuideEnabled = true;
-          if (!args.noSelfVoicing) {
-            this._tourGuideSelfVoicingState = draft.ui.isVoicingEnabled;
-            draft.ui.isVoicingEnabled = true;
-          }
-        });
+        paraView.enableTourGuide(args.noSelfVoicing as boolean);
       },
       /** Toggle data table. */
       toggleDataTable() {
@@ -308,15 +302,7 @@ export class ParaAPI {
     this._tourGuideActions.goLast = () => { };
     this._tourGuideActions.repeatLastAnnouncement = () => { };
     this._tourGuideActions.toggleTourGuide = () => {
-      paraView.paraState.updateConfig(draft => {
-        if (!this._tourGuideNoSelfVoicing) {
-          draft.ui.isVoicingEnabled = this._tourGuideSelfVoicingState;
-        }
-        this._tourGuideNoSelfVoicing = true;
-      });
-      paraView.paraState.updateConfig(draft => {
-        draft.ui.isTourGuideEnabled = false;
-      });
+      paraView.disableTourGuide();
     };
     this._tourGuideActions.playPauseMedia = () => {
       voicing.togglePaused();
