@@ -1,17 +1,37 @@
-// * Generate Chart Stories *
+// ** Generate Chart Stories **
 
-// Imports
+// * Imports *
+
+// NOTE (@simonvarey): `DOMParser` is not defined for Node.js, but it is needed for ChartSignal
+//   This means ChartSignal has to be imported dynamically *after* the `DOMParser` polyfill is 
+//   defined.
+
+// Imports before `DOMParser`
 
 import printf from 'printf';
 import fs from 'node:fs';
+import { DOMParser } from 'happy-dom';
 
-import { type CatalogListing } from '@fizz/chart-data';
+import type { CatalogListing } from '@fizz/chart-data';
+// NOTE (@simonvarey): `import type` is ignored by Node.js. Runtime imports from ChartSignal
+//   are below.
+import type { ChartTypeFamily, ChartType } from '@fizz/chartsignal-internal';
 
 import { template } from './storyTemplate.ts';
 import { template as testTemplate } from './testStoriesTemplate.ts';
-import { familyCatalogMap, familyCatalogMapMulti } from './chartSelectorHelper.ts';
 import { allTemplate } from './allStoriesTemplate.ts';
-import { CHART_FAMILY_MEMBERS, type ChartTypeFamily, type ChartType, capitalize, CHART_TYPE_FAMILIES } from '@fizz/chartsignal-internal';
+
+// Define `DOMParser`
+
+(globalThis as any).DOMParser = DOMParser;
+
+// Imports after `DOMParser`
+
+const { CHART_FAMILY_MEMBERS, capitalize, CHART_TYPE_FAMILIES } = await import('@fizz/chartsignal-internal');
+// NOTE (@simonvarey): `chartSelectorHelper` imports ChartSignal
+const { familyCatalogMap, familyCatalogMapMulti } = await import('./chartSelectorHelper.ts');
+
+// * Constants *
 
 const AUTOGEN_PATH = './src/stories/autogen/';
 const AUTOGEN_TEST_PATH = './src/stories/autogen-test/';
@@ -54,7 +74,7 @@ const CHART_TYPE_FOLDERS_MULTI: Record<ChartType, string> = {
   'combo': 'Combo Charts'
 }
 
-// Generator Functions
+// * Generator Functions *
 
 function generateCode(
   typeFolder: string,
@@ -192,7 +212,7 @@ function generateFamilyAllStory(family: ChartTypeFamily, multi?: boolean): void 
   }
 }
 
-// Runtime
+// * Runtime *
 
 // Removes existing `autogen` and `autogen-test` folders. 'force: true' means that this is ignored 
 //   if they don't exist because the stories have never been built before

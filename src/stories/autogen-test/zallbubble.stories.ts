@@ -4,7 +4,7 @@ import type { Meta, StoryObj } from "@storybook/web-components-vite";
 
 type Story = StoryObj<ChartProps>;
 
-const titleToFilenameMap = familyManifestPathsMap('scatter', false);
+const titleToFilenameMap = familyManifestPathsMap('bubble', false);
 
 const meta = {
   title: 'Charts/Bubble Charts',

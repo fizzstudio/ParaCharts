@@ -5,7 +5,7 @@ import type { Meta, StoryObj } from '@storybook/web-components-vite';
 type Story = StoryObj<ChartProps>;
 
 const meta = {
-  title: 'Charts/Bubble Charts',
+  title: 'Charts/Histograms',
   render: (args) => Chart(args),
 } satisfies Meta<ChartProps>;
 
@@ -15,6 +15,6 @@ export const Chart53: Story = {
   name: "d3 (53)",
   args: {
     filename: 'manifests/scatter-manifest-d3.json',
-    forcecharttype: 'bubble',
+    forcecharttype: 'histogram',
   }
 }
