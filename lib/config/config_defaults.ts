@@ -178,6 +178,7 @@ export const defaultConfig: Config = {
       isCaptionVisible: true,
       isExplorationBarVisible: true,
       isSparkBrailleVisible: false,
+      isSparkBrailleCompact: false,
       isDataTabVisible: true,
       isColorsTabVisible: true,
       isAudioTabVisible: true,

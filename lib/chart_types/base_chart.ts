@@ -15,7 +15,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { Logger, getLogger } from '@fizz/logger';
-import { ChartType, Facet, Datapoint, clusterObject, Summarizer, formatBox, Highlight, HighlightedSummary, ExtendedSummarizer, summarizerFromModelAndLang, extendedSummarizerFromModelAndLang } from '@fizz/chartsignal-internal';
+import { ChartType, Facet, Datapoint, clusterObject, Highlight, formatBox, ExtendedSummarizer, HighlightedSummary, extendedSummarizerFromModelAndLang } from '@fizz/chartsignal-internal';
 import { ConfigSetting, DeepReadonly, LegendConfig, PlaneDirection } from '../config/config_types';
 import { ConfigGroup, Direction, HorizDirection } from '../config/config_types';
 import { ParaView } from '../paraview/paraview';
@@ -95,7 +95,7 @@ export abstract class BaseChartInfo {
   }
 
   protected _createSummarizer(): void {
-    this._summarizer = extendedSummarizerFromModelAndLang(this.model!, 'en') as ExtendedSummarizer;
+    this._summarizer = extendedSummarizerFromModelAndLang(this.model!, 'en');
   }
 
   // Called in ParaState.setManifest() immediately after chartInfo creation
@@ -115,7 +115,7 @@ export abstract class BaseChartInfo {
     return this._conciseSummary;
   }
 
-  // Overriden by LineChartInfo for combo charts
+  // Overridden by LineChartInfo for combo charts
   get model() {
     return this._paraState.model;
   }

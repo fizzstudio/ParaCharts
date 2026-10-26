@@ -15,8 +15,8 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { getLogger } from '@fizz/logger';
-import { interpolate } from '@fizz/templum';
-import { type ChartType, formatXYDatapoint, PlaneDatapoint } from '@fizz/chartsignal-internal';
+import { formatXYDatapoint } from '@fizz/chartsignal-internal';
+import { type ChartType, PlaneDatapoint } from '@fizz/chartsignal-internal';
 import { PointChartInfo } from './point_chart';
 import { datapointIdToCursor, type ParaState, queryMessages, describeSelections, describeAdjacentDatapoints, getDatapointMinMax } from '../state';
 import { DataSymbols } from '../view/symbol';
@@ -102,6 +102,7 @@ export class CandlestickChartInfo extends PointChartInfo {
         (dp.facetValueAsNumber('y')! + close.datapoints[i].facetValueAsNumber('y')!)/2);
   }
 
+  // TODO (@simonvarey): localize this text output by moving it to the summarizer. See #1427
   // all visited datapoint views: e.options!.visited
   queryData(): void {
     const msgArray: string[] = [];
@@ -122,7 +123,7 @@ export class CandlestickChartInfo extends PointChartInfo {
       const series = this._paraState.model!.atKey(seriesKey)!;
       const datapointCount = series.length;
       const seriesLabel = series.getLabel();
-      msgArray.push(interpolate(
+      msgArray.push(this.summarizer.templum.replace(
         queryMessages.seriesLabelLength,
         { seriesLabel, datapointCount }
       ));
@@ -146,7 +147,7 @@ export class CandlestickChartInfo extends PointChartInfo {
       const datapoint = series.datapoints[index];
       const seriesLabel = series.getLabel();
       const datapointView = this._paraView.documentView!.chartLayers.dataLayer.datapointView(seriesKey, index)!;
-      msgArray.push(interpolate(
+      msgArray.push(this.summarizer.templum.replace(
         queryMessages.datapointLabelLength,
         {
           seriesLabel,

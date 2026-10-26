@@ -4,10 +4,10 @@ import {
   html, css,
 } from 'lit';
 import { customElement } from 'lit/decorators.js';
-import { datapointIdToCursor } from '../../state/parastate';
 import { AxisAnnotation, BaseAnnotation, DatapointAnnotation, formatXYDatapointX, IntersectionAnnotation, type PlaneDatapoint } from '@fizz/chartsignal-internal';
 import { LineBreakControlsDialog } from '../dialogs/line_break_controls_dialog';
 import { createRef, ref } from 'lit/directives/ref.js';
+import { datapointIdToCursor,  } from '../../state/parastate';
 
 @customElement('para-annotation-panel')
 export class AnnotationPanel extends ControlPanelTabPanel {

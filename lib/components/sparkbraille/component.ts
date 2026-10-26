@@ -10,6 +10,12 @@ import { ParaComponent } from '../paracomponent';
 
 const brailleUnicodeBlock = 0x2800;
 
+                   // 28C0, 28E4, 28F6, 28FF
+const BRAILLE_FILLED = ['⣀', '⣤', '⣶', '⣿'];
+                   // 28C0, 2824, 2812, 2809
+const BRAILLE_EMPTY = ['⣀', '⠤', '⠒' ,'⠉'];
+
+
 /**
  * Converts an array of dot specifications to a string of (Unicode) braille.
  * Each dot specification is an array of integers (1-8); [] represents a braille space character.
@@ -52,10 +58,13 @@ export class SparkBraille extends ParaComponent {
   /** Use with labeled data to produce a proportional chart. */
   @property({ type: Boolean }) isProp = false;
   @property() currentSeries = '';
+  /** Whether to display the chart in compact mode. */
+  @property({type: Boolean}) compact = false;
 
-  @state() private cells?: readonly (readonly number[])[];
+  @state() private _cells?: readonly (readonly number[])[];
+  @state() private _braille = '';
 
-  @queryAssignedNodes() private slotNodes!: Node[];
+  @queryAssignedNodes() private _slotNodes!: Node[];
 
   private _regionRef: Ref<HTMLDivElement> = createRef();
   private _preRef: Ref<HTMLPreElement> = createRef();
@@ -103,8 +112,8 @@ export class SparkBraille extends ParaComponent {
   connectedCallback() {
     super.connectedCallback();
     document.addEventListener('selectionchange', this.onSelectionChange);
-    if (this.data && !this.cells) {
-      this.renderBraille(this.data);
+    if (this.data && !this._cells) {
+      this._renderBraille(this.data);
     }
   }
 
@@ -114,8 +123,8 @@ export class SparkBraille extends ParaComponent {
   }
 
   protected willUpdate(changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {
-    if (changedProperties.has('data')) {
-      this.renderBraille(this.data!);
+    if (changedProperties.has('data') || changedProperties.has('compact')) {
+      this._renderBraille(this.data!);
     }
   }
 
@@ -124,16 +133,12 @@ export class SparkBraille extends ParaComponent {
   }
 
   render() {
-    let brailleContent;
     if (this.isProp) {
-    //const propData = [{ label: "Acme", value: 10 }, { label: "Blobbo", value: 50 }, { label: "CornCo", value: 35 }, { label: "Broadbean", value: 4 }, { label: "Billybob's", value: 1 }]
-    const propData = this.labeledData
-    const propBinner = new ProportionalDataBinner(propData!, 20)
-    brailleContent = this.toBraille(propBinner.returnString)
-  }
-  else{
-    brailleContent = this.cells ? convertCells(this.cells) : ''
-  }
+      //const propData = [{ label: "Acme", value: 10 }, { label: "Blobbo", value: 50 }, { label: "CornCo", value: 35 }, { label: "Broadbean", value: 4 }, { label: "Billybob's", value: 1 }]
+      const propData = this.labeledData;
+      const propBinner = new ProportionalDataBinner(propData!, 20);
+      this._braille = this.toBraille(propBinner.returnString);
+    }
     /*@click=${(e: MouseEvent) => {
       const xDist = e.x - this.preRef.value!.offsetLeft;
       const xPct = xDist/this.preRef.value!.offsetWidth;
@@ -170,7 +175,7 @@ export class SparkBraille extends ParaComponent {
           ${ref(this._preRef)}
           contenteditable="false"
         >${
-          brailleContent + ' ' +  (series ? this.toBraille(series.label) : '')
+          this._braille + ' ' +  (series ? this.toBraille(series.label) : '')
         }</pre>
         <div class="data" style="display: none">
           <slot
@@ -181,23 +186,28 @@ export class SparkBraille extends ParaComponent {
   }
 
   protected firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {
-    if (this.cells) {
+    if (this._cells) {
       return;
     }
-    const dataNode = this.slotNodes.find(node => node.textContent?.trim());
+    const dataNode = this._slotNodes.find(node => node.textContent?.trim());
     if (dataNode) {
-      this.renderBraille(dataNode.textContent!);
+      this._renderBraille(dataNode.textContent!);
     }
   }
 
-  private renderBraille(dataText: string) {
+  private _renderBraille(dataText: string) {
     const data = dataText.split(/ /).map(parseFloat);
     const binner = new DataBinner(data, 4);
     this._binnedData = binner.binnedData;
-    const brailleLine = new BinsToBraille(this._binnedData, this.bar);
-    this.cells = brailleLine.cells;
+    if (this.compact) {
+      const brailleLine = new BinsToBraille(this._binnedData, this.bar);
+      this._cells = brailleLine.cells;
+      this._braille = convertCells(this._cells);
+    } else {
+      const brailleSet = this.bar ? BRAILLE_FILLED : BRAILLE_EMPTY;
+      this._braille = this._binnedData.map(bin => brailleSet[bin]).join('');
+    }
   }
-
 }
 
 //NB: Sam generated this map with AI because he was on a deadline. Ideally test this for accuracy before production

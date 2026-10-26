@@ -32,7 +32,7 @@ export interface AvailableActions {
   shutUp(): void;
   repeatLastAnnouncement(): void;
   addAnnotation(): void;
-  toggleNarrativeHighlightMode(noSelfVoicing: boolean): void;
+  toggleTourGuide(noSelfVoicing: boolean): void;
   toggleDataTable(): void;
   toggleSparkBraille(): void;
   playPauseMedia(): void;

@@ -540,6 +540,8 @@ export interface ControlpanelConfig extends ConfigGroup {
   isExplorationBarVisible: boolean;
   /** Show spark braille display */
   isSparkBrailleVisible: boolean;
+  /** Whether to use a single braille dot per datapoint */
+  isSparkBrailleCompact: boolean;
   /** Show data table tab */
   isDataTabVisible: boolean;
   /** Show colors/appearance tab */

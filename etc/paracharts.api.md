@@ -16,12 +16,13 @@ import { Datatype } from '@fizz/dataframe';
 import { Datatype as Datatype_2 } from '@fizz/chartsignal-internal';
 import { Dialog } from '@fizz/ui-components';
 import { DirectiveResult } from 'lit-html/directive.js';
+import { ExtendedSummarizer } from '@fizz/chartsignal-internal';
 import { Facet } from '@fizz/chartsignal-internal';
 import { FacetSignature } from '@fizz/chartsignal-internal';
 import { FizzTabs } from '@fizz/ui-components';
-import { FormatType } from '@fizz/parasummary';
-import { Highlight as Highlight_2 } from '@fizz/parasummary';
-import { HighlightedSummary } from '@fizz/parasummary';
+import { FormatType } from '@fizz/chartsignal-internal';
+import { Highlight as Highlight_2 } from '@fizz/chartsignal-internal';
+import { HighlightedSummary } from '@fizz/chartsignal-internal';
 import { Interval } from '@fizz/chartsignal-internal';
 import { Jimerator } from '@fizz/jimerator';
 import { LitElement } from 'lit';
@@ -47,7 +48,6 @@ import { StateController } from '@lit-app/state';
 import { StaticValue } from 'lit-html/static.js';
 import { StyleInfo } from 'lit/directives/style-map.js';
 import { StyleInfo as StyleInfo_2 } from 'lit-html/directives/style-map.js';
-import { Summarizer } from '@fizz/parasummary';
 import { SVGTemplateResult } from 'lit';
 import { TemplateResult } from 'lit';
 import { TemplateResult as TemplateResult_2 } from 'lit-html';
@@ -388,6 +388,7 @@ export interface ControlpanelConfig extends ConfigGroup {
     isDataTabVisible: boolean;
     isExplorationBarVisible: boolean;
     isMDRAnnotationsVisible: boolean;
+    isSparkBrailleCompact: boolean;
     isSparkBrailleControlVisible: boolean;
     isSparkBrailleVisible: boolean;
     tabLabelStyle: TabLabelStyle;
@@ -708,10 +709,6 @@ export class ParaAPI {
     protected _standardActions: Actions;
     // (undocumented)
     protected _tourGuideActions: Actions;
-    // (undocumented)
-    protected _tourGuideNoSelfVoicing: boolean;
-    // (undocumented)
-    protected _tourGuideSelfVoicingState: boolean;
     unhideAllSeries(): void;
     waitForManifest(): Promise<void>;
 }

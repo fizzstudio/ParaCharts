@@ -79,11 +79,8 @@ export default defineConfig({
       '@lit-app/state',
       'immer',
       '@fizz/chartsignal-internal',
-      '@fizz/parasummary',
       '@fizz/ui-components',
       '@fizz/jimerator',
-      '@fizz/sparkbraille-component',
-      '@fizz/templum',
       'decimal.js',
       'papaparse'
     ]

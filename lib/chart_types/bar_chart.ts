@@ -16,8 +16,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { Logger, getLogger } from '@fizz/logger';
 
-import { ChartType, strToId, enumerate, Box, Series, formatBox, formatXYDatapoint, formatXYDatapointX } from '@fizz/chartsignal-internal';
-import { interpolate } from '@fizz/templum';
+import { ChartType, strToId, enumerate, Box, Series, formatBox, formatXYDatapoint, 
+  formatXYDatapointX } from '@fizz/chartsignal-internal';
 import { PlaneChartInfo, computeAxisRange, AxisRangeInfo } from './plane_chart';
 import { datapointIdToCursor, type ParaState, queryMessages, describeAdjacentDatapoints, describeSelections, getDatapointMinMax, SettingsManager } from '../state';
 import { ConfigSetting, DeepReadonly, LegendConfig, TypeBarConfig } from '../config/config_types';
@@ -340,7 +340,7 @@ export class BarChartInfo extends PlaneChartInfo {
     return legendItems;
   }
 
-  // TODO: localize this text output
+  // TODO (@simonvarey): localize this text output by moving it to the summarizer. See #1427
   // focused view: e.options!.focus
   // all visited datapoint views: e.options!.visited
   queryData(): void {
@@ -362,7 +362,7 @@ export class BarChartInfo extends PlaneChartInfo {
       const series = this._paraState.model!.atKey(seriesKey)!;
       const datapointCount = series.length;
       const seriesLabel = series.getLabel();
-      msgArray.push(interpolate(
+      msgArray.push(this.summarizer.templum.replace(
         queryMessages.seriesLabelLength,
         { seriesLabel, datapointCount }
       ));
@@ -386,7 +386,7 @@ export class BarChartInfo extends PlaneChartInfo {
       const seriesLabel = series.getLabel();
       const datapointView = this._paraView.documentView!.chartLayers.dataLayer.datapointView(seriesKey, index)!;
 
-      msgArray.push(interpolate(
+      msgArray.push(this.summarizer.templum.replace(
         queryMessages.datapointLabelLength,
         {
           seriesLabel,
