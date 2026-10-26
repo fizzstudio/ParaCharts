@@ -14,8 +14,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { ChartType, type PlaneDatapoint, Datapoint } from '@fizz/chartsignal-internal';
-import { formatBox, formatXYDatapointX } from '@fizz/parasummary';
+import { ChartType, type PlaneDatapoint, Datapoint, formatBox, formatXYDatapointX } from '@fizz/chartsignal-internal';
 import { interpolate } from '@fizz/templum';
 import { BaseChartInfo, RiffOrder } from './base_chart';
 import { type ParaState, datapointIdToCursor, queryMessages, describeSelections, getDatapointMinMax, SettingsManager } from '../state';

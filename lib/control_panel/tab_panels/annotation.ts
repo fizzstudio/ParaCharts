@@ -5,8 +5,7 @@ import {
 } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { datapointIdToCursor } from '../../state/parastate';
-import { formatXYDatapointX } from '@fizz/parasummary';
-import { AxisAnnotation, BaseAnnotation, DatapointAnnotation, type PlaneDatapoint } from '@fizz/chartsignal-internal';
+import { AxisAnnotation, BaseAnnotation, DatapointAnnotation, formatXYDatapointX, IntersectionAnnotation, type PlaneDatapoint } from '@fizz/chartsignal-internal';
 import { LineBreakControlsDialog } from '../dialogs/line_break_controls_dialog';
 import { createRef, ref } from 'lit/directives/ref.js';
 
@@ -63,12 +62,12 @@ export class AnnotationPanel extends ControlPanelTabPanel {
               data-series="${(item as DatapointAnnotation).seriesIndex}"
               data-index="${(item as DatapointAnnotation).datapointIndex}"
               @click=${(event: Event) => {
-                this._selectAnnotation(event);
-                }}
+        this._selectAnnotation(event);
+      }}
               @contextmenu=${(event: Event) => {
-                event.preventDefault()
-                this.editAnnotation(event)
-                }}
+        event.preventDefault()
+        this.editAnnotation(event)
+      }}
             >${this.getAnnotationMessage(item)}</li>
           `)
       }
@@ -88,6 +87,22 @@ export class AnnotationPanel extends ControlPanelTabPanel {
       const cap = axisAnnot.axis == 'y' ? "Y axis" : "X axis";
       const isThreshold = axisAnnot.kind == 'threshold' ? "threshold" : "marker";
       return `${cap} ${isThreshold} - ${axisAnnot.value}: ${axisAnnot.text}`;
+    }
+    else if (annot.type == 'intersection-annotation') {
+      const intersectionAnnot = annot as IntersectionAnnotation
+      const series = this._paraState.model!.series;
+      const targetSeries1 = series[intersectionAnnot.series1Index];
+      const targetSeries2 = series[intersectionAnnot.series2Index];
+      if (intersectionAnnot.intersection.record.index !== null) {
+        const loc = targetSeries1.datapoints[intersectionAnnot.intersection.record.index].facetBox('x')!.raw;
+        return `Intersection between ${targetSeries1.label} and ${targetSeries2.label} at ${loc}`;
+      }
+      else if (intersectionAnnot.intersection.record.beforeIndex !== null && intersectionAnnot.intersection.record.afterIndex !== null) {
+        const loc1 = targetSeries1.datapoints[intersectionAnnot.intersection.record.beforeIndex].facetBox('x')!.raw;
+        const loc2 = targetSeries1.datapoints[intersectionAnnot.intersection.record.afterIndex].facetBox('x')!.raw;
+        return `Intersection between ${targetSeries1.label} and ${targetSeries2.label} between ${loc1} and ${loc2}`;
+      }
+
     }
     return annot.text;
   }

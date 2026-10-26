@@ -25,14 +25,11 @@ import {
   numberToScaledNumberRounded, SequenceInfo, SeriesAnalysis, clusterObject, facetsFromDataset,
   Model, modelFromExternalData, modelFromInlineData, FacetSignature, PlaneDatapoint,
   planeModelFromInlineData, planeModelFromExternalData, PlaneModel, type Datapoint,
-  Facet, type DatapointAnnotation
-} from '@fizz/chartsignal-internal';
-import { Jimerator } from '@fizz/jimerator';
-import {
-  FormatType, formatXYDatapointX, formatXYDatapointY,
+  Facet, type DatapointAnnotation, FormatType, formatXYDatapointX, formatXYDatapointY,
   HighlightedSummary, type Highlight,
   formatBox
-} from '@fizz/parasummary';
+} from '@fizz/chartsignal-internal';
+import { Jimerator } from '@fizz/jimerator';
 
 import { BaseState, SettingObserver } from './base_state';
 import {
@@ -382,8 +379,8 @@ export class ParaState extends BaseState {
       } else {
         const shouldGetConcise = this.config.description.captionFormat === 'concise';
         const generatedSummary = await (shouldGetConcise
-          ? this._chartInfo.summarizer.getConciseSummary()
-          : this._chartInfo.summarizer.getChartSummary()
+          ? this._chartInfo.summarizer.getConciseSummaryHighlighted()
+          : this._chartInfo.summarizer.getChartSummaryHighlighted()
         );
         if (generatedSummary !== undefined) {
           this._caption = generatedSummary;
@@ -1628,11 +1625,27 @@ export class ParaState extends BaseState {
     return this._highlightedIntersections;
   }
 
-  highlightIntersection(index: number) {
-    this._highlightedIntersections = new Set([
-      ...this._highlightedIntersections.values(),
-      index
-    ]);
+  highlightIntersection(series1Index: number, series2Index: number, intersectionIndex = 0) {
+    const series = this.model!.series;
+    const targetSeries1 = series[series1Index];
+    const targetSeries2 = series[series2Index];
+    const targetIntersection = (this.model! as PlaneModel).intersections.filter(i =>
+      i.series.includes(targetSeries1.key)
+      && i.series.includes(targetSeries2.key))[intersectionIndex];
+    if (!targetIntersection) {
+      return;
+    }
+    const text = `Intersection between ${targetSeries1.label} and ${targetSeries2.label}`
+    const annot = {
+      type: 'intersection-annotation',
+      series1Index: series1Index,
+      series2Index: series2Index,
+      intersectionIndex: intersectionIndex,
+      intersection: targetIntersection,
+      text: text,
+      id: `intersection-${this.model!.nextAnnotID(targetSeries1.key, 0, text)}`
+    }
+    this.model?.addAnnotation(annot)
   }
 
   highlightCluster(index: number) {
@@ -1646,13 +1659,13 @@ export class ParaState extends BaseState {
     return this._highlightedClusters;
   }
 
-  clearIntersectionHighlight(index: number) {
-    for (let intersection of Array.from(this._highlightedIntersections)) {
-      this.removeCrosshair(`intersection-${intersection}`)
+  clearIntersectionHighlight(series1Index: number, series2Index: number, intersectionIndex = 0) {
+    const annot = this.model?.allIntersectionAnnotations.filter(a => a.series1Index == series1Index
+      && a.series2Index == series2Index && a.intersectionIndex == intersectionIndex)[0];
+      console.log("annot", annot)
+    if (annot) {
+      this.model?.removeAnnotation(annot.id)
     }
-    this._highlightedIntersections = new Set(
-      [...this._highlightedIntersections.values()].filter(idx => idx !== index)
-    );
   }
 
   clearAllAxisLabelHighlights() {
@@ -1788,7 +1801,7 @@ export class ParaState extends BaseState {
     const recordLabel = formatXYDatapointX(
       this._model!.atKeyAndIndex(seriesKey, datapointIndex) as PlaneDatapoint, 'raw');
     const annot = {
-      type: 'datapoint',
+      type: 'datapoint-annotation',
       seriesKey,
       datapointIndex,
       annotation: `${seriesKey}, ${recordLabel}: ${text}`,

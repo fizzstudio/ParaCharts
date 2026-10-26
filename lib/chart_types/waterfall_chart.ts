@@ -14,9 +14,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { ChartType, type Datapoint, type PlaneDatapoint } from '@fizz/chartsignal-internal';
-
-import { formatXYDatapointX } from '@fizz/parasummary';
+import { ChartType, type Datapoint, type PlaneDatapoint, formatXYDatapointX } from '@fizz/chartsignal-internal';
 import { type ParaState } from '../state';
 import { type DeepReadonly, TypeWaterfallConfig } from '../config/config_types';
 import { NavNode } from '../view/layers';

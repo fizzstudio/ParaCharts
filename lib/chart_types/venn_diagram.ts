@@ -14,9 +14,8 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { formatXYDatapointX } from '@fizz/parasummary';
 import { interpolate } from '@fizz/templum';
-import { ChartType, type Datapoint, type PlaneDatapoint } from '@fizz/chartsignal-internal';
+import { ChartType, type Datapoint, type PlaneDatapoint, formatXYDatapointX } from '@fizz/chartsignal-internal';
 import { BaseChartInfo, RiffOrder } from './base_chart';
 import { type ParaState, datapointIdToCursor, queryMessages, describeSelections, getDatapointMinMax } from '../state';
 import { directions, type HorizDirection, type Direction } from '../config/config_types';
@@ -85,47 +84,47 @@ export class VennDiagramInfo extends BaseChartInfo {
     this._paraState.settingControls.insert('type.venn.explode');
   }
 
-/*  protected _createNavMap() {
-    super._createNavMap();
-    const layer = this._navMap!.newLayer('circles');
-    directions.forEach(dir => {
-      this._navMap!.node('top', {})!.connect(dir, layer);
-    });
-    const nodes = this._paraState.model!.series.map((series, i) => {
-      const node = new NavNode(layer, 'datapoint', {
-        seriesKey: series.key,
-        index: 0
-      }, this._paraState);
-      node.connect('out', this._navMap!.top.cursor!);
-      node.connect('up', this._navMap!.top.cursor!);
-
-      const regionOptions = this._regionOptionsForSeries(series.key);
-      if (regionOptions.length) {
-        const circleLayer = this._navMap!.newLayer(`circle-${series.key}`);
-        const regionNodes = regionOptions.map(options => new NavNode(circleLayer, 'venn-part', options, this._paraState));
-        regionNodes.forEach((regionNode, regionIndex) => {
-          const nextRegion = regionNodes[(regionIndex + 1) % regionNodes.length]!;
-          const prevRegion = regionNodes[(regionIndex + regionNodes.length - 1) % regionNodes.length]!;
-          regionNode.connect('right', nextRegion, false);
-          regionNode.connect('left', prevRegion, false);
-          regionNode.connect('up', layer, false);
-          regionNode.connect('out', layer, false);
-        });
-        node.connect('down', circleLayer, false);
-      }
-
-      return node;
-    });
-    nodes.slice(0, -1).forEach((node, i) => {
-      node.connect('right', layer.get('datapoint', i + 1)!);
-    });
-    nodes.at(-1)!.connect('right', nodes[0]);
-  } */
+  /*  protected _createNavMap() {
+      super._createNavMap();
+      const layer = this._navMap!.newLayer('circles');
+      directions.forEach(dir => {
+        this._navMap!.node('top', {})!.connect(dir, layer);
+      });
+      const nodes = this._paraState.model!.series.map((series, i) => {
+        const node = new NavNode(layer, 'datapoint', {
+          seriesKey: series.key,
+          index: 0
+        }, this._paraState);
+        node.connect('out', this._navMap!.top.cursor!);
+        node.connect('up', this._navMap!.top.cursor!);
+  
+        const regionOptions = this._regionOptionsForSeries(series.key);
+        if (regionOptions.length) {
+          const circleLayer = this._navMap!.newLayer(`circle-${series.key}`);
+          const regionNodes = regionOptions.map(options => new NavNode(circleLayer, 'venn-part', options, this._paraState));
+          regionNodes.forEach((regionNode, regionIndex) => {
+            const nextRegion = regionNodes[(regionIndex + 1) % regionNodes.length]!;
+            const prevRegion = regionNodes[(regionIndex + regionNodes.length - 1) % regionNodes.length]!;
+            regionNode.connect('right', nextRegion, false);
+            regionNode.connect('left', prevRegion, false);
+            regionNode.connect('up', layer, false);
+            regionNode.connect('out', layer, false);
+          });
+          node.connect('down', circleLayer, false);
+        }
+  
+        return node;
+      });
+      nodes.slice(0, -1).forEach((node, i) => {
+        node.connect('right', layer.get('datapoint', i + 1)!);
+      });
+      nodes.at(-1)!.connect('right', nodes[0]);
+    } */
 
   async move(dir: Direction) {
     const dirStr = dir as string;
     if ((dirStr === 'shiftleft' || dirStr === 'shiftright')
-        && this._navMap!.cursor!.isNodeType('venn-part')) {
+      && this._navMap!.cursor!.isNodeType('venn-part')) {
       const allParts = this._paraState.model!.series.flatMap(series => this._regionOptionsForSeries(series.key));
       const cursor = this._navMap!.cursor;
       const currentIndex = allParts.findIndex(

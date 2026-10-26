@@ -16,8 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { Logger, getLogger } from '@fizz/logger';
 
-import { ChartType, strToId, enumerate, Box, Series } from '@fizz/chartsignal-internal';
-import { formatBox, formatXYDatapoint, formatXYDatapointX } from '@fizz/parasummary';
+import { ChartType, strToId, enumerate, Box, Series, formatBox, formatXYDatapoint, formatXYDatapointX } from '@fizz/chartsignal-internal';
 import { interpolate } from '@fizz/templum';
 import { PlaneChartInfo, computeAxisRange, AxisRangeInfo } from './plane_chart';
 import { datapointIdToCursor, type ParaState, queryMessages, describeAdjacentDatapoints, describeSelections, getDatapointMinMax, SettingsManager } from '../state';

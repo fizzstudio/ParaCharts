@@ -1,8 +1,7 @@
 import Decimal from 'decimal.js';
 import { Logger, getLogger } from '@fizz/logger';
 import { capitalize, join, interpolate } from '@fizz/templum';
-import { type Model } from '@fizz/chartsignal-internal';
-import { formatXYDatapoint } from '@fizz/parasummary';
+import { type Model, formatXYDatapoint } from '@fizz/chartsignal-internal';
 import { type DatapointView } from '../view/data';
 
 // TODO (@simonvarey): This is a redefined from the `ComparisonRelationship` in @fizz/dataframe. I should
@@ -18,39 +17,39 @@ interface ComparisonResult {
 }
 
 export function describeSelections(
-  visitedDatapoint: DatapointView,
-  selectedDatapoints: DatapointView[]
+    visitedDatapoint: DatapointView,
+    selectedDatapoints: DatapointView[]
 ): string[] {
-  const msgArray: string[] = [];
+    const msgArray: string[] = [];
 
-  // if there are selected datapoints other than the focused datapoint (which may or may not be
-  // selected), compare the current datapoint against each of those
-  const selfSelected = selectedDatapoints.some((point) => point.equals(visitedDatapoint));
-  const othersSelected = selectedDatapoints.length >= (selfSelected ? 2 : 1);
-  if (othersSelected) {
-    const other = selfSelected ? queryMessages.other : undefined;
-    msgArray.push(interpolate(queryMessages.comparisonSelectedDatapoints, { other }));
-    const sortedDatapoints = selectedDatapoints.toSorted((a, b) =>
-      a.datapoint.facetValueNumericized('y')! > b.datapoint.facetValueNumericized('y')! ? -1 : 1);
-    for (const view of sortedDatapoints) {
-      if (!view.equals(visitedDatapoint)) {
-        const viewValue = view.datapoint.facetValueNumericized('y')!;
-        const targetValue = visitedDatapoint.datapoint.facetValueNumericized('y')!;
-        const result = compare(viewValue, targetValue);
-        const comparatorMsg = comparisonMsgs[result.relationship].msg;
-        const diff = result.diff! !== 0 ? interpolate('${diff:number} ', { diff: result.diff! }) : undefined;
-        msgArray.push(capitalize(interpolate(
-          '${diff:string?}${comparatorMsg:string} ${seriesLabel:string} ${datapointXY:string}',
-          { diff, comparatorMsg, seriesLabel: view.series.getLabel(), datapointXY: formatXYDatapoint(view.datapoint, 'raw') }
-        )));
-      }
-    };
-  }
-  return msgArray;
+    // if there are selected datapoints other than the focused datapoint (which may or may not be
+    // selected), compare the current datapoint against each of those
+    const selfSelected = selectedDatapoints.some((point) => point.equals(visitedDatapoint));
+    const othersSelected = selectedDatapoints.length >= (selfSelected ? 2 : 1);
+    if (othersSelected) {
+        const other = selfSelected ? queryMessages.other : undefined;
+        msgArray.push(interpolate(queryMessages.comparisonSelectedDatapoints, { other }));
+        const sortedDatapoints = selectedDatapoints.toSorted((a, b) =>
+            a.datapoint.facetValueNumericized('y')! > b.datapoint.facetValueNumericized('y')! ? -1 : 1);
+        for (const view of sortedDatapoints) {
+            if (!view.equals(visitedDatapoint)) {
+                const viewValue = view.datapoint.facetValueNumericized('y')!;
+                const targetValue = visitedDatapoint.datapoint.facetValueNumericized('y')!;
+                const result = compare(viewValue, targetValue);
+                const comparatorMsg = comparisonMsgs[result.relationship].msg;
+                const diff = result.diff! !== 0 ? interpolate('${diff:number} ', { diff: result.diff! }) : undefined;
+                msgArray.push(capitalize(interpolate(
+                    '${diff:string?}${comparatorMsg:string} ${seriesLabel:string} ${datapointXY:string}',
+                    { diff, comparatorMsg, seriesLabel: view.series.getLabel(), datapointXY: formatXYDatapoint(view.datapoint, 'raw') }
+                )));
+            }
+        };
+    }
+    return msgArray;
 }
 
 export function getDatapointMinMax(model: Model, value: number, seriesKey: string): string[] {
-    let log: Logger = getLogger("getDatapointMinMax");    
+    let log: Logger = getLogger("getDatapointMinMax");
     const msgArray: string[] = [];
 
     //const metadata = await this.getMetadata();
@@ -98,11 +97,11 @@ export function /*for tests*/ describeAdjacentDatapoints(model: Model, targetVie
 
 export function /*for tests*/ describeAdjacentDatapointComparison(
     model: Model,
-    self: DatapointView, 
+    self: DatapointView,
     direction: 'prev' | 'next'
 ): string | null {
     let log: Logger = getLogger("describeAdjacentDatapointComparison");
-	const other = self[direction];
+    const other = self[direction];
     if (!other) {
         return null;
     }
@@ -124,7 +123,7 @@ export function /*for tests*/ describeAdjacentDatapointComparison(
     //log.info(ParaView.paraState.model!.allPoints[self.index].seriesKey)
     const selfValue = selfSeries[self.index].facetValueNumericized('y')!;
     const otherValue = otherSeries[other.index].facetValueNumericized('y')!;
-    const result = direction === 'prev' ? compare(otherValue, selfValue): compare(selfValue, otherValue);
+    const result = direction === 'prev' ? compare(otherValue, selfValue) : compare(selfValue, otherValue);
     console.log('p', direction, otherValue, selfValue)
     log.info(result);
     console.log('r', result, result.relationship, direction)
@@ -225,28 +224,28 @@ export const comparisonMsgs: Record<ComparisonRelationship, ComparisonMsgs> = {
 }
 
 export function compare(earlier: number, later: number): ComparisonResult {
-  /*let log: Logger = getLogger("compare");
-  log.info(later)*/
-  if (earlier === later) {
-    return {
-      relationship: 'equal',
-      diff: 0,
-      percentage: 0
+    /*let log: Logger = getLogger("compare");
+    log.info(later)*/
+    if (earlier === later) {
+        return {
+            relationship: 'equal',
+            diff: 0,
+            percentage: 0
+        }
     }
-  }
 
-  const relationship = earlier > later ? 'shrinking' : 'growing';
-  console.log(earlier > later, earlier, later, relationship)
-  const min = new Decimal(Math.min(earlier, later));
-  const max = new Decimal(Math.max(earlier, later));
-  const diff = max.sub(min).toNumber();
-  // calculate the percentage difference
-  const startVal = new Decimal(earlier);
-  const endVal = new Decimal(later);
-  const percentage = endVal.sub(startVal).dividedBy(startVal).times(100).toNumber();
-  return {
-    relationship,
-    diff,
-    percentage
-  };
+    const relationship = earlier > later ? 'shrinking' : 'growing';
+    console.log(earlier > later, earlier, later, relationship)
+    const min = new Decimal(Math.min(earlier, later));
+    const max = new Decimal(Math.max(earlier, later));
+    const diff = max.sub(min).toNumber();
+    // calculate the percentage difference
+    const startVal = new Decimal(earlier);
+    const endVal = new Decimal(later);
+    const percentage = endVal.sub(startVal).dividedBy(startVal).times(100).toNumber();
+    return {
+        relationship,
+        diff,
+        percentage
+    };
 }

@@ -268,7 +268,7 @@ export class ParaAPI {
       },
       /** Toggle data table. */
       toggleDataTable() {
-        _paraChart.isDataTableVisible = ! _paraChart.isDataTableVisible;
+        _paraChart.isDataTableVisible = !_paraChart.isDataTableVisible;
       },
       /** Toggle SparkBraille */
       toggleSparkBraille() {
@@ -368,7 +368,7 @@ export class ParaAPI {
     return this._paraChart.waitForManifest();
   }
 
-  protected async _slideWindow(points: Record<string, {x: string, y: string}>, forward = true) {
+  protected async _slideWindow(points: Record<string, { x: string, y: string }>, forward = true) {
     // mani.jim.datasets[0].series[0].records[0].x
     const mani = this._paraChart.paraState.manifest!;
     for (const [k, v] of Object.entries(points)) {
@@ -400,7 +400,7 @@ export class ParaAPI {
   }
 
   /** Add a record to the end of the chart and remove the first record. */
-  async addRecord(pushPoints: Record<string, {x: string, y: string}>) {
+  async addRecord(pushPoints: Record<string, { x: string, y: string }>) {
     await this._slideWindow(pushPoints);
     //if (!this._paraChart.hasFocus) return;
     const sleep = (msec: number) => {
@@ -419,12 +419,12 @@ export class ParaAPI {
         });
       });
     };
-    const liveUpdateDelayMs = this._paraChart.paraState.config.ui.liveUpdateDelay*1000;
+    const liveUpdateDelayMs = this._paraChart.paraState.config.ui.liveUpdateDelay * 1000;
     this._liveUpdateRecordCount++;
     if (!this._liveUpdateWaiting) {
       while (this._liveUpdateRecordCount) {
         this._liveUpdateWaiting = true;
-        const concise = await this._paraChart.paraState.chartInfo.summarizer.getConciseSummary();
+        const concise = await this._paraChart.paraState.chartInfo.summarizer.getConciseSummaryHighlighted();
         const announcement = `Live update: ${this._liveUpdateRecordCount} record${this._liveUpdateRecordCount > 1 ? 's' : ''} added. ${concise.text}`;
         this._liveUpdateRecordCount = 0;
         if (this._paraChart.paraState.config.ui.isVoicingEnabled) {
@@ -443,7 +443,7 @@ export class ParaAPI {
   }
 
   /** Remove the last record from the chart and add a new record to the start. */
-  async removeRecord(unshiftPoints: Record<string, {x: string, y: string}>) {
+  async removeRecord(unshiftPoints: Record<string, { x: string, y: string }>) {
     await this._slideWindow(unshiftPoints, false);
   }
 
@@ -473,8 +473,8 @@ export class ParaAPI {
   }
 
   /** Get an intersection between two or more series. */
-  getIntersection(index: number): ParaAPIIntersection {
-    return new ParaAPIIntersection(index, this);
+  getIntersection(series1Index: number, series2Index: number, intersectionIndex = 0): ParaAPIIntersection {
+    return new ParaAPIIntersection(series1Index, series2Index, intersectionIndex, this);
   }
 
   // protected _labelToKey(seriesLabel: string): string {
@@ -509,7 +509,7 @@ export class ParaAPI {
 
   /** Get the chart description. */
   async getDescription(): Promise<string | undefined> {
-    const summary = await this._paraChart.globalState.paraState.chartInfo.summarizer.getChartSummary();
+    const summary = await this._paraChart.globalState.paraState.chartInfo.summarizer.getChartSummaryHighlighted();
     return summary?.text;
   }
 
@@ -594,7 +594,7 @@ export class ParaAPI {
   }
 
   /** Get config group metadata. */
-  getConfigGroupMetadata(path: string): ConfigGroupMetadata | undefined{
+  getConfigGroupMetadata(path: string): ConfigGroupMetadata | undefined {
     return configMetadata[path];
   }
 
@@ -717,13 +717,13 @@ export class ParaAPI {
   }
 
   /** Highlight an intersection between series. */
-  highlightIntersection(index: number) {
-    this.getIntersection(index).highlight();
+  highlightIntersection(series1Index: number, series2Index: number, intersectionIndex = 0) {
+    this.getIntersection(series1Index, series2Index, intersectionIndex).highlight();
   }
 
   /** Clear any series intersection highlight. */
-  clearIntersectionHighlight(index: number) {
-    this.getIntersection(index).clearHighlight();
+  clearIntersectionHighlight(series1Index: number, series2Index: number, intersectionIndex = 0) {
+    this.getIntersection(series1Index, series2Index, intersectionIndex).clearHighlight();
   }
 
   /** Clear all chart horizontal range highlights. */
@@ -975,26 +975,35 @@ export class ParaAPIRange {
  * Perform operations on an intersection between two or more series.
  */
 export class ParaAPIIntersection {
-  constructor(protected _index: number, protected _api: ParaAPI) {
+  constructor(protected series1Index: number, protected series2Index: number, protected intersectionIndex = 0, protected _api: ParaAPI) {
     if (!(this._api.paraChart.paraState.model instanceof PlaneModel)) {
       throw new Error('chart type does not support intersections');
     }
-    if (_index < 0) {
+    const targetSeries1 = this._api.paraChart.paraState.model!.series[series1Index];
+    const targetSeries2 = this._api.paraChart.paraState.model!.series[series2Index];
+    const allSeriesIntersects = this._api.paraChart.paraState.model.intersections.filter(i =>
+      i.series.includes(targetSeries1.key)
+      && i.series.includes(targetSeries2.key));
+    const intersect = allSeriesIntersects[intersectionIndex];
+    if (!allSeriesIntersects) {
+      throw new Error('Series do not intersect')
+    }
+    if (intersectionIndex < 0) {
       throw new Error('intersection index must not be negative');
     }
-    if (_index > this._api.paraChart.paraState.model!.intersections.length - 1) {
+    if (intersectionIndex > this._api.paraChart.paraState.model!.intersections.length - 1 || !intersect) {
       throw new Error('intersection index out of range');
     }
   }
 
   /** Highlight the intersection. */
   highlight() {
-    this._api.paraChart.paraState.highlightIntersection(this._index);
+    this._api.paraChart.paraState.highlightIntersection(this.series1Index, this.series2Index, this.intersectionIndex);
   }
 
   /** Clear any highlight. */
   clearHighlight() {
-    this._api.paraChart.paraState.clearIntersectionHighlight(this._index);
+    this._api.paraChart.paraState.clearIntersectionHighlight(this.series1Index, this.series2Index, this.intersectionIndex);
   }
 }
 

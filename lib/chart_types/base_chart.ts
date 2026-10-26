@@ -15,8 +15,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { Logger, getLogger } from '@fizz/logger';
-import { ChartType, Facet, Datapoint, clusterObject } from '@fizz/chartsignal-internal';
-import { Summarizer, formatBox, Highlight, summarizerFromModel, HighlightedSummary } from '@fizz/parasummary';
+import { ChartType, Facet, Datapoint, clusterObject, Summarizer, formatBox, Highlight, HighlightedSummary, ExtendedSummarizer, summarizerFromModelAndLang, extendedSummarizerFromModelAndLang } from '@fizz/chartsignal-internal';
 import { ConfigSetting, DeepReadonly, LegendConfig, PlaneDirection } from '../config/config_types';
 import { ConfigGroup, Direction, HorizDirection } from '../config/config_types';
 import { ParaView } from '../paraview/paraview';
@@ -59,7 +58,7 @@ export type RiffOrder = 'normal' | 'sorted' | 'reversed';
 export abstract class BaseChartInfo {
   protected log: Logger = getLogger("BaseChartInfo");
   protected _navMap: NavMap | null = null;
-  protected _summarizer!: Summarizer;
+  protected _summarizer!: ExtendedSummarizer;
   protected _chordPrevSeriesKey = '';
   protected _sonifier!: Sonifier;
   protected _soniInterval: ReturnType<typeof setTimeout> | null = null;
@@ -96,19 +95,19 @@ export abstract class BaseChartInfo {
   }
 
   protected _createSummarizer(): void {
-    this._summarizer = summarizerFromModel(this.model!);
+    this._summarizer = extendedSummarizerFromModelAndLang(this.model!, 'en') as ExtendedSummarizer;
   }
 
   // Called in ParaState.setManifest() immediately after chartInfo creation
   async setup() {
-    this._conciseSummary = await this._summarizer.getConciseSummary();
+    this._conciseSummary = await this._summarizer.getConciseSummaryHighlighted();
   }
 
   get type(): ChartType {
     return this._type;
   }
 
-  get summarizer(): Summarizer {
+  get summarizer(): ExtendedSummarizer {
     return this._summarizer;
   }
 
@@ -503,31 +502,31 @@ export abstract class BaseChartInfo {
   }
 
   navToChordLanding() {
-  //   // Add to this list when adding chord support for additional chart types
-  //   if (['line', 'bar', 'column', 'candlestick'].includes(this._paraState.type) && this.model!.series.length > 1) {
-  //     if (this._navMap!.cursor!.isNodeType('top')) {
-  //       this._navMap!.cursor.layer.goTo('chord', 0);
-  //       this._chordPrevSeriesKey = this._paraState.model!.seriesKeys[0];
-  //       this._paraState.postNotice('enterChordMode', { options: this._navMap!.cursor.options });
-  //     } else if (this._navMap!.cursor!.isNodeType(this.navDatapointType)) {
-  //       const seriesKey = this._navMap!.cursor.options.seriesKey;
-  //       this._navMap!.cursor.layer.goTo('chord', this._navMap!.cursor.options.index);
-  //       this._chordPrevSeriesKey = seriesKey;
-  //       this._paraState.postNotice('enterChordMode', { options: this._navMap!.cursor.options });
-  //     } else if (this._navMap!.cursor!.isNodeType('chord')) {
-  //       this._navMap!.cursor.layer.goTo(
-  //         this.navDatapointType, {
-  //         // Candlestick charts default to chord mode, so _chordPrevSeriesKey
-  //         // isn't initially set
-  //         seriesKey: this._chordPrevSeriesKey || this._paraState.model!.seriesKeys[0],
-  //         index: this._navMap!.cursor.options.index
-  //       });
-  //       this._paraState.postNotice('exitChordMode', { options: this._navMap!.cursor.options });
-  //     }
-  //   }
-  //   else {
-  //     this.log.info('Chord mode not supported for this chart type');
-  //   }
+    //   // Add to this list when adding chord support for additional chart types
+    //   if (['line', 'bar', 'column', 'candlestick'].includes(this._paraState.type) && this.model!.series.length > 1) {
+    //     if (this._navMap!.cursor!.isNodeType('top')) {
+    //       this._navMap!.cursor.layer.goTo('chord', 0);
+    //       this._chordPrevSeriesKey = this._paraState.model!.seriesKeys[0];
+    //       this._paraState.postNotice('enterChordMode', { options: this._navMap!.cursor.options });
+    //     } else if (this._navMap!.cursor!.isNodeType(this.navDatapointType)) {
+    //       const seriesKey = this._navMap!.cursor.options.seriesKey;
+    //       this._navMap!.cursor.layer.goTo('chord', this._navMap!.cursor.options.index);
+    //       this._chordPrevSeriesKey = seriesKey;
+    //       this._paraState.postNotice('enterChordMode', { options: this._navMap!.cursor.options });
+    //     } else if (this._navMap!.cursor!.isNodeType('chord')) {
+    //       this._navMap!.cursor.layer.goTo(
+    //         this.navDatapointType, {
+    //         // Candlestick charts default to chord mode, so _chordPrevSeriesKey
+    //         // isn't initially set
+    //         seriesKey: this._chordPrevSeriesKey || this._paraState.model!.seriesKeys[0],
+    //         index: this._navMap!.cursor.options.index
+    //       });
+    //       this._paraState.postNotice('exitChordMode', { options: this._navMap!.cursor.options });
+    //     }
+    //   }
+    //   else {
+    //     this.log.info('Chord mode not supported for this chart type');
+    //   }
   }
 
   async navRunDidStart(cursor: NavNode) {
@@ -551,7 +550,7 @@ export abstract class BaseChartInfo {
         } else {
           orientationSentences = await this._summarizer.getRequestedSummaries(ORIENTATION_SENTENCES);
         }
-        const chartSummary = await this._summarizer.getChartSummary();
+        const chartSummary = await this._summarizer.getChartSummaryHighlighted();
         this._paraState.announce({
           text: chartSummary.text + ' ' + orientationSentences.text,
           html: chartSummary.html + ' ' + orientationSentences.html,
