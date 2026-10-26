@@ -26,7 +26,8 @@ import {
   Model, modelFromExternalData, modelFromInlineData, FacetSignature, PlaneDatapoint,
   planeModelFromInlineData, planeModelFromExternalData, PlaneModel, type Datapoint,
   Facet, FormatType, 
-  formatXYDatapointX, formatXYDatapointY, HighlightedSummary, type Highlight, formatBox
+  formatXYDatapointX, formatXYDatapointY, HighlightedSummary, type Highlight, formatBox,
+  DatapointAnnotation
   } from '@fizz/chartsignal-internal';
 import { Jimerator } from '@fizz/jimerator';
 
@@ -54,8 +55,7 @@ import { type BaseChartInfo, chartInfoClasses, ComboChartInfo, LineChartInfo, Sc
 import { firstDataset, type Manifest } from '../loader/common';
 import { ClusterShellView } from '../view/layers';
 import { computeLabels } from '../common/axisinfo';
-import { Legend, LegendItem } from '../view/legend';
-import { type BubbleChartInfo } from '../chart_types/bubble_chart';
+import { Legend } from '../view/legend';
 import { Threshold } from '../view/layers/annotation/threshold';
 
 export type DataState = 'initial' | 'pending' | 'complete' | 'error';
@@ -71,28 +71,6 @@ export interface Announcement {
   clear?: boolean;
   startFrom: number;
   target: AnnounceTarget;
-}
-
-export interface BaseAnnotation {
-  type: string;
-  annotation: string;
-  id: string;
-  seriesKey?: string;
-  index?: number;
-  isSelected?: boolean;
-}
-
-export interface PointAnnotation extends BaseAnnotation {
-  type: "datapoint";
-  seriesKey: string;
-  index: number;
-  annotation: string;
-  text: string;
-  timestamp?: Date;
-}
-
-export interface MDRAnnotation extends BaseAnnotation {
-  annotation: string;
 }
 
 export interface RangeHighlight {
@@ -186,7 +164,6 @@ export class ParaState extends BaseState {
 
   @property() darkMode = false;
   @property() announcement: Announcement = { text: '', html: '', highlights: [], startFrom: 0, target: 'all' };
-  @property() annotations: BaseAnnotation[] = [];
   @property() popups: Popup[] = [];
   @property() focusPopups: Popup[] = [];
   @property() selectPopups: Popup[] = [];
@@ -241,6 +218,7 @@ export class ParaState extends BaseState {
 
   @property() protected _thresholdData: ThresholdData[] = [];
   @property() protected _thresholds: Threshold[] = [];
+  @property() _selectedAnnotations: string[] = [];
   protected _data: AllSeriesData | null = null;
   protected _dataState: DataState = 'initial';
   protected _settingControls = new SettingControlManager(this);
@@ -411,10 +389,6 @@ export class ParaState extends BaseState {
         }
       }
     }
-  }
-
-  nextAnnotID(): number {
-    return this._annotID++;
   }
 
   nextLegendID(): number {
@@ -632,7 +606,8 @@ export class ParaState extends BaseState {
     }
 
     // Sync to manifest (we still want the changed paths recorded)
-    this._syncPatchesToManifest(patches);
+    // TODO: Fix this to work with instanced settings
+    //this._syncPatchesToManifest(patches);
 
     const observedInst: { [path: string]: Partial<{ oldValue: ConfigSetting, newValue: ConfigSetting }> } = {};
     for (const patch of patches) {
@@ -1650,11 +1625,28 @@ export class ParaState extends BaseState {
     return this._highlightedIntersections;
   }
 
-  highlightIntersection(index: number) {
-    this._highlightedIntersections = new Set([
-      ...this._highlightedIntersections.values(),
-      index
-    ]);
+  highlightIntersection(series1Index: number, series2Index: number, intersectionIndex = 0) {
+    const series = this.model!.series;
+    const targetSeries1 = series[series1Index];
+    const targetSeries2 = series[series2Index];
+    const targetIntersection = (this.model! as PlaneModel).intersections.filter(i =>
+      i.series.includes(targetSeries1.key)
+      && i.series.includes(targetSeries2.key))[intersectionIndex];
+    if (!targetIntersection) {
+      return;
+    }
+    const text = `Intersection between ${targetSeries1.label} and ${targetSeries2.label}`
+    const annot = {
+      type: 'intersection-annotation',
+      series1Index: series1Index,
+      series2Index: series2Index,
+      intersectionIndex: intersectionIndex,
+      intersection: targetIntersection,
+      text: text,
+      id: `intersection-${this.model!.nextAnnotID(targetSeries1.key, 0, text)}`
+    }
+    this.model?.addAnnotation(annot);
+    this.refreshParaView();
   }
 
   highlightCluster(index: number) {
@@ -1668,13 +1660,13 @@ export class ParaState extends BaseState {
     return this._highlightedClusters;
   }
 
-  clearIntersectionHighlight(index: number) {
-    for (let intersection of Array.from(this._highlightedIntersections)) {
-      this.removeCrosshair(`intersection-${intersection}`)
+  clearIntersectionHighlight(series1Index: number, series2Index: number, intersectionIndex = 0) {
+    const annot = this.model?.allIntersectionAnnotations.filter(a => a.series1Index == series1Index
+      && a.series2Index == series2Index && a.intersectionIndex == intersectionIndex)[0];
+    if (annot) {
+      this.model?.removeAnnotation(annot.id);
+      this.refreshParaView();
     }
-    this._highlightedIntersections = new Set(
-      [...this._highlightedIntersections.values()].filter(idx => idx !== index)
-    );
   }
 
   clearAllAxisLabelHighlights() {
@@ -1793,27 +1785,32 @@ export class ParaState extends BaseState {
     this._selectedDatapoints = new Set();
   }
 
+  removeSelectedAnnotation(id: string) {
+    this._selectedAnnotations = this._selectedAnnotations.filter(a => a !== id);
+  }
+
   getFormatType(context: FormatContext): FormatType {
     return context === 'domId' ? 'domId'
       : SettingsManager.get(FORMAT_CONTEXT_SETTINGS[context], this.config) as FormatType;
   }
 
-  annotatePoint(seriesKey: string, index: number, text: string) {
-    if (this.annotations.find((annot: PointAnnotation) =>
-      annot.seriesKey === seriesKey && annot.index === index && annot.text === text)) {
+  annotatePoint(seriesKey: string, datapointIndex: number, text: string) {
+    if (this.model?.annotations.find((annot: DatapointAnnotation) =>
+      this.model!.seriesKeys[annot.seriesIndex] === seriesKey && annot.datapointIndex === datapointIndex && annot.text === text)) {
       return;
     }
     const recordLabel = formatXYDatapointX(
-      this._model!.atKeyAndIndex(seriesKey, index) as PlaneDatapoint, 'raw');
-    this.annotations = [...this.annotations, {
-      type: 'datapoint',
+      this._model!.atKeyAndIndex(seriesKey, datapointIndex) as PlaneDatapoint, 'raw');
+    const annot = {
+      type: 'datapoint-annotation',
       seriesKey,
-      index,
+      datapointIndex,
       annotation: `${seriesKey}, ${recordLabel}: ${text}`,
       text,
       id: `${seriesKey}-${recordLabel}-${this._annotID}`,
       isSelected: true
-    } as PointAnnotation];
+    }
+    this.model!.addAnnotation(annot);
     this._annotID++;
   }
 
@@ -1856,15 +1853,13 @@ export class ParaState extends BaseState {
           message += ` ${start} to ${end} (${trendTranslation[seq.slopeInfo.classes[0]]}),`;
         }
         message = message.slice(0, -1) + ".";
-        if (this.annotations.some(a => a.id == "trend-analysis-annotation")) {
-          const index = this.annotations.findIndex(a => a.id == "trend-analysis-annotation");
-          this.annotations.splice(index, 1);
-        }
-        this.annotations.push({
+        this.model?.removeAnnotation("trend-analysis-annotation")
+        const annot = {
           type: 'trend',
-          annotation: message,
-          id: `trend-analysis-annotation`
-        });
+          id: `trend-analysis-annotation`,
+          text: message
+        };
+        this.model?.addAnnotation(annot);
       } else {
         this.removeMDRAnnotations();
       }
@@ -1905,11 +1900,7 @@ export class ParaState extends BaseState {
       this.removeModelLineBreaks(seriesAnalysis!.sequences, seriesKey);
       this.removeModelTrendLines(seriesAnalysis!.sequences, seriesKey);
     }
-
-    if (this.annotations.some(a => a.id == "trend-analysis-annotation")) {
-      const index = this.annotations.findIndex(a => a.id == "trend-analysis-annotation");
-      this.annotations.splice(index, 1);
-    }
+    this.model?.removeAnnotation("trend-analysis-annotation")
   }
 
   protected _getUrlAnnotations() {
@@ -2025,16 +2016,18 @@ export class ParaState extends BaseState {
     for (const datapointId of this.selectedDatapoints) {
       //const [seriesKey, index] = keyIdx.split('-');
       const { seriesKey, index } = datapointIdToCursor(datapointId);
-      const series = this.model!.series.filter(s => s[0].seriesKey === seriesKey)[0];
+      const seriesIndex = this.model!.seriesKeys.indexOf(seriesKey);
+      const series = this.model!.series[seriesIndex];
       const length = series.length - 1;
       this.addLineBreak(index / length, index, seriesKey, false)
-      this.annotations.push({
-        type: "lineBreak",
-        seriesKey,
+      const annot = {
+        type: "linebreak-annotation",
+        seriesIndex,
         index,
-        annotation: `${series.key}, ${series.rawData[index].x}: Added line break`,
-        id: `line-break-${index}`
-      })
+        id: `line-break-${index}`,
+        text: `${series.label}, ${series.rawData[index].x}: Added line break`
+      };
+      this.model?.addAnnotation(annot);
       this.postNotice('addLineBreak', { seriesKey, index });
     }
     if (this.userLineBreaks.length) {
@@ -2099,7 +2092,7 @@ export class ParaState extends BaseState {
 
   clearUserLineBreaks() {
     this._userLineBreaks = [];
-    this.annotations = this.annotations.filter(a => !/line-break/.test(a.id));
+    this.model!.annotations.filter(a => a.type == 'linebreak-annotation').forEach(a => this.model?.removeAnnotation(a.id))
     this.postNotice('clearLineBreaks', null);
   }
 

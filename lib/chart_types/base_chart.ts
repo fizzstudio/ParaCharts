@@ -22,7 +22,7 @@ import { ParaView } from '../paraview/paraview';
 import { LegendItemsWithPosition, type LegendItem } from '../view/legend';
 import { AxisOrientation } from '../view/axis';
 import { NavMap, type NavNode, NavNodeType, DatapointNavNodeType, ChordNavNodeOptions } from '../view/layers/data/navigation';
-import { type ParaState, PointAnnotation, type SparkBrailleInfo, datapointIdToCursor, SettingsManager } from '../state';
+import { type ParaState, type SparkBrailleInfo, datapointIdToCursor, SettingsManager } from '../state';
 import { Sonifier } from '../audio/sonifier';
 
 
@@ -502,31 +502,31 @@ export abstract class BaseChartInfo {
   }
 
   navToChordLanding() {
-  //   // Add to this list when adding chord support for additional chart types
-  //   if (['line', 'bar', 'column', 'candlestick'].includes(this._paraState.type) && this.model!.series.length > 1) {
-  //     if (this._navMap!.cursor!.isNodeType('top')) {
-  //       this._navMap!.cursor.layer.goTo('chord', 0);
-  //       this._chordPrevSeriesKey = this._paraState.model!.seriesKeys[0];
-  //       this._paraState.postNotice('enterChordMode', { options: this._navMap!.cursor.options });
-  //     } else if (this._navMap!.cursor!.isNodeType(this.navDatapointType)) {
-  //       const seriesKey = this._navMap!.cursor.options.seriesKey;
-  //       this._navMap!.cursor.layer.goTo('chord', this._navMap!.cursor.options.index);
-  //       this._chordPrevSeriesKey = seriesKey;
-  //       this._paraState.postNotice('enterChordMode', { options: this._navMap!.cursor.options });
-  //     } else if (this._navMap!.cursor!.isNodeType('chord')) {
-  //       this._navMap!.cursor.layer.goTo(
-  //         this.navDatapointType, {
-  //         // Candlestick charts default to chord mode, so _chordPrevSeriesKey
-  //         // isn't initially set
-  //         seriesKey: this._chordPrevSeriesKey || this._paraState.model!.seriesKeys[0],
-  //         index: this._navMap!.cursor.options.index
-  //       });
-  //       this._paraState.postNotice('exitChordMode', { options: this._navMap!.cursor.options });
-  //     }
-  //   }
-  //   else {
-  //     this.log.info('Chord mode not supported for this chart type');
-  //   }
+    //   // Add to this list when adding chord support for additional chart types
+    //   if (['line', 'bar', 'column', 'candlestick'].includes(this._paraState.type) && this.model!.series.length > 1) {
+    //     if (this._navMap!.cursor!.isNodeType('top')) {
+    //       this._navMap!.cursor.layer.goTo('chord', 0);
+    //       this._chordPrevSeriesKey = this._paraState.model!.seriesKeys[0];
+    //       this._paraState.postNotice('enterChordMode', { options: this._navMap!.cursor.options });
+    //     } else if (this._navMap!.cursor!.isNodeType(this.navDatapointType)) {
+    //       const seriesKey = this._navMap!.cursor.options.seriesKey;
+    //       this._navMap!.cursor.layer.goTo('chord', this._navMap!.cursor.options.index);
+    //       this._chordPrevSeriesKey = seriesKey;
+    //       this._paraState.postNotice('enterChordMode', { options: this._navMap!.cursor.options });
+    //     } else if (this._navMap!.cursor!.isNodeType('chord')) {
+    //       this._navMap!.cursor.layer.goTo(
+    //         this.navDatapointType, {
+    //         // Candlestick charts default to chord mode, so _chordPrevSeriesKey
+    //         // isn't initially set
+    //         seriesKey: this._chordPrevSeriesKey || this._paraState.model!.seriesKeys[0],
+    //         index: this._navMap!.cursor.options.index
+    //       });
+    //       this._paraState.postNotice('exitChordMode', { options: this._navMap!.cursor.options });
+    //     }
+    //   }
+    //   else {
+    //     this.log.info('Chord mode not supported for this chart type');
+    //   }
   }
 
   async navRunDidStart(cursor: NavNode) {
@@ -571,9 +571,7 @@ export abstract class BaseChartInfo {
       const seriesPreviouslyVisited = this._paraState.everVisitedSeries(cursor.options.seriesKey);
       const datapoint = this.model!.atKeyAndIndex(cursor.options.seriesKey, cursor.options.index)!;
       const announcements = [this._summarizer.getDatapointSummary(datapoint, 'statusBar')];
-      const annotations = this._paraState.annotations.filter(
-        (a) => a.type === 'datapoint' && a.seriesKey === datapoint.seriesKey && a.index === datapoint.datapointIndex
-      ) as PointAnnotation[];
+      const annotations = datapoint.annotations;
       if (annotations.length > 0) {
         const annotationsText = annotations.map((a) => a.text).join(', ');
         announcements.push(`Annotation${annotations.length > 1 ? 's' : ''}: ${annotationsText}`);

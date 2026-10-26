@@ -300,12 +300,18 @@ export class ClusterShellView extends View {
   }
 
   get centroidCoords() {
-    const c: number[] = [0, 0];
-    for (const point of this.points!) {
-      c[0] += (point[0] / this.points!.length);
-      c[1] += (point[1] / this.points!.length);
-    }
-    return c;
+    const chartInfo = this.paraview.paraState.chartInfo as ScatterChartInfo;
+    const clustering = chartInfo.clustering!;
+    const centroid = clustering[this.clusterID ?? 0].centroid;
+    const xMin = chartInfo.xRangeInfo?.interval.start ?? 0;
+    const xMax = chartInfo.xRangeInfo?.interval.end ?? 1;
+    const yMin = chartInfo.yRangeInfo?.interval.start ?? 0;
+    const yMax = chartInfo.yRangeInfo?.interval.end ?? 1;
+    const xRange = xMax - xMin;
+    const yRange = yMax - yMin;
+    const width = this.chart.parent.width;
+    const height = this.chart.parent.height;
+    return [(centroid[0] - xMin) * width / (xRange), (yMax - centroid[1]) * height / (yRange)];
   }
 
   get centroidColor() {
@@ -323,7 +329,8 @@ export class ClusterShellView extends View {
       <polygon points=${this.pointsString} style="stroke:black; fill:none; stroke-width:2"/>
       <circle
         cx=${fixed`${this.centroidCoords[0]}`}
-        cy=${fixed`${this.centroidCoords[1]}`} r="8"
+        cy=${fixed`${this.centroidCoords[1]}`} 
+        r="8"
         class="series-${this.centroidColor} cluster-centroid"
       />
     </g>`

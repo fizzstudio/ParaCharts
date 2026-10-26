@@ -6,7 +6,7 @@
           "type": "chart",
           "subtype": "line"
         },
-        "title": "Expenses vs. Revenue",
+        "title": "Passenger cars - sales in selected countries worldwide 2005 to 2018",
         "facets": {
           "x": {
             "label": "Year",
@@ -20,12 +20,11 @@
             }
           },
           "y": {
-            "label": "Expenses and revenue in millions",
+            "label": "Passenger car sales in millions",
             "variableType": "dependent",
             "measure": "ratio",
             "datatype": "number",
             "multiplier": 1000000,
-            "units": "U.S. dollar",
             "displayType": {
               "type": "axis",
               "orientation": "vertical"
@@ -34,156 +33,297 @@
         },
         "series": [
           {
-            "key": "Expenses",
+            "key": "China",
             "topic": {
-              "baseQuantity": "expenses",
-              "baseKind": "dimensioned"
+              "baseQuantity": "passenger car sale",
+              "baseKind": "number",
+              "locale": "China"
             },
-            "label": "Expenses",
             "records": [
               {
-                "x": "Q1 1980",
-                "y": "7.66"
+                "x": "2005",
+                "y": "3.97"
               },
               {
-                "x": "Q2 1980",
-                "y": "7.76"
+                "x": "2006",
+                "y": "5.18"
               },
               {
-                "x": "Q3 1980",
-                "y": "7.56"
+                "x": "2007",
+                "y": "6.3"
               },
               {
-                "x": "Q4 1980",
-                "y": "6.77"
+                "x": "2008",
+                "y": "6.76"
               },
               {
-                "x": "Q1 1981",
-                "y": "7.4"
+                "x": "2009",
+                "y": "10.33"
               },
               {
-                "x": "Q2 1981",
-                "y": "7.64"
+                "x": "2010",
+                "y": "13.76"
               },
               {
-                "x": "Q3 1981",
-                "y": "7.09"
+                "x": "2011",
+                "y": "14.47"
               },
               {
-                "x": "Q4 1981",
-                "y": "7.24"
+                "x": "2012",
+                "y": "15.5"
               },
               {
-                "x": "Q1 1982",
-                "y": "7.59"
+                "x": "2013",
+                "y": "17.93"
               },
               {
-                "x": "Q2 1982",
-                "y": "7.69"
+                "x": "2014",
+                "y": "19.71"
               },
               {
-                "x": "Q3 1982",
-                "y": "7.52"
+                "x": "2015",
+                "y": "21.21"
               },
               {
-                "x": "Q4 1982",
-                "y": "6.87"
+                "x": "2016",
+                "y": "24.38"
               },
               {
-                "x": "Q1 1983",
-                "y": "7.08"
+                "x": "2017",
+                "y": "24.72"
               },
               {
-                "x": "Q2 1983",
-                "y": "7.3"
-              },
-              {
-                "x": "Q3 1983",
-                "y": "7.1"
-              },
-              {
-                "x": "Q4 1983",
-                "y": "7.2"
+                "x": "2018",
+                "y": "23.71"
               }
             ]
           },
           {
-            "key": "Revenue",
+            "key": "U.S. (excluding light trucks*)",
             "topic": {
-              "baseQuantity": "revenue",
-              "baseKind": "dimensioned"
+              "baseQuantity": "passenger car sale",
+              "baseKind": "number",
+              "locale": "the U.S."
+            },
+            "label": "U.S.",
+            "records": [
+              {
+                "x": "2005",
+                "y": "7.66"
+              },
+              {
+                "x": "2006",
+                "y": "7.76"
+              },
+              {
+                "x": "2007",
+                "y": "7.56"
+              },
+              {
+                "x": "2008",
+                "y": "6.77"
+              },
+              {
+                "x": "2009",
+                "y": "5.4"
+              },
+              {
+                "x": "2010",
+                "y": "5.64"
+              },
+              {
+                "x": "2011",
+                "y": "6.09"
+              },
+              {
+                "x": "2012",
+                "y": "7.24"
+              },
+              {
+                "x": "2013",
+                "y": "7.59"
+              },
+              {
+                "x": "2014",
+                "y": "7.69"
+              },
+              {
+                "x": "2015",
+                "y": "7.52"
+              },
+              {
+                "x": "2016",
+                "y": "6.87"
+              },
+              {
+                "x": "2017",
+                "y": "6.08"
+              },
+              {
+                "x": "2018",
+                "y": "5.3"
+              }
+            ]
+          },
+          {
+            "key": "Japan",
+            "topic": {
+              "baseQuantity": "passenger car sale",
+              "baseKind": "number",
+              "locale": "Japan"
             },
             "records": [
               {
-                "x": "Q1 1980",
+                "x": "2005",
+                "y": "4.75"
+              },
+              {
+                "x": "2006",
+                "y": "4.61"
+              },
+              {
+                "x": "2007",
+                "y": "4.33"
+              },
+              {
+                "x": "2008",
+                "y": "4.18"
+              },
+              {
+                "x": "2009",
+                "y": "3.91"
+              },
+              {
+                "x": "2010",
+                "y": "4.2"
+              },
+              {
+                "x": "2011",
+                "y": "3.51"
+              },
+              {
+                "x": "2012",
+                "y": "4.57"
+              },
+              {
+                "x": "2013",
+                "y": "4.56"
+              },
+              {
+                "x": "2014",
+                "y": "4.7"
+              },
+              {
+                "x": "2015",
+                "y": "4.22"
+              },
+              {
+                "x": "2016",
+                "y": "4.15"
+              },
+              {
+                "x": "2017",
+                "y": "4.39"
+              },
+              {
+                "x": "2018",
+                "y": "4.39"
+              }
+            ]
+          },
+          {
+            "key": "Germany",
+            "topic": {
+              "baseQuantity": "passenger car sale",
+              "baseKind": "number",
+              "locale": "Germany"
+            },
+            "records": [
+              {
+                "x": "2005",
                 "y": "3.32"
               },
               {
-                "x": "Q2 1980",
+                "x": "2006",
                 "y": "3.47"
               },
               {
-                "x": "Q3 1980",
+                "x": "2007",
                 "y": "3.15"
               },
               {
-                "x": "Q4 1980",
+                "x": "2008",
                 "y": "3.09"
               },
               {
-                "x": "Q1 1981",
+                "x": "2009",
                 "y": "3.81"
               },
               {
-                "x": "Q2 1981",
+                "x": "2010",
                 "y": "2.92"
               },
               {
-                "x": "Q3 1981",
+                "x": "2011",
                 "y": "3.17"
               },
               {
-                "x": "Q4 1981",
+                "x": "2012",
                 "y": "3.08"
               },
               {
-                "x": "Q1 1982",
+                "x": "2013",
                 "y": "2.95"
               },
               {
-                "x": "Q2 1982",
+                "x": "2014",
                 "y": "3.04"
               },
               {
-                "x": "Q3 1982",
+                "x": "2015",
                 "y": "3.21"
               },
               {
-                "x": "Q4 1982",
+                "x": "2016",
                 "y": "3.35"
               },
               {
-                "x": "Q1 1983",
+                "x": "2017",
                 "y": "3.44"
               },
               {
-                "x": "Q2 1983",
+                "x": "2018",
                 "y": "3.44"
-              },
-              {
-                "x": "Q3 1983",
-                "y": "3.1"
-              },
-              {
-                "x": "Q4 1983",
-                "y": "3.3"
               }
             ]
           }
         ],
         "topic": {
-          "baseQuantity": "expenses and revenue",
-          "baseKind": "dimensioned"
+          "baseQuantity": "passenger car sale",
+          "baseKind": "number",
+          "locale": "nation"
+        }
+      }
+    ],
+    "annotations": [
+      {
+        "target": {
+          "marker": {
+            "source": "https://example.org/chart1",
+            "selector": {
+              "type": "intersection",
+              "datasetIndex": 0,
+              "series1Index": 0,
+              "series2Index": 1
+            }
+          }
+        },
+        "content": {
+          "kind": "intersection",
+          "highlightBetween": "after",
+          "label": {
+            "en": "Wow! An Intersection!"
+          }
         }
       }
     ]

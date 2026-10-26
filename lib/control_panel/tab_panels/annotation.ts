@@ -4,11 +4,15 @@ import {
   html, css,
 } from 'lit';
 import { customElement } from 'lit/decorators.js';
-import { datapointIdToCursor, type PointAnnotation } from '../../state/parastate';
-import { type PlaneDatapoint, formatXYDatapointX } from '@fizz/chartsignal-internal';
+import { AxisAnnotation, BaseAnnotation, DatapointAnnotation, formatXYDatapointX, IntersectionAnnotation, type PlaneDatapoint } from '@fizz/chartsignal-internal';
+import { LineBreakControlsDialog } from '../dialogs/line_break_controls_dialog';
+import { createRef, ref } from 'lit/directives/ref.js';
+import { datapointIdToCursor,  } from '../../state/parastate';
 
 @customElement('para-annotation-panel')
 export class AnnotationPanel extends ControlPanelTabPanel {
+
+  protected _lineBreakControlsDialogRef = createRef<LineBreakControlsDialog>();
 
   static styles = [
     ...ControlPanelTabPanel.styles,
@@ -47,34 +51,74 @@ export class AnnotationPanel extends ControlPanelTabPanel {
   }
 
   showAnnotations() {
+    if (!this._paraState.model) {
+      return;
+    }
     return html`
       <ol class="annotations">
-        ${this._paraState.annotations.map(item => html`
+        ${this._paraState.model.annotations.map(item => html`
             <li
               id="${item.id}"
-              data-series="${item.seriesKey}"
-              data-index="${item.index}"
+              data-series="${(item as DatapointAnnotation).seriesIndex}"
+              data-index="${(item as DatapointAnnotation).datapointIndex}"
               @click=${(event: Event) => {
-                item.isSelected = !item.isSelected;
-                this._selectAnnotation(event);
-                }}
+        this._selectAnnotation(event);
+      }}
               @contextmenu=${(event: Event) => {
-                event.preventDefault()
-                this.editAnnotation(event)
-                }}
-            >${item.annotation}</li>
+        event.preventDefault()
+        this.editAnnotation(event)
+      }}
+            >${this.getAnnotationMessage(item)}</li>
           `)
       }
       </ol>
     `;
   }
 
+
+  getAnnotationMessage(annot: BaseAnnotation) {
+    if (annot.type == 'datapoint-annotation') {
+      const datapointAnnot = annot as DatapointAnnotation;
+      const seriesLabel = this._paraState.model?.series[datapointAnnot.seriesIndex].label
+      return `${seriesLabel}, datapoint ${datapointAnnot.datapointIndex}: ${datapointAnnot.text}`
+    }
+    else if (annot.type == 'axis-annotation') {
+      const axisAnnot = annot as AxisAnnotation;
+      const cap = axisAnnot.axis == 'y' ? "Y axis" : "X axis";
+      const isThreshold = axisAnnot.kind == 'threshold' ? "threshold" : "marker";
+      return `${cap} ${isThreshold} - ${axisAnnot.value}: ${axisAnnot.text}`;
+    }
+    else if (annot.type == 'intersection-annotation') {
+      const intersectionAnnot = annot as IntersectionAnnotation
+      const series = this._paraState.model!.series;
+      const targetSeries1 = series[intersectionAnnot.series1Index];
+      const targetSeries2 = series[intersectionAnnot.series2Index];
+      if (intersectionAnnot.intersection.record.index !== null) {
+        const loc = targetSeries1.datapoints[intersectionAnnot.intersection.record.index].facetBox('x')!.raw;
+        return `Intersection between ${targetSeries1.label} and ${targetSeries2.label} at ${loc}`;
+      }
+      else if (intersectionAnnot.intersection.record.beforeIndex !== null && intersectionAnnot.intersection.record.afterIndex !== null) {
+        const loc1 = targetSeries1.datapoints[intersectionAnnot.intersection.record.beforeIndex].facetBox('x')!.raw;
+        const loc2 = targetSeries1.datapoints[intersectionAnnot.intersection.record.afterIndex].facetBox('x')!.raw;
+        return `Intersection between ${targetSeries1.label} and ${targetSeries2.label} between ${loc1} and ${loc2}`;
+      }
+
+    }
+    return annot.text;
+  }
+
   protected _selectAnnotation(event: Event) {
     const target = (event?.target as HTMLElement);
     if (target) {
       this._highlightAnnotation(target);
+      if (this._paraState._selectedAnnotations.includes(target.id)) {
+        this._paraState.removeSelectedAnnotation(target.id);
+      }
+      else {
+        this._paraState._selectedAnnotations.push(target.id);
+      }
       if (target.dataset.series && target.dataset.index!) {
-        const seriesKey = target.dataset.series!;
+        const seriesKey = this._paraState.model!.seriesKeys[parseInt(target.dataset.series!)];
         const index = parseInt(target.dataset.index!);
         this._navToAnnotation(seriesKey, index);
       }
@@ -95,10 +139,11 @@ export class AnnotationPanel extends ControlPanelTabPanel {
   }
 
   async addAnnotation() {
-    const newAnnotationList: PointAnnotation[] = [];
+    const newAnnotationList: DatapointAnnotation[] = [];
     for (const dpId of this._paraState.visitedDatapoints) {
       const { seriesKey, index } = datapointIdToCursor(dpId);
-      const series = this._paraState.model!.atKey(seriesKey)!.getLabel();
+      const seriesIndex = this._paraState.model!.seriesKeys.indexOf(seriesKey);
+      const series = this._paraState.model!.atKey(seriesKey)!.label;
       const recordLabel = formatXYDatapointX(
         this._paraState.model!.atKeyAndIndex(seriesKey, index) as PlaneDatapoint,
         'raw'
@@ -108,26 +153,30 @@ export class AnnotationPanel extends ControlPanelTabPanel {
         continue;
       }
       const annotationText = text;
+      const id = `${series}-${recordLabel}-${this._paraState.model?.nextAnnotID(seriesKey, index, annotationText)}`;
       if (annotationText) {
         newAnnotationList.push({
-          type: "datapoint",
-          seriesKey,
-          index,
-          annotation: `${series}, ${recordLabel}: ${annotationText}`,
+          type: "datapoint-annotation",
+          datasetIndex: 0,
+          seriesIndex,
+          datapointIndex: index,
           text: annotationText,
-          id: `${series}-${recordLabel}-${this._paraState.nextAnnotID()}`,
-          isSelected: this._paraState.config.ui.isLowVisionModeEnabled ? false : true,
+          id: id,
         });
       }
+      this._paraState._selectedAnnotations.push(id);
     }
-    this._paraState.annotations = [...this._paraState.annotations, ...newAnnotationList];
+    for (let annot of newAnnotationList) {
+      this._paraState.model?.addAnnotation(annot);
+    }
+    this._paraState.refreshParaView();
   }
 
   async editAnnotation(event: Event) {
     const target = (event?.target as HTMLElement);
     if (target) {
-      const annot = this._paraState.annotations.filter(p => (p.id == target.id))[0] as PointAnnotation;
-      if (!annot){
+      const annot = this._paraState.model!.annotations.filter(p => (p.id == target.id))[0] as BaseAnnotation;
+      if (!annot) {
         return;
       }
       const { result, text } = await this.showEditAnnotDialog(annot);
@@ -135,18 +184,19 @@ export class AnnotationPanel extends ControlPanelTabPanel {
         return;
       }
       if (result == 'remove') {
-        this._paraState.annotations = this._paraState.annotations.filter(p => !(p.id == target.id));
+        this._paraState.model!.removeAnnotation(target.id);
+        this._paraState.refreshParaView();
         return;
       }
       else {
-        annot.text = text;
-        this._paraState.requestUpdate();
+        this._paraState.model?.editAnnotationText(annot.id, text);
+        this._paraState.refreshParaView();
       }
     }
   }
 
   async showAddAnnotDialog(dpId: string) {
-    return await this.controlPanel.annotationDialog.show('Add Annotation', this._addAnnot(dpId), {showRemove: false});
+    return await this.controlPanel.annotationDialog.show('Add Annotation', this._addAnnot(dpId), { showRemove: false });
   }
 
   protected _addAnnot(dpId: string) {
@@ -162,23 +212,36 @@ export class AnnotationPanel extends ControlPanelTabPanel {
     `;
   }
 
-  async showEditAnnotDialog(annot: PointAnnotation) {
-    return await this.controlPanel.annotationDialog.show('Edit Annotation', this._editAnnot(annot), {showRemove: true});
+  async showEditAnnotDialog(annot: BaseAnnotation) {
+    return await this.controlPanel.annotationDialog.show('Edit Annotation', this._editAnnotDialogContent(annot), { showRemove: true });
   }
 
-  protected _editAnnot(annot: PointAnnotation) {
-    const seriesKey = annot.seriesKey;
-    const index = annot.index;
-    const series = this._paraState.model!.atKey(seriesKey)!.getLabel();
-    return html`
+  protected _editAnnotDialogContent(annot: BaseAnnotation) {
+    if (annot.type == 'datapoint') {
+      const datapointAnnot = annot as DatapointAnnotation
+      const seriesKey = this._paraState.model!.seriesKeys[datapointAnnot.seriesIndex];
+      const index = datapointAnnot.datapointIndex;
+      const series = this._paraState.model!.atKey(seriesKey)!.label;
+      return html`
       <div id="annotDialog">
         <div>Datapoint: ${series}, ${index}</div><br>
+        <div>Current text: ${datapointAnnot.text}</div><br>
+        <label for="annot">New text:</label><br>
+        <input type="text" id="annot" name="annot">
+        <br><br>
+      </div>
+    `;
+    }
+    else {
+      return html`
+      <div id="annotDialog">
         <div>Current text: ${annot.text}</div><br>
         <label for="annot">New text:</label><br>
         <input type="text" id="annot" name="annot">
         <br><br>
       </div>
     `;
+    }
   }
 
   render() {
@@ -190,46 +253,24 @@ export class AnnotationPanel extends ControlPanelTabPanel {
         <div>
           <button
             @click=${() => {
-              this.addAnnotation();
-            }}
+        this.addAnnotation();
+      }}
           >
             ${this._globalState.l10n.localize('cpanel.tabs.annotations.add_annotation')}
           </button>
         </div>
         <div>
-          <button
-            @click=${() => {
-                this._paraState.addUserLineBreaks()
-              }
-            }
-          >
-            ${this._globalState.l10n.localize('cpanel.tabs.annotations.add_line_breaks')}
-          </button>
-        </div>
-         <div>
-          <button
-            @click=${() => {
-                this._paraState.clearUserLineBreaks()
-                this._paraState.clearUserTrendLines()
-              }
-            }
-          >
-            ${this._globalState.l10n.localize('cpanel.tabs.annotations.remove_line_breaks')}
-          </button>
-        </div>
-         <div>
-          <button
-            @click=${() => {
-                this._paraState.updateConfig(draft => {
-                  draft.controlPanel.isMDRAnnotationsVisible = !this._paraState.config.controlPanel.isMDRAnnotationsVisible;
-                });
-                this._paraState.showMDRAnnotations()
-              }
-            }
-          >
-            ${this._globalState.l10n.localize('cpanel.tabs.annotations.show_annotations')}
-          </button>
-        </div>
+            <button
+              @click=${() => this._lineBreakControlsDialogRef.value?.show()}
+            >
+              Line-break controls
+            </button>
+          </div>
+        <para-line-break-controls-dialog
+          ${ref(this._lineBreakControlsDialogRef)}
+          id="line-break-controls-dialog"
+          .globalState=${this._globalState}
+        ></para-line-break-controls-dialog>  
       </div>
     `;
   }

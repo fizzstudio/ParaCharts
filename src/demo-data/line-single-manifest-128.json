@@ -90,17 +90,10 @@
     "annotations": [
       {
         "target": {
-          "element": {
-            "source": "https://example.org/chart1.svg",
-            "selector": {
-              "type": "https://example.org/selectors/css/1",
-              "value": "#maximum-emissions"
-            }
-          },
           "marker": {
             "source": "https://example.org/chart1",
             "selector": {
-              "type": "https://paracharts.example/selectors/chart-value/1",
+              "type": "chart-value",
               "axis": "y",
               "value": 995
             }
@@ -111,10 +104,29 @@
           "role": "upper-limit",
           "polarity": "below-is-better",
           "label": {
-            "en": "Maximum allowed emissions"
+            "en": "Maximum allowed cows"
           }
         },
         "relationship": "https://example.org/relationships/marker/1"
+      },
+      {
+        "target": {
+          "marker": {
+            "source": "https://example.org/chart1",
+            "selector": {
+              "type": "datapoint",
+              "datasetIndex": 0,
+              "seriesIndex": 0,
+              "datapointIndex": 3
+            }
+          }
+        },
+        "content": {
+          "kind": "datapoint-annotation",
+          "label": {
+            "en": "This point is super special."
+          }
+        }
       }
     ]
   }

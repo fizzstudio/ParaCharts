@@ -17,8 +17,8 @@ interface ComparisonResult {
 
 // TODO (@simonvarey): localize this text output by moving it to the summarizer. See #1427
 export function describeSelections(
-  visitedDatapoint: DatapointView,
-  selectedDatapoints: DatapointView[]
+    visitedDatapoint: DatapointView,
+    selectedDatapoints: DatapointView[]
 ): string[] {
   const msgArray: string[] = [];
   const templum = wrappedTemplumFromLang('en');
@@ -50,7 +50,7 @@ export function describeSelections(
 }
 
 export function getDatapointMinMax(model: Model, value: number, seriesKey: string): string[] {
-    let log: Logger = getLogger("getDatapointMinMax");    
+    let log: Logger = getLogger("getDatapointMinMax");
     const msgArray: string[] = [];
 
     //const metadata = await this.getMetadata();
@@ -99,12 +99,12 @@ export /*for tests*/ function describeAdjacentDatapoints(model: Model, targetVie
 
 export function /*for tests*/ describeAdjacentDatapointComparison(
     model: Model,
-    self: DatapointView, 
+    self: DatapointView,
     direction: 'prev' | 'next'
 ): string | null {
     const templum = wrappedTemplumFromLang('en');
     let log: Logger = getLogger("describeAdjacentDatapointComparison");
-	const other = self[direction];
+    const other = self[direction];
     if (!other) {
         return null;
     }
@@ -126,7 +126,7 @@ export function /*for tests*/ describeAdjacentDatapointComparison(
     //log.info(ParaView.paraState.model!.allPoints[self.index].seriesKey)
     const selfValue = selfSeries[self.index].facetValueNumericized('y')!;
     const otherValue = otherSeries[other.index].facetValueNumericized('y')!;
-    const result = direction === 'prev' ? compare(otherValue, selfValue): compare(selfValue, otherValue);
+    const result = direction === 'prev' ? compare(otherValue, selfValue) : compare(selfValue, otherValue);
     console.log('p', direction, otherValue, selfValue)
     log.info(result);
     console.log('r', result, result.relationship, direction)
@@ -227,28 +227,28 @@ export const comparisonMsgs: Record<ComparisonRelationship, ComparisonMsgs> = {
 }
 
 export function compare(earlier: number, later: number): ComparisonResult {
-  /*let log: Logger = getLogger("compare");
-  log.info(later)*/
-  if (earlier === later) {
-    return {
-      relationship: 'equal',
-      diff: 0,
-      percentage: 0
+    /*let log: Logger = getLogger("compare");
+    log.info(later)*/
+    if (earlier === later) {
+        return {
+            relationship: 'equal',
+            diff: 0,
+            percentage: 0
+        }
     }
-  }
 
-  const relationship = earlier > later ? 'shrinking' : 'growing';
-  console.log(earlier > later, earlier, later, relationship)
-  const min = new Decimal(Math.min(earlier, later));
-  const max = new Decimal(Math.max(earlier, later));
-  const diff = max.sub(min).toNumber();
-  // calculate the percentage difference
-  const startVal = new Decimal(earlier);
-  const endVal = new Decimal(later);
-  const percentage = endVal.sub(startVal).dividedBy(startVal).times(100).toNumber();
-  return {
-    relationship,
-    diff,
-    percentage
-  };
+    const relationship = earlier > later ? 'shrinking' : 'growing';
+    console.log(earlier > later, earlier, later, relationship)
+    const min = new Decimal(Math.min(earlier, later));
+    const max = new Decimal(Math.max(earlier, later));
+    const diff = max.sub(min).toNumber();
+    // calculate the percentage difference
+    const startVal = new Decimal(earlier);
+    const endVal = new Decimal(later);
+    const percentage = endVal.sub(startVal).dividedBy(startVal).times(100).toNumber();
+    return {
+        relationship,
+        diff,
+        percentage
+    };
 }
