@@ -70,7 +70,7 @@
     "go": "npm i && storybook dev --no-open -p 5180",
     "demo:headless": "vite --port 5177 --open src/demo/headless/vite/headless.html",
     "demo:basic": "vite --port 5178 --open src/demo/basic.html",
-     "demo:performer": "vite --port 5179 --open src/demo/performer/index.html",
+    "demo:performer": "vite --port 5179 --open src/demo/performer/index.html",
     "demo:short": "vite --port 5183 --open src/demo/short-desc/short.html",
     "demo:poll": "vite --port 5199 --config src/demo/poll/vite.config.ts",
     "demo:live_update": "vite --port 5200 --open src/demo/live_update/index.html",
@@ -137,7 +137,7 @@
   },
   "dependencies": {
     "@elemental/localization": "^1.10.0",
-    "@fizz/chartsignal-internal": "^0.1.3",
+    "@fizz/chartsignal-internal": "^0.1.4",
     "@fizz/dataframe": "^0.27.2",
     "@fizz/jimerator": "^0.20.6",
     "@fizz/logger": "^0.1.0",

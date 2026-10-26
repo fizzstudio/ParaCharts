@@ -5,6 +5,7 @@
 ```ts
 
 import { AllSeriesData } from '@fizz/chartsignal-internal';
+import { BaseAnnotation } from '@fizz/chartsignal-internal';
 import { ButtonDescriptor } from '@fizz/ui-components';
 import { ChartType } from '@fizz/chartsignal-internal';
 import { ClassInfo } from 'lit/directives/class-map.js';
@@ -622,7 +623,7 @@ export class ParaAPI {
     clearCrosshair(xAxis: string | number, yAxis: string | number): void;
     clearEastLegendHighlight(): void;
     clearHorizontalAxisHighlight(): void;
-    clearIntersectionHighlight(index: number): void;
+    clearIntersectionHighlight(series1Index: number, series2Index: number, intersectionIndex?: number): void;
     clearNorthLegendHighlight(): void;
     clearRangeHighlight(startPortion: number, endPortion: number): void;
     // (undocumented)
@@ -651,7 +652,7 @@ export class ParaAPI {
     // Warning: (ae-forgotten-export) The symbol "ParaAPIHorizontalAxis" needs to be exported by the entry point index.d.ts
     getHorizontalAxis(): ParaAPIHorizontalAxis;
     // Warning: (ae-forgotten-export) The symbol "ParaAPIIntersection" needs to be exported by the entry point index.d.ts
-    getIntersection(index: number): ParaAPIIntersection;
+    getIntersection(series1Index: number, series2Index: number, intersectionIndex?: number): ParaAPIIntersection;
     getJIM(): Manifest | undefined;
     // Warning: (ae-forgotten-export) The symbol "ParaAPILegend" needs to be exported by the entry point index.d.ts
     getLegend(location: CardinalDirection): ParaAPILegend;
@@ -669,7 +670,7 @@ export class ParaAPI {
     highlightCluster(clusterID: number): void;
     highlightEastLegend(): void;
     highlightHorizontalAxis(): void;
-    highlightIntersection(index: number): void;
+    highlightIntersection(series1Index: number, series2Index: number, intersectionIndex?: number): void;
     highlightNorthLegend(): void;
     highlightRange(startPortion: number, endPortion: number): void;
     highlightSouthLegend(): void;

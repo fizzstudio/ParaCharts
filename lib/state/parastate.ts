@@ -1645,7 +1645,8 @@ export class ParaState extends BaseState {
       text: text,
       id: `intersection-${this.model!.nextAnnotID(targetSeries1.key, 0, text)}`
     }
-    this.model?.addAnnotation(annot)
+    this.model?.addAnnotation(annot);
+    this.refreshParaView();
   }
 
   highlightCluster(index: number) {
@@ -1662,9 +1663,9 @@ export class ParaState extends BaseState {
   clearIntersectionHighlight(series1Index: number, series2Index: number, intersectionIndex = 0) {
     const annot = this.model?.allIntersectionAnnotations.filter(a => a.series1Index == series1Index
       && a.series2Index == series2Index && a.intersectionIndex == intersectionIndex)[0];
-      console.log("annot", annot)
     if (annot) {
-      this.model?.removeAnnotation(annot.id)
+      this.model?.removeAnnotation(annot.id);
+      this.refreshParaView();
     }
   }
 

@@ -104,7 +104,9 @@ export class PopupLayer extends PlotLayer {
         ...this.paraview.paraState.selectPopups,
         ]) {
             if (this.type === 'foreground') {
-                this.group('datapoint-popups')!.append(popup);
+                if (!popup.parent){
+                    this.group('datapoint-popups')!.append(popup);
+                }
             }
             else {
                 if (this._groups.has('datapoint-popups')) {
