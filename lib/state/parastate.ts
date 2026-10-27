@@ -25,10 +25,8 @@ import {
   numberToScaledNumberRounded, SequenceInfo, SeriesAnalysis, clusterObject, facetsFromDataset,
   Model, modelFromExternalData, modelFromInlineData, FacetSignature, PlaneDatapoint,
   planeModelFromInlineData, planeModelFromExternalData, PlaneModel, type Datapoint,
-  Facet, FormatType, 
-  formatXYDatapointX, formatXYDatapointY, HighlightedSummary, type Highlight, formatBox,
-  DatapointAnnotation
-  } from '@fizz/chartsignal-internal';
+  Facet, FormatType, formatXYDatapointX, formatXYDatapointY, HighlightedSummary, type Highlight, 
+  formatBox, DatapointAnnotation } from '@fizz/chartsignal-internal';
 import { Jimerator } from '@fizz/jimerator';
 
 import { BaseState, SettingObserver } from './base_state';

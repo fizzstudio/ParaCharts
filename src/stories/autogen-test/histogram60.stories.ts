@@ -3,25 +3,25 @@ import { Chart, type ChartProps } from '../Chart';
 import type { Meta, StoryObj } from '@storybook/web-components-vite';
 import { expect } from 'storybook/test';
 
-import Runner from '../tests/heatmapTests';
+import Runner from '../tests/histogramTests';
 
 type Story = StoryObj<ChartProps>;
 
 const meta = {
-  title: 'Charts/Heat Maps',
+  title: 'Charts/Histograms',
   render: (args) => Chart(args),
 } satisfies Meta<ChartProps>;
 
 export default meta;
 
-export const Chart51: Story = {
-  name: 'Pokemon dataset from CSV (51)',
+export const Chart60: Story = {
+  name: 's1 (60)',
   args: {
-    filename: 'manifests/pokemon-multi-facet-manifest.json',
-    forcecharttype: 'heatmap',
+    filename: 'manifests/scatter-manifest-s1.json',
+    forcecharttype: 'histogram',
   },
   play: async ({canvas, userEvent}) => {
-    const runner = await (new Runner(canvas, userEvent, expect)).loadManifest('manifests/pokemon-multi-facet-manifest.json');
+    const runner = await (new Runner(canvas, userEvent, expect)).loadManifest('manifests/scatter-manifest-s1.json');
     await runner.run();
   }
 }
