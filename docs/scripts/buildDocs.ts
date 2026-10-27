@@ -2,7 +2,11 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath, pathToFileURL } from 'url';
 import mustache from 'mustache';
+import { DOMParser } from 'happy-dom';
+
 import { replaceGeneratedDirectory } from './replaceGeneratedDir.js';
+
+(globalThis as any).DOMParser = DOMParser;
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
