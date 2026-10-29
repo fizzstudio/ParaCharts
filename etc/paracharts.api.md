@@ -25,7 +25,7 @@ import { FormatType } from '@fizz/chartsignal-internal';
 import { Highlight as Highlight_2 } from '@fizz/chartsignal-internal';
 import { HighlightedSummary } from '@fizz/chartsignal-internal';
 import { Interval } from '@fizz/chartsignal-internal';
-import { Jimerator } from '@fizz/jimerator';
+import { Jimerator } from '@fizz/chartsignal-internal';
 import { LitElement } from 'lit';
 import { Logger } from '@fizz/logger';
 import { Manifest } from '@fizz/chartsignal-internal';

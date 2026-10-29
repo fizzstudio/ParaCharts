@@ -26,8 +26,7 @@ import {
   Model, modelFromExternalData, modelFromInlineData, FacetSignature, PlaneDatapoint,
   planeModelFromInlineData, planeModelFromExternalData, PlaneModel, type Datapoint,
   Facet, FormatType, formatXYDatapointX, formatXYDatapointY, HighlightedSummary, type Highlight, 
-  formatBox, DatapointAnnotation } from '@fizz/chartsignal-internal';
-import { Jimerator } from '@fizz/jimerator';
+  formatBox, DatapointAnnotation, Jimerator } from '@fizz/chartsignal-internal';
 
 import { BaseState, SettingObserver } from './base_state';
 import {
