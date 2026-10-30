@@ -1,8 +1,8 @@
 {
     "start": {
-        "level": "datapoints"
+        "layer": "datapoints"
     },
-    "levels": [
+    "layers": [
         {
             "id": "datapoints"
         }

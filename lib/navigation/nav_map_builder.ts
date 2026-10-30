@@ -1,6 +1,6 @@
 
 import { Datapoint, Model, Series, clusterObject } from '@fizz/chartsignal-internal';
-import { NavLevel, NavSchema, navSchemas } from '.';
+import { NavIter, NavSchemaLayer, NavSchema, navSchemas, NavSchemaTransition } from '.';
 import { DatapointNavNodeType, NavLayer, NavNode, NavNodeType, type NavMap } from '../view/layers';
 import { ChartType } from '@fizz/chartsignal-internal';
 import { Direction, PlaneDirection } from '../config/config_types';
@@ -25,7 +25,7 @@ export function populateNavMap(navMap: NavMap, ctx: NavMapBuilderContext) {
     shouldWrapMove: schema.shouldWrapMove
   });
   const nodes: Map<string, NavNode> = new Map();
-  for (const level of schema.levels) {
+  for (const level of schema.layers) {
     if (level.id === 'collective') {
       _createCollectiveLayer(navMap, ctx, nodes);
     } else if (level.id === 'series') {
@@ -50,129 +50,120 @@ export function populateNavMap(navMap: NavMap, ctx: NavMapBuilderContext) {
       _createClusterDatapointLayers(navMap, ctx, nodes);
     }
   }
+  const fromIter: Record<string, NavIter> = {
+    series: 'datapoints',
+    eachSeriesDatapoints: 'datapoints',
+    chords: 'records',
+    stacks: 'records',
+    eachStackDatapoints: 'recordDatapoints',
+    clusters: 'clusters'
+  };
   for (const transition of schema.transitions) {
-    let outer: any[] = [];
-    let innerFn: (s: any, i?: number) => any;
-    if (transition.iter === 'datapoints') {
-      outer = ctx.seriesInNavOrder();
-      innerFn = (s: Series) => s.datapoints;
-    } else if (transition.iter === 'records') {
-      outer = ctx.model!.series[0].datapoints;
-      innerFn = (d: Datapoint) => ctx.model!.series;
-    } else if (transition.iter === 'clusters') {
-      outer = ctx.clustering!.toSorted((a, b) => a.centroid[0] - b.centroid[0]);
-      innerFn = (c: clusterObject) => c.dataPointIDs;
-    } else if (transition.iter === 'recordDatapoints') {
-      outer = ctx.model!.series[0].datapoints;
-      innerFn = (d: Datapoint, i: number) => ctx.model!.series.map(series => series.datapoints[i])
-    }
-
-    if (transition.mode === 'oneToFirst') {
-      // Connect `in` from a single node to the first node of `transition.to`.
-      nodes.get(transition.from)!.connect('in', nodes.get(`${transition.to}-0`)!);
-      if (transition.dir) {
-        transition.dir.split(/ /).forEach((d: PlaneDirection) => {
-          nodes.get(transition.from)!.connect(d, nodes.get(`${transition.to}-0`)!);
-        });
-      }
+    if (transition.mode === 'firstToFirst') {
+      // Connect from the first node of `from` to the first node of `to`.
+      const from = navMap.layer(transition.from, 0)!.nodes[0];
+      const to = navMap.layer(transition.to, 0)!.nodes[0];
+      _dirs(transition).forEach((d: Direction) => {
+        from!.connect(d, to!);
+      });
     } else if (transition.mode === 'eachToFirst') {
-      outer.forEach((a, i) => {
-        const from = nodes.get(`${transition.from}-${i}`);
-        const to = nodes.get(`${transition.to}-0`);
-        transition.dir!.split(/ /).forEach((d: PlaneDirection) => {
-          from!.connect(d, to!, !!transition.reciprocal);
+      // Connect each node of `from` to the first node of `to`.
+      const fromLayer = navMap.layer(transition.from, 0)!;
+      const toLayer = navMap.layer(transition.to, 0)!;
+      fromLayer.nodes.forEach((from, i) => {
+        _dirs(transition).forEach((d: Direction) => {
+          from!.connect(d, toLayer.nodes[0], !!transition.reciprocal);
         });
       });
     } else if (transition.mode === 'trendPointToTrend') {
+      // Connect each node of `from` to its corresponding trend.
       if (ctx.model!.multi) {
         ctx.seriesInNavOrder().forEach((series, i) => {
-          const datapointLayer = navMap.layer(transition.from, i)!;
-          const datapointNodes = datapointLayer.query('datapoint');
+          const fromLayer = navMap.layer(transition.from, i)!;
+          const fromNodes = fromLayer.query('datapoint');
+          const toLayer = navMap.layer(transition.to, i);
           const analysis = ctx.paraState.seriesAnalyses[series.key]!;
           analysis.sequences.forEach((seqInfo, j) => {
-            datapointNodes.slice(seqInfo.start, seqInfo.end).forEach((datapointNode) => {
-              datapointNode.connect('in', nodes.get(`sequences-${i}-${j}`)!);
+            const to = toLayer!.nodes[j];
+            fromNodes.slice(seqInfo.start, seqInfo.end).forEach((from) => {
+              _dirs(transition).forEach((d: Direction) => {
+                from.connect(d, to);
+              });
             });
           });
         });
       } else {
-        const datapointLayer = navMap.layer(transition.from, 0)!;
-        const datapointNodes = datapointLayer.query('datapoint');
+        const fromLayer = navMap.layer(transition.from, 0)!;
+        const fromNodes = fromLayer.query('datapoint');
+        const toLayer = navMap.layer(transition.to, 0);
         const analysis = ctx.paraState.seriesAnalyses[ctx.model!.seriesKeys[0]]!;
         analysis.sequences.forEach((seqInfo, i) => {
-          datapointNodes.slice(seqInfo.start, seqInfo.end).forEach((datapointNode) => {
-            datapointNode.connect('in', nodes.get(`sequences-${i}`)!);
-          });
-        });
-      }
-    } else if (transition.mode === 'eachToFirstOfEachSet') {
-      // Connect `in` from each node N of a collection (e.g., a stack node)
-      // to the first node of a collection corresponding to N (e.g., a layer of datapoints),
-      // and connect `out` from the remaining corresponding nodes to N
-      outer.forEach((a, i) => {
-        const inner = innerFn(a);
-        inner.forEach((b: any, j: number) => {
-          if (j === 0) {
-            nodes.get(`${transition.from}-${i}`)!.connect(
-              'in', nodes.get(`${transition.to}-${i}-${j}`)!);
-          } else {
-            nodes.get(`${transition.to}-${i}-${j}`)!.connect(
-              'out', nodes.get(`${transition.from}-${i}`)!, false);
-          }
-        });
-        if (transition.dir) {
-          transition.dir.split(/ /).forEach((d: Direction) => {
-            nodes.get(`${transition.from}-${i}`)!.connect(
-              d, nodes.get(`${transition.to}-${i}-0`)!);
-          });
-        }
-      });
-    } else if (transition.mode === 'eachOfSetToNextSet') {
-      const origInnerFn = innerFn!;
-      if (transition.when === 'last') {
-        innerFn = (s: Series) => [origInnerFn(s).at(-1)];
-      }
-      outer.forEach((a, i) => {
-        const inner = innerFn(a);
-        inner.forEach((b: Datapoint, j: number) => {
-          const from = nodes.get(`${transition.from}-${i}-${b.datapointIndex}`);
-          const to = nodes.get(`${transition.to}-${i + 1}`);
-          if (to) {
-            from!.connect('in', to);
-            if (transition.dir) {
-              transition.dir.split(/ /).forEach((d: PlaneDirection) => {
-                from!.connect(d, to);
-              });
-            }
-          }
-        });
-      });
-    } else if (transition.mode === 'eachOfSetToSameSet') {
-      outer.forEach((a, i) => {
-        const when = (transition.when === 'first') ? i === 0 : false;
-        if (when) {
-          const inner = innerFn(a, i);
-          inner.forEach((b: any, j: number) => {
-            const from = nodes.get(`${transition.from}-${i}-${j}`);
-            const to = nodes.get(`${transition.to}-${j}`);
-            transition.dir!.split(/ /).forEach((d: PlaneDirection) => {
-              from!.connect(d, to!);
+          const to = toLayer!.nodes[i];
+          fromNodes.slice(seqInfo.start, seqInfo.end).forEach((from) => {
+            _dirs(transition).forEach((d: Direction) => {
+              from.connect(d, to);
             });
           });
+        });
+      }
+    } else if (transition.mode === 'eachToFirstOfRelated') {
+      // Connect from each node N of a layer (e.g., a stack node)
+      // to the first node of a layer corresponding to N (e.g., a layer of datapoints),
+      // and connect `out` from the remaining corresponding nodes to N
+      const fromLayer = navMap.layer(transition.from, 0);
+      fromLayer!.nodes.forEach((from, i) => {
+        const toLayer = navMap.layer(transition.to, i);
+        toLayer!.nodes.forEach((to, j) => {
+          if (j === 0) {
+            _dirs(transition).forEach((d: Direction) => {
+              from!.connect(d, to!);
+            });
+          } else {
+            to.connect('out', from, false);
+          }
+        });
+      });
+    } else if (transition.mode === 'eachOfRelatedToNext') {
+      // Connect all members of each `from` layer to the next corresponding `to` node in sequence.
+      const toLayer = navMap.layer(transition.to, 0);
+      navMap.allLayers(transition.from).forEach((fromLayer, i) => {
+        const to = toLayer!.nodes[i + 1];
+        if (to) {
+          for (let j = 0; j < fromLayer!.nodes.length; j++) {
+            if (transition.when === 'last' && j < fromLayer!.nodes.length - 1) continue;
+            const from = fromLayer.nodes[j];
+            _dirs(transition).forEach((d: Direction) => {
+              from.connect(d, to);
+            });
+          }
         }
       });
+    } else if (transition.mode === 'eachOfRelatedToSame') {
+      // Connect all members of each `from` layer to the corresponding `to` node.
+      const toLayer = navMap.layer(transition.to, 0);
+      for (let i = 0; i < navMap.allLayers(transition.from).length; i++) {
+        const fromLayer = navMap.layer(transition.from, i);
+        if (transition.when === 'first' && i > 0) continue;
+        for (let j = 0; j < fromLayer!.nodes.length; j++) {
+          const from = fromLayer!.nodes[j];
+          const to = toLayer!.nodes[j];
+          _dirs(transition).forEach((d: Direction) => {
+            from.connect(d, to);
+          });
+        }
+      }
     }
   }
   let startNodes: readonly NavNode[];
   if (schema.start.if === 'sonificationIsEnabled') {
     if (!schema.start.else) throw new Error('missing `start.else`');
     if (ctx.paraState.config.sonification.isSonificationEnabled) {
-      startNodes = navMap.layer(schema.start.level, 0)!.nodes;
+      startNodes = navMap.layer(schema.start.layer, 0)!.nodes;
     } else {
       startNodes = navMap.layer(schema.start.else, 0)!.nodes;
     }
   } else {
-    startNodes = navMap.layer(schema.start.level, 0)!.nodes;
+    startNodes = navMap.layer(schema.start.layer, 0)!.nodes;
   }
   const startNode = startNodes[0];
   const top = navMap.top.cursor!;
@@ -186,17 +177,25 @@ export function populateNavMap(navMap: NavMap, ctx: NavMapBuilderContext) {
   });
 }
 
+function _dirs(transition: NavSchemaTransition): Direction[] {
+  return Array.from(new Set<Direction>(
+    (transition.dir ?? 'in').trim().split(/ /) as Direction[]));
+}
+
 function _createCollectiveLayer(
   navMap: NavMap,
   ctx: NavMapBuilderContext,
   nodes: Map<string, NavNode>,
 ) {
   const collectiveLayer = navMap.newLayer('collective');
-  nodes.set('collective', collectiveLayer.newNode('collective', {}));
+  nodes.set('collective-0', collectiveLayer.newNode('collective', {}));
 }
 
+/**
+ * Create landings for each series and connect them together.
+ */
 function _createSeriesLayer(
-  level: NavLevel,
+  level: NavSchemaLayer,
   navMap: NavMap,
   ctx: NavMapBuilderContext,
   nodes: Map<string, NavNode>,
@@ -218,6 +217,10 @@ function _createSeriesLayer(
   });
 }
 
+/**
+ * Create layers for the datapoints of each series, and
+ * populate them with datapoint nodes.
+ */
 function _createSeriesDatapointLayers(
   navMap: NavMap,
   ctx: NavMapBuilderContext,
@@ -267,13 +270,13 @@ function _createStackLayer(
 }
 
 function _createStackDatapointLayers(
-  level: NavLevel,
+  level: NavSchemaLayer,
   navMap: NavMap,
   ctx: NavMapBuilderContext,
   nodes: Map<string, NavNode>,
 ) {
   ctx.model!.series[0].datapoints.forEach((datapoint, i) => {
-    const datapointLayer = navMap.newLayer('datapoint', level.orientation);
+    const datapointLayer = navMap.newLayer('eachStackDatapoints', level.orientation);
     let prevDatapointNode: NavNode<'datapoint'> | null = null;
     const stackDatapoints = ctx.model!.series.map(series => series.datapoints[i]);
     stackDatapoints.forEach((datapoint, j) => {
@@ -293,7 +296,7 @@ function _createStackDatapointLayers(
 }
 
 function _createDatapointLayer(
-  level: NavLevel,
+  level: NavSchemaLayer,
   navMap: NavMap,
   ctx: NavMapBuilderContext,
   nodes: Map<string, NavNode>,
@@ -520,7 +523,7 @@ function _createSingleSeriesClusterDatapointLayers(
 ) {
   const clustering = ctx.clustering!.toSorted((a, b) => a.centroid[0] - b.centroid[0]);
   clustering.forEach((cluster, clusterIndex) => {
-    const datapointLayer = navMap.newLayer('datapoint');
+    const datapointLayer = navMap.newLayer('eachClusterDatapoints');
     let prevDatapointNode: NavNode | null = null;
     cluster.dataPointIDs.forEach((dpId, dpIndex) => {
       const datapointNode = datapointLayer.newNode(
@@ -548,7 +551,7 @@ function _createMultiSeriesClusterDatapointLayers(
   sortedSeries.forEach((series, i) => {
     const clusterIndex = ctx.clustering!.findIndex(c => c.label === series.key);
     const cluster = ctx.clustering![clusterIndex];
-    const datapointLayer = navMap.newLayer('datapoint');
+    const datapointLayer = navMap.newLayer('eachClusterDatapoints');
     let prevDatapointNode: NavNode | null = null;
     cluster.dataPointIDs.forEach((dpId, j) => {
       const datapointNode = datapointLayer.newNode(
