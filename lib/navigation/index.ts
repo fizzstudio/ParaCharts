@@ -1,44 +1,43 @@
 
-import { PlaneDirection } from '../config/config_types';
+import { Direction } from '../config/config_types';
 
 export interface NavSchema {
-  start: NavStart;
+  start: NavSchemaStart;
   shouldWrapMove?: boolean;
   oneWayTopLink?: boolean;
-  levels: NavLevel[];
-  transitions: NavTransition[];
+  layers: NavSchemaLayer[];
+  transitions: NavSchemaTransition[];
 }
 
-export interface NavStart {
-  level: string;
-  if?: NavStartIf;
+export interface NavSchemaStart {
+  layer: string;
+  if?: NavSchemaStartIf;
   else?: string;
 }
 
-export type NavStartIf = 'sonificationIsEnabled';
+export type NavSchemaStartIf = 'sonificationIsEnabled';
 
-export interface NavLevel {
+export interface NavSchemaLayer {
   id: string;
-  orientation?: NavOrientation;
+  orientation?: NavSchemaOrientation;
   wrap?: boolean;
   invisible?: boolean;
 }
 
-export type NavOrientation = 'horiz' | 'vert' | 'both';
+export type NavSchemaOrientation = 'horiz' | 'vert' | 'both';
 
-export interface NavTransition {
+export interface NavSchemaTransition {
   from: string;
   to: string;
-  dir?: PlaneDirection;
-  iter?: NavIter;
-  mode: NavMode;
-  when?: NavWhen;
+  dir?: Direction;
+  mode: NavSchemaMode;
+  when?: NavSchemaWhen;
   reciprocal?: boolean;
 }
 
-export type NavIter = 'datapoints' | 'records' | 'clusters';
-export type NavMode = 'oneToFirst' | 'eachToFirst' | 'trendPointToTrend' | 'eachToFirstOfEachSet' | 'eachOfSetToNextSet' | 'eachOfSetToSameSet';
-export type NavWhen = 'first' | 'last';
+export type NavIter = 'datapoints' | 'records' | 'recordDatapoints' | 'clusters';
+export type NavSchemaMode = 'firstToFirst' | 'eachToFirst' | 'trendPointToTrend' | 'eachToFirstOfRelated' | 'eachOfRelatedToNext' | 'eachOfRelatedToSame';
+export type NavSchemaWhen = 'first' | 'last';
 
 import barSingleJson from './bar_single.json' with { type: 'json' };
 import barMultiJson from './bar_multi.json' with { type: 'json' };
