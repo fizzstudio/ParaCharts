@@ -128,8 +128,8 @@ export abstract class Shape extends View {
 
   get outerBbox() {
     return new DOMRect(
-      this.left - this.effectiveStrokeWidth/2,
-      this.top - this.effectiveStrokeWidth/2,
+      this.left - this.effectiveStrokeWidth / 2,
+      this.top - this.effectiveStrokeWidth / 2,
       this.width + this.effectiveStrokeWidth,
       this.height + this.effectiveStrokeWidth
     );

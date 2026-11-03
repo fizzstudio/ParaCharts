@@ -384,7 +384,7 @@ export abstract class PlanePlotView extends DataLayer {
     let datapointViews = datapoint.withCousins;
     let text = '';
     for (let dpView of datapointViews) {
-      text = text.concat(`${dpView.series.getLabel()}: ${this.paraview.documentView!.chartLayers!.dataLayer.chartInfo.summarizer.getDatapointSummary(dpView.datapoint, 'statusBar')}\n`);
+      text = text.concat(`${dpView.series.label}: ${this.paraview.documentView!.chartLayers!.dataLayer.chartInfo.summarizer.getDatapointSummary(dpView.datapoint, 'statusBar')}\n`);
     }
     const dpView = datapointViews[0];
     const items = this.paraview.documentView?.chartLayers.dataLayer.chartInfo.popuplegend()!;

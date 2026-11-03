@@ -856,12 +856,15 @@ export class DocumentView extends Container(View) {
   }
 
   content() {
+    const isTitleHighlighted = this._paraState.model!.allTitleAnnotations.length > 0;
+    const isVerticalAxisHighlighted = this._paraState.model!.allAxisAnnotations.filter(a => a.axis == 'y' && a.kind == 'highlight').length > 0;
+    const isHorizontallAxisHighlighted = this._paraState.model!.allAxisAnnotations.filter(a => a.axis == 'x' && a.kind == 'highlight').length > 0;
     return svg`
-      ${this._titleLabel && this._paraState.isTitleHighlighted
+      ${this._titleLabel && isTitleHighlighted
         ? this._titleLabel.renderHighlight('bg') : ''}
-      ${this._horizAxis && this._paraState.isHorizontalAxisHighlighted
+      ${this._horizAxis && isHorizontallAxisHighlighted
         ? this._horizAxis.renderHighlight('bg') : ''}
-      ${this._vertAxis && this._paraState.isVerticalAxisHighlighted
+      ${this._vertAxis && isVerticalAxisHighlighted
         ? this._vertAxis.renderHighlight('bg') : ''}
       ${this._legends.east?.length && this._paraState.isEastLegendHighlighted
         ? this._legends.east.forEach(l => l.renderHighlight('bg')) : ''}
@@ -873,11 +876,11 @@ export class DocumentView extends Container(View) {
         ? this._legends.south.forEach(l => l.renderHighlight('bg')) : ''}
       ${this._paraState.index === 0 ? this._closeX.render() : ''}
       ${super.content()}
-      ${this._titleLabel && this._paraState.isTitleHighlighted
+      ${this._titleLabel && isTitleHighlighted
         ? this._titleLabel.renderHighlight('fg') : ''}
-      ${this._horizAxis && this._paraState.isHorizontalAxisHighlighted
+      ${this._horizAxis && isHorizontallAxisHighlighted
         ? this._horizAxis.renderHighlight('fg') : ''}
-      ${this._vertAxis && this._paraState.isVerticalAxisHighlighted
+      ${this._vertAxis && isVerticalAxisHighlighted
         ? this._vertAxis.renderHighlight('fg') : ''}
       ${this._legends.east?.length && this._paraState.isEastLegendHighlighted
         ? this._legends.east.forEach(l => l.renderHighlight('fg')) : ''}

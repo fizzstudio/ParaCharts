@@ -407,7 +407,7 @@ export class DatapointView extends DataView {
     const { text, xInput, yInput, focus, select } = options;
     let datapointText = `${this.index + 1}/${this.series.datapoints.length}: ${this.chart.chartInfo.summarizer.getDatapointSummary(this.datapoint, 'statusBar')}`;
     if (this.paraview.paraState.model!.multi) {
-      datapointText = `${this.series.getLabel()} ${datapointText}`
+      datapointText = `${this.series.label} ${datapointText}`;
     }
     if (this.paraview.paraState.thresholds.length > 0) {
       const horizTs = this.paraview.paraState.thresholds.filter(t => t.orientation == 'horiz');

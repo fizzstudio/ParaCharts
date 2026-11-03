@@ -1,7 +1,7 @@
 import { PlotLayer } from '../layer';
 import { View, Container } from '../../base_view';
 import { DataLayerContext, type ViewContext } from '../../view_context';
-import { RectShape, PathShape } from '../../shape';
+import { RectShape, PathShape, Shape } from '../../shape';
 import { Vec2 } from '../../../common/vector';
 import { datapointIdToCursor } from '../../../state/parastate';
 import { Popup } from '../../popup';
@@ -12,7 +12,7 @@ import { ConfigSetting, MarkerConfig } from '../../../config/config_types';
 import { svg } from 'lit';
 import { ParaView } from '../../../paraview';
 import { SettingsManager } from '../../../state';
-import { LinePlotView, LineSection, PlanePlotView } from '../data';
+import { LinePlotView, LineSection, PlaneDatapointView, PlanePlotView } from '../data';
 import { Threshold } from './threshold';
 import { ParaChart } from '../../../parachart/parachart';
 import { DatapointAnnotation, PlaneModel, ThresholdAnnotation } from '@fizz/chartsignal-internal';
@@ -401,6 +401,63 @@ export class AnnotationLayer extends PlotLayer {
     return;
   }
 
+  addSequences() {
+    if (this.paraview.paraState.model!.allSequenceAnnotations.length == 0) {
+      return;
+    }
+    // XXX Ultimately, we need to support pastry and other non-plane chart types here
+    for (let sequence of this.paraview.paraState.model!.allSequenceAnnotations) {
+      const underlayRects: RectShape[] = [];
+      const overlays: (DataSymbol | Shape)[] = [];
+      const overlayLines: PathShape[] = [];
+      const chartInfo = this.paraview.paraState.chartInfo as PlaneChartInfo;
+      const seriesKey = this.paraview.paraState.model!.seriesKeys[sequence.seriesIndex];
+      const datapoints = [
+        this.paraview.paraState.model!.atKeyAndIndex(seriesKey, sequence.startIndex)!,
+        this.paraview.paraState.model!.atKeyAndIndex(seriesKey, sequence.endIndex - 1)!,
+      ];
+      let datapointViews: PlaneDatapointView[] = datapoints.map(datapoint =>
+        this._parent.dataLayer.datapointView(datapoint.seriesKey, datapoint.datapointIndex)!) as PlaneDatapointView[];
+      const lineStroke = this.paraview.paraState.colors.colorValueAt(this.paraview.paraState.model!.seriesKeys.indexOf(datapointViews[0].seriesKey));
+
+      if (this.type === 'background') {
+        const endpoints = datapointViews.map(dpView => {
+          const overlay = (dpView.symbol ?? dpView.shapes[0]).clone();
+          if (overlay instanceof DataSymbol) {
+            overlay.colorIndex = dpView.symbolColorIndex;
+          }
+          return overlay;
+        });
+        overlays.push(...endpoints);
+        const rect = new RectShape(this.paraview, {
+          x: overlays.at(-2)!.x,
+          y: 0,
+          width: overlays.at(-1)!.x - overlays.at(-2)!.x + (chartInfo.isIntertick ? overlays.at(-2)!.width : 0),
+          height: this._height,
+          fill: lineStroke,
+          opacity: 0.25
+        });
+        underlayRects.push(rect);
+        rect.classInfo = { 'underlay-rect': true };
+        overlayLines.push(new PathShape(this.paraview, {
+          x: 0,
+          y: 0,
+          points: [overlays.at(-2)!.loc, overlays.at(-1)!.loc],
+          stroke: lineStroke,
+          opacity: 0.5,
+          strokeWidth: 20
+        }));
+        this.paraview.paraState.popups.push(...this.parent.popupLayer.addSequencePopups(datapointViews));
+      }
+      overlays.slice(-2).forEach(sym => {
+        sym.scale = 3;
+        sym.opacity = 0.5;
+        sym.fill = 'empty';
+      });
+      [...overlays, ...overlayLines, ...underlayRects].forEach(view => this.group('sequences')!.append(view));
+    }
+  }
+
   renderChildren() {
     if (this.type === 'foreground') {
       if (this.paraview.paraState.modelTrendLines && this.paraview.paraState.chartInfo instanceof PlaneChartInfo) {
@@ -499,8 +556,8 @@ export class AnnotationLayer extends PlotLayer {
       }
 
       if (this.paraview.paraState.model?.allDatapointAnnotations) {
-        this.addGroup('annotation-popups', true);
-        this.group('annotation-popups')!.clearChildren();
+        this.addGroup('datapoint-annotations', true);
+        this.group('datapoint-annotations')!.clearChildren();
         const annots = structuredClone(this.paraview.paraState.model?.allDatapointAnnotations.filter(a =>
           this.paraview.paraState._selectedAnnotations.includes(a.id)));
 
@@ -517,9 +574,20 @@ export class AnnotationLayer extends PlotLayer {
         }
 
         for (const annot of annots) {
+          const overlays: (DataSymbol | Shape)[] = [];
           const seriesKey = this.paraview.paraState.model!.series[annot.seriesIndex].key;
           const dpView = this.paraview.documentView?.chartLayers.dataLayer.datapointViews.filter(d =>
-            d.seriesKey == seriesKey && d.index == annot.datapointIndex)[0]
+            d.seriesKey == seriesKey && d.index == annot.datapointIndex)[0]!
+
+          overlays.push((dpView.symbol ?? dpView.shapes[0]).clone());
+          if (this.type === 'foreground' && !this.paraview.paraState.popups.some(p => p.id == dpView.id)) {
+            dpView.addDatapointPopup();
+          }
+          //overlays.forEach(sym => {
+          overlays.at(-1)!.scale = 3;
+          overlays.at(-1)!.opacity = 0.5;
+          overlays.at(-1)!.fill = 'empty';
+          //});
           if (!dpView) {
             break;
           }
@@ -542,14 +610,15 @@ export class AnnotationLayer extends PlotLayer {
                   this.paraview.paraState.colors.colorValueAt(dpView.colorIndex)
                   : "black",
             })
-          popup.classInfo = { 'popup': true }
-          this.group('annotation-popups')!.append(popup);
+          popup.classInfo = { 'popup': true };
+          overlays.forEach(view => this.group('datapoint-annotations')!.append(view));
+          this.group('datapoint-annotations')!.append(popup);
         }
 
       }
       else {
-        if (this._groups.has('annotation-popups')) {
-          this.removeGroup('annotation-popups', true);
+        if (this._groups.has('datapoint-annotations')) {
+          this.removeGroup('datapoint-annotations', true);
         }
       }
 
@@ -631,16 +700,26 @@ export class AnnotationLayer extends PlotLayer {
         this.group('thresholds')!.clearChildren();
         this.addThresholds();
       }
+      else {
+        if (this._groups.has('thresholds')) {
+          this.removeGroup('thresholds', true);
+        }
+      }
       if (this.paraview.paraState.model?.allIntersectionAnnotations) {
         this.addGroup('intersections', true);
         this.group('intersections')!.clearChildren();
         this.addIntersections();
       }
       else {
-        if (this._groups.has('thresholds')) {
-          this.removeGroup('thresholds', true);
+        if (this._groups.has('intersections')) {
+          this.removeGroup('intersections', true);
         }
       }
+    }
+    if (this.paraview.paraState.model?.allSequenceAnnotations) {
+      this.addGroup('sequences', true);
+      this.group('sequences')!.clearChildren();
+      this.addSequences();
     }
     return super.renderChildren();
   }
