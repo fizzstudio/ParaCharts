@@ -26,7 +26,8 @@ import {
   Model, modelFromExternalData, modelFromInlineData, FacetSignature, PlaneDatapoint,
   planeModelFromInlineData, planeModelFromExternalData, PlaneModel, type Datapoint,
   Facet, FormatType, formatXYDatapointX, formatXYDatapointY, HighlightedSummary, type Highlight, 
-  formatBox, DatapointAnnotation, Jimerator } from '@fizz/chartsignal-internal';
+  formatBox, DatapointAnnotation, Jimerator, 
+  hasInlineData} from '@fizz/chartsignal-internal';
 
 import { BaseState, SettingObserver } from './base_state';
 import {
@@ -710,7 +711,7 @@ export class ParaState extends BaseState {
     this._title = dataset.title;
     this._facets = facetsFromDataset(dataset);
 
-    if (!dataset.href) {
+    if (hasInlineData(this._manifest)) {
       if (isPastryType(this._type) || isVennType(this._type)) {
         this._model = modelFromInlineData(manifest);
       } else {

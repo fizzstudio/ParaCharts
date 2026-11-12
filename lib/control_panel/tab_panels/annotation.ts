@@ -56,7 +56,7 @@ export class AnnotationPanel extends ControlPanelTabPanel {
     }
     return html`
       <ol class="annotations">
-        ${this._paraState.model.annotations.map(item => html`
+        ${this._paraState.model.annotations.filter((a) => 'text' in a).map(item => html`
             <li
               id="${item.id}"
               data-series="${(item as DatapointAnnotation).seriesIndex}"

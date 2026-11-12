@@ -573,7 +573,7 @@ export abstract class BaseChartInfo {
       const announcements = [this._summarizer.getDatapointSummary(datapoint, 'statusBar')];
       const annotations = datapoint.annotations;
       if (annotations.length > 0) {
-        const annotationsText = annotations.map((a) => a.text).join(', ');
+        const annotationsText = annotations.filter((a) => 'text' in a).map((a) => a.text).join(', ');
         announcements.push(`Annotation${annotations.length > 1 ? 's' : ''}: ${annotationsText}`);
       }
       const isSeriesChange = !this._paraState.wasVisitedSeries(cursor.options.seriesKey);

@@ -1,4 +1,4 @@
-import { ChartType, Dataset, Manifest, type Datatype, type AllSeriesData } from '@fizz/chartsignal-internal';
+import { ChartType, Dataset, Manifest, type Datatype, type AllSeriesData, hasInlineData } from '@fizz/chartsignal-internal';
 
 import papa from 'papaparse';
 
@@ -131,14 +131,14 @@ function buildSeriesDataFromCSV(
  * @throws {LoadError} If data loading or processing fails
  */
 async function processExternalData(
-  manifest: Manifest
+  manifest: Manifest, url: string
 ): Promise<AllSeriesData> {
   const dataset = firstDataset(manifest);
-  if (!dataset.href?.path) {
+  /*if (!dataset.href?.path) {
     throw new LoadError(LoadErrorCode.CSV_INVALID_FORMAT, 'External data source requires a path');
   }
   
-  const url = dataset.href.path;
+  const url = dataset.href.path;*/
   const response = await fetch(url);
   if (!response.ok) {
     throw new LoadError(LoadErrorCode.NETWORK_ERROR, `Failed to fetch CSV from ${url}: ${response.status} ${response.statusText}`);
@@ -272,13 +272,14 @@ export async function load(
   kind: SourceKind,
   manifestInput: string,
   chartType?: ChartType,
-  description?: string
+  description?: string,
+  url?: string
 ): Promise<LoadedData> {
   const manifest = await loadManifest(kind, manifestInput);
   let data: AllSeriesData | undefined = undefined;
 
-  if (!!firstDataset(manifest).href) {
-    data = await processExternalData(manifest);
+  if (!hasInlineData(manifest)) {
+    data = await processExternalData(manifest, url!);
   }
 
   log.info('manifest loaded');
