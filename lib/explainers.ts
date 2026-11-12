@@ -122,7 +122,7 @@ const explainers: Partial<Explainers> = {
       summary: normalizeSummary(`
         <span data-phrasecode="0">This is a bar chart, a way to compare different categories. </span>
         <span data-phrasecode="1" data-action="highlightVerticalAxis()">Along the left side, on the x-axis, you see the categories being compared. </span>
-        <span data-phrasecode="2" data-action="clearVerticalAxisHighlight();getVerticalAxis().highlightLabel(0,0)">Each bar represents one category. </span>
+        <span data-phrasecode="2" data-action="clearVerticalAxisHighlight();getHorizontalAxis().highlightLabel(0,0)">Each bar represents one category. </span>
         <span data-phrasecode="3" data-action="highlightHorizontalAxis()">The length of each bar shows a number or amount, which you can read on the y-axis at the bottom. </span>
         <span data-phrasecode="4" data-action="clearHorizontalAxisHighlight()">In this example, the bars show how many students are enrolled in each school subject. </span>
         <span data-phrasecode="5" data-action="getVerticalAxis().getMaxPoints().highlight()">Longer bars mean more students. </span>

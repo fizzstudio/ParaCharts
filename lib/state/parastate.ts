@@ -48,7 +48,7 @@ import { Popup } from '../view/popup';
 import { type DatapointCursor } from '../view/layers/data/navigation';
 import { type PathShape } from '../view/shape';
 import { type GlobalState } from './global_state';
-import { type BaseChartInfo, chartInfoClasses, ComboChartInfo, LineChartInfo, ScatterChartInfo } from '../chart_types';
+import { type BaseChartInfo, chartInfoClasses, ComboChartInfo, LineChartInfo, PlaneChartInfo, ScatterChartInfo } from '../chart_types';
 import { firstDataset, type Manifest } from '../loader/common';
 import { ClusterShellView } from '../view/layers';
 import { computeLabels } from '../common/axisinfo';
@@ -758,7 +758,7 @@ export class ParaState extends BaseState {
       await Promise.all(
         this._model.seriesKeys.map(async (seriesKey) => {
           this._seriesAnalyses = {
-            [seriesKey]: await (this._model as PlaneModel).getSeriesAnalysis(seriesKey, { maxError: maxError, maxSegments: maxSegments, extremumWeight: extremumWeight }),
+            [seriesKey]: await (this._model as PlaneModel).getSeriesAnalysis(seriesKey, { maxError: maxError, maxSegments: maxSegments, extremumWeight: extremumWeight, yAxis: (this.chartInfo as PlaneChartInfo).yRangeInfo!.interval }),
             ...this._seriesAnalyses
           };
         }));
