@@ -1,8 +1,8 @@
 {
     "start": {
-        "level": "series"
+        "layer": "series"
     },
-    "levels": [
+    "layers": [
         {
             "id": "series",
             "orientation": "horiz"
@@ -15,8 +15,7 @@
         {
             "from": "series",
             "to": "eachSeriesDatapoints",
-            "mode": "eachToFirstOfEachSet",
-            "iter": "datapoints"
+            "mode": "eachToFirstOfRelated"
         }
     ]
 }

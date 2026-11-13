@@ -1,10 +1,10 @@
 {
     "start": {
-        "level": "series",
+        "layer": "series",
         "if": "sonificationIsEnabled",
         "else": "eachSeriesDatapoints"
     },
-    "levels": [
+    "layers": [
         {
             "id": "series"
         },
@@ -20,9 +20,7 @@
             "from": "series",
             "to": "eachSeriesDatapoints",
             "dir": "right",
-            "iter": "datapoints",
-            "mode": "eachToFirstOfEachSet",
-            "reciprocal": true
+            "mode": "eachToFirstOfRelated"
         },
         {
             "from": "datapoints",

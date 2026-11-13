@@ -1,9 +1,9 @@
 {
     "start": {
-        "level": "collective"
+        "layer": "collective"
     },
     "shouldWrapMove": true,
-    "levels": [
+    "layers": [
         {
             "id": "collective"
         },
@@ -22,22 +22,20 @@
         {
             "from": "collective",
             "to": "stacks",
-            "dir": "right down",
-            "mode": "oneToFirst"
+            "dir": "in right down",
+            "mode": "firstToFirst"
         },
         {
             "from": "stacks",
             "to": "eachStackDatapoints",
-            "iter": "records",
-            "mode": "eachToFirstOfEachSet"
+            "mode": "eachToFirstOfRelated"
         },
         {
             "from": "eachStackDatapoints",
             "to": "series",
-            "iter": "recordDatapoints",
             "when": "first",
             "dir": "left",
-            "mode": "eachOfSetToSameSet"
+            "mode": "eachOfRelatedToSame"
         }
     ]
 }

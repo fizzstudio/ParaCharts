@@ -1,8 +1,8 @@
 {
     "start": {
-        "level": "chords"
+        "layer": "chords"
     },
-    "levels": [
+    "layers": [
         {
             "id": "series"
         },
@@ -22,16 +22,14 @@
             "from": "series",
             "to": "eachSeriesDatapoints",
             "dir": "right",
-            "iter": "datapoints",
-            "mode": "eachToFirstOfEachSet"
+            "mode": "eachToFirstOfRelated"
         },
         {
             "from": "eachSeriesDatapoints",
             "to": "series",
-            "dir": "right",
-            "mode": "eachOfSetToNextSet",
-            "when": "last",
-            "iter": "datapoints"
+            "dir": "in right",
+            "mode": "eachOfRelatedToNext",
+            "when": "last"
         },
         {
             "from": "eachSeriesDatapoints",
@@ -42,15 +40,13 @@
             "from": "chords",
             "to": "series",
             "dir": "in",
-            "mode": "eachToFirst",
-            "iter": "records"
+            "mode": "eachToFirst"
         },
         {
             "from": "series",
             "to": "chords",
             "mode": "eachToFirst",
-            "dir": "out",
-            "iter": "datapoints"
+            "dir": "out"
         }
     ]
 }

@@ -4,13 +4,10 @@ import {
   html, css,
 } from 'lit';
 import { customElement } from 'lit/decorators.js';
-import {
-  BaseAnnotation, DatapointAnnotation,
-  IntersectionAnnotation, SequenceAnnotation, ThresholdAnnotation
-} from '@fizz/chartsignal-internal';
+import { AxisAnnotation, BaseAnnotation, DatapointAnnotation, formatXYDatapointX, IntersectionAnnotation, SequenceAnnotation, ThresholdAnnotation, type PlaneDatapoint } from '@fizz/chartsignal-internal';
 import { LineBreakControlsDialog } from '../dialogs/line_break_controls_dialog';
 import { createRef, ref } from 'lit/directives/ref.js';
-import { datapointIdToCursor, } from '../../state/parastate';
+import { datapointIdToCursor,  } from '../../state/parastate';
 
 @customElement('para-annotation-panel')
 export class AnnotationPanel extends ControlPanelTabPanel {
@@ -71,7 +68,7 @@ export class AnnotationPanel extends ControlPanelTabPanel {
         event.preventDefault()
         this.editAnnotation(event)
       }}
-            >${this.getAnnotationMessage(item)}</li>
+            >${this.getAnnotationMessage(item as unknown as BaseAnnotation)}</li>
           `)
       }
       </ol>
@@ -158,13 +155,35 @@ export class AnnotationPanel extends ControlPanelTabPanel {
   }
 
   async addAnnotation() {
+    const newAnnotationList: DatapointAnnotation[] = [];
     for (const dpId of this._paraState.visitedDatapoints) {
       const { seriesKey, index } = datapointIdToCursor(dpId);
+      const seriesIndex = this._paraState.model!.seriesKeys.indexOf(seriesKey);
+      const series = this._paraState.model!.atKey(seriesKey)!.label;
+      const recordLabel = formatXYDatapointX(
+        this._paraState.model!.atKeyAndIndex(seriesKey, index) as PlaneDatapoint,
+        'raw'
+      );
       const { result, text } = await this.showAddAnnotDialog(dpId);
       if (result == 'cancel') {
         continue;
       }
-      this._paraState.annotatePoint(seriesKey, index, text)
+      const annotationText = text;
+      const id = `${series}-${recordLabel}-${this._paraState.model?.nextAnnotID()}`;
+      if (annotationText) {
+        newAnnotationList.push({
+          type: "datapoint-annotation",
+          datasetIndex: 0,
+          seriesIndex,
+          datapointIndex: index,
+          text: annotationText,
+          id: id,
+        });
+      }
+      this._paraState._selectedAnnotations.push(id);
+    }
+    for (let annot of newAnnotationList) {
+      this._paraState.model?.addAnnotation(annot);
     }
     this._paraState.refreshParaView();
   }

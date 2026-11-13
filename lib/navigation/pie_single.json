@@ -1,9 +1,9 @@
 {
     "start": {
-        "level": "datapoints"
+        "layer": "datapoints"
     },
     "oneWayTopLink": true,
-    "levels": [
+    "layers": [
         {
             "id": "datapoints",
             "wrap": true

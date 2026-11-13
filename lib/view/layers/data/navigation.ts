@@ -2,7 +2,7 @@ import { type clusterObject, type Datapoint } from '@fizz/chartsignal-internal';
 import { type ParaState } from '../../../state';
 import { HorizDirection, type Direction, type PlaneDirection } from '../../../config/config_types';
 import { type BaseChartInfo } from '../../../chart_types';
-import { NavOrientation } from '../../../navigation';
+import { NavSchemaOrientation } from '../../../navigation';
 
 
 const oppositeDirs: Record<Direction, Direction> = {
@@ -196,6 +196,10 @@ export class NavMap {
     return this._layers.get(type)?.at(index) ?? null;
   }
 
+  allLayers(type: string): NavLayer[] {
+    return this._layers.get(type) ?? [];
+  }
+
   registerLayer(layer: NavLayer) {
     if (!this._layers.has(layer.type)) {
       this._layers.set(layer.type, []);
@@ -204,7 +208,7 @@ export class NavMap {
     layer.index = this._layers.get(layer.type)!.length - 1;
   }
 
-  newLayer(type: string, orientation: NavOrientation = 'horiz'): NavLayer {
+  newLayer(type: string, orientation: NavSchemaOrientation = 'horiz'): NavLayer {
     const layer = new NavLayer(this, type, this._paraState, orientation);
     this.registerLayer(layer);
     return layer;

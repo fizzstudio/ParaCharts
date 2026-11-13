@@ -1,8 +1,8 @@
 {
     "start": {
-        "level": "candlesticks"
+        "layer": "candlesticks"
     },
-    "levels": [
+    "layers": [
         {
             "id": "candlesticks"
         }

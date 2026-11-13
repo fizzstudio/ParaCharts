@@ -38,9 +38,9 @@ export function describeSelections(
         const targetValue = visitedDatapoint.datapoint.facetValueNumericized('y')!;
         const result = compare(viewValue, targetValue);
         const comparatorMsg = comparisonMsgs[result.relationship].msg;
-        const diff = result.diff! !== 0 ? templum.replace('${diff:number} ', { diff: result.diff! }) : undefined;
+        const diff = result.diff.toString();
         msgArray.push(capitalize(templum.replace(
-          '${diff:string?}${comparatorMsg:string} ${seriesLabel:string} ${datapointXY:string}',
+          '${diff:string?} ${comparatorMsg:string} ${seriesLabel:string} ${datapointXY:string}',
           { diff, comparatorMsg, seriesLabel: view.series.getLabel(), datapointXY: formatXYDatapoint(view.datapoint, 'raw') }
         )));
       }
@@ -227,6 +227,7 @@ export const comparisonMsgs: Record<ComparisonRelationship, ComparisonMsgs> = {
 }
 
 export function compare(earlier: number, later: number): ComparisonResult {
+    console.log("compare")
     /*let log: Logger = getLogger("compare");
     log.info(later)*/
     if (earlier === later) {
@@ -242,6 +243,7 @@ export function compare(earlier: number, later: number): ComparisonResult {
     const min = new Decimal(Math.min(earlier, later));
     const max = new Decimal(Math.max(earlier, later));
     const diff = max.sub(min).toNumber();
+    console.log("diff", diff)
     // calculate the percentage difference
     const startVal = new Decimal(earlier);
     const endVal = new Decimal(later);

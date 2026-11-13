@@ -1,8 +1,8 @@
 {
     "start": {
-        "level": "clusters"
+        "layer": "clusters"
     },
-    "levels": [
+    "layers": [
         {
             "id": "clusters"
         },
@@ -14,8 +14,7 @@
         {
             "from": "clusters",
             "to": "eachClusterDatapoints",
-            "mode": "eachToFirstOfEachSet",
-            "iter": "clusters"
+            "mode": "eachToFirstOfRelated"
         }
     ]
 }
