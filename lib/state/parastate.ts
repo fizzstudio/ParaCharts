@@ -29,7 +29,8 @@ import {
   formatBox, DatapointAnnotation,
   SequenceAnnotation,
   AxisAnnotation,
-  Jimerator
+  Jimerator,
+  hasInlineData
 } from '@fizz/chartsignal-internal';
 
 import { BaseState, SettingObserver } from './base_state';
@@ -713,7 +714,7 @@ export class ParaState extends BaseState {
     this._title = dataset.title;
     this._facets = facetsFromDataset(dataset);
 
-    if (!dataset.href) {
+    if (hasInlineData(this._manifest)) {
       if (isPastryType(this._type) || isVennType(this._type)) {
         this._model = modelFromInlineData(manifest);
       } else {
