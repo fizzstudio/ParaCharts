@@ -92,7 +92,8 @@ export class AnnotationPanel extends ControlPanelTabPanel {
       else if (annot.kind == 'highlight') {
         const axisAnnot = annot as ThresholdAnnotation;
         const cap = axisAnnot.axis == 'y' ? "Y axis" : "X axis";
-        return `${cap}: ${this._paraState.chartInfo.horizFacet?.label}`
+        const label = axisAnnot.axis == 'y' ? this._paraState.chartInfo.vertFacet?.label : this._paraState.chartInfo.horizFacet?.label
+        return `${cap}: ${label}`
       }
     }
     else if (annot.type == 'intersection-annotation') {

@@ -231,22 +231,6 @@ export class PlotLayerManager extends View {
 
   render() {
     let transform = fixed`translate(${this._x + this._padding.left},${this._y + this._padding.top})`;
-    if (this._orientation === 'east') {
-      transform += fixed`
-        translate(${this._logicalHeight},${0})
-        rotate(90)
-      `;
-    } else if (this._orientation === 'west') {
-      transform += fixed`
-        translate(0,${this._logicalHeight})
-        rotate(-90)
-      `;
-    } else if (this._orientation === 'south') {
-      transform += fixed`
-        translate(0,${this._logicalHeight})
-        scale(1,-1)
-      `;
-    }
     return svg`
       <g
         id="chart-layers"

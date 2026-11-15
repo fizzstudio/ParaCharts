@@ -643,9 +643,9 @@ export class DocumentView extends Container(View) {
 
   getAxisForCoord(coord: AxisCoord) {
     if (this._horizAxis?.coord === coord) {
-      return this._horizAxis;
+      return this.paraview.paraState.type == 'bar' ? this._vertAxis : this._horizAxis;
     } else if (this._vertAxis?.coord === coord) {
-      return this._vertAxis;
+      return this.paraview.paraState.type == 'bar' ? this._horizAxis : this._vertAxis;
     }
     this.log.info('no axis!', this._horizAxis, this._vertAxis, coord)
     return undefined;

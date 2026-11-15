@@ -578,19 +578,17 @@ export class AnnotationLayer extends PlotLayer {
           const seriesKey = this.paraview.paraState.model!.series[annot.seriesIndex].key;
           const dpView = this.paraview.documentView?.chartLayers.dataLayer.datapointViews.filter(d =>
             d.seriesKey == seriesKey && d.index == annot.datapointIndex)[0]!
-
+          if (!dpView) {
+            break;
+          }
           overlays.push((dpView.symbol ?? dpView.shapes[0]).clone());
           if (this.type === 'foreground' && !this.paraview.paraState.popups.some(p => p.id == dpView.id)) {
             dpView.addDatapointPopup();
           }
-          //overlays.forEach(sym => {
-          overlays.at(-1)!.scale = 3;
+          overlays.at(-1)!.scale = 1.2;
           overlays.at(-1)!.opacity = 0.5;
-          overlays.at(-1)!.fill = 'empty';
-          //});
-          if (!dpView) {
-            break;
-          }
+          overlays.at(-1)!.fill = this.paraview.paraState.colors.colorValueAt(dpView.colorIndex);
+
           let popup = new Popup(this.paraview,
             {
               text: annot.text,
