@@ -227,7 +227,6 @@ export const comparisonMsgs: Record<ComparisonRelationship, ComparisonMsgs> = {
 }
 
 export function compare(earlier: number, later: number): ComparisonResult {
-    console.log("compare")
     /*let log: Logger = getLogger("compare");
     log.info(later)*/
     if (earlier === later) {
@@ -243,7 +242,6 @@ export function compare(earlier: number, later: number): ComparisonResult {
     const min = new Decimal(Math.min(earlier, later));
     const max = new Decimal(Math.max(earlier, later));
     const diff = max.sub(min).toNumber();
-    console.log("diff", diff)
     // calculate the percentage difference
     const startVal = new Decimal(earlier);
     const endVal = new Decimal(later);
