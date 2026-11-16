@@ -113,6 +113,10 @@ export class BarPlotView extends PlanePlotView {
     return this._availSpace;
   }
 
+  get isHorizontal() {
+    return this.paraview.paraState.type === 'bar';
+  }
+
   protected _newDatapointView(seriesView: PlaneSeriesView, stack: BarStack) {
     return new Bar(seriesView, stack);
   }
@@ -127,7 +131,8 @@ export class BarPlotView extends PlanePlotView {
     // on its right, and each cluster is separated by `clusterGap`
 
     this._numStacks = numClusters * this._chartInfo.stacksPerCluster;
-    let maxStackWidth = (this._width - numClusters * this._chartInfo.config.clusterGap) / this._numStacks;
+    const stackAxisLength = this.isHorizontal ? this._height : this._width;
+    const maxStackWidth = (stackAxisLength - numClusters * this._chartInfo.config.clusterGap) / this._numStacks;
     let gapWidth = 0;
     let stackWidth = Math.min(this._chartInfo.config.barWidth, maxStackWidth);
     stackWidth ||= maxStackWidth;
@@ -188,11 +193,7 @@ export class BarPlotView extends PlanePlotView {
       this._totalLabels = [];
       const seriesViews = this._chartLandingView.children;
 
-      let angle = 0;
-      if (this.parent.orientation === 'east') {
-        //textAnchor = 'start';
-        angle = -90;
-      }
+      const angle = this.isHorizontal ? 0 : this.parent.orientation === 'east' ? -90 : 0;
 
       let i = 0;
       for (const [clusterKey, cluster] of Object.entries(this._chartInfo.clusteredData)) {
@@ -211,8 +212,18 @@ export class BarPlotView extends PlanePlotView {
             angle
           }));
           this.append(this._totalLabels.at(-1)!);
-          this._totalLabels.at(-1)!.centerX = barView.centerX;
-          this._totalLabels.at(-1)!.bottom = barView.top - this._chartInfo.config.totalLabelGap;
+          const label = this._totalLabels.at(-1)!;
+          if (this.isHorizontal) {
+            if (sum < 0) {
+              label.right = barView.left - this._chartInfo.config.totalLabelGap;
+            } else {
+              label.left = barView.right + this._chartInfo.config.totalLabelGap;
+            }
+            label.centerY = barView.centerY;
+          } else {
+            label.centerX = barView.centerX;
+            label.bottom = barView.top - this._chartInfo.config.totalLabelGap;
+          }
         }
       }
       // this._resizeToFitLabels();
@@ -360,77 +371,63 @@ export class Bar extends PlaneDatapointView {
 
   computeLocation() {
     const chartInfo = this.chart.chartInfo as BarChartInfo;
-
     const idealWidth = this.chart.stackWidth;
-    this._width = this.chart.stackWidth;
-    if (this.paraview.paraState.config.animation.isAnimationEnabled) {
-      this._height = 0;
-      //this._x = this._stack.x + this._stack.cluster.x; // - this.width/2; // + BarCluster.width/2 - this.width/2;
-
-      // const clusterGap = Math.min(chartInfo.settings.clusterGap, this.chart.stackGap);
-      // const barGap = Math.min(chartInfo.settings.barGap, this.chart.availSpace/this.chart.numBars);
-      // this._x = barGap/2
-      //   + idealWidth*this._stack.cluster.index
-      //   //+ clusterGap*this._stack.cluster.index
-      //   //+ idealWidth*this._stack.index
-      //   + barGap*this._stack.cluster.index;
-
-      this._y = 0;
-    } else {
-      const orderIdx = Object.keys(this._stack.bars).indexOf(this.series.key);
-      const numBars = Object.keys(this._stack.bars).length;
-      const extra = (numBars - 1)*chartInfo.config.stackInsideGap;
-      const delta = extra/numBars;
-      const yRange = chartInfo.yRangeInfo!.interval.end - chartInfo.yRangeInfo!.interval.start;
-      const pxPerYUnit = this.paraview.documentView!.chartLayers.logicalHeight / yRange;
-      const distFromXAxis = Object.values(this._stack.bars).slice(0, orderIdx)
-        .map(bar => bar.value.value * pxPerYUnit - delta)
-        .reduce((a, b) => a + b, 0);
-      const zeroHeight = this.paraview.documentView!.chartLayers.logicalHeight
-        - (chartInfo.yRangeInfo!.interval.end * this.paraview.documentView!.chartLayers.logicalHeight / yRange);
-      this._height = Math.max(1, Math.abs(this.datapoint.facetValueAsNumber('y')! * pxPerYUnit)
-        - delta);
-      if (this.datapoint.facetValueAsNumber('y')! < 0) {
-        this._y = this.chart.height - distFromXAxis - zeroHeight;
-      } else {
-        this._y = this.chart.height
-          - this.height
-          - distFromXAxis
-          - zeroHeight
-          - orderIdx * chartInfo.config.stackInsideGap;
-      }
-    }
+    const horizontal = this.chart.isHorizontal;
+    this._width = horizontal ? 0 : idealWidth;
+    this._height = horizontal ? idealWidth : 0;
     const barGap = this.chart.availSpace / this.chart.numStacks;
     const clusterGap = chartInfo.config.clusterGap;
-    this._x = clusterGap / 2 + barGap / 2
+    const stackPosition = clusterGap / 2 + barGap / 2
       + idealWidth * (chartInfo.stacksPerCluster * this._stack.cluster.index + this._stack.index)
       + clusterGap * this._stack.cluster.index
       + barGap * (chartInfo.stacksPerCluster * this._stack.cluster.index + this._stack.index);
+    if (horizontal) {
+      this._y = stackPosition;
+    } else {
+      this._x = stackPosition;
+    }
+    this._setValueGeometry(this.paraview.paraState.config.animation.isAnimationEnabled ? 0 : 1);
   }
 
-  beginAnimStep(bezT: number, linearT: number): void {
+  protected _setValueGeometry(progress: number) {
     const chartInfo = this.chart.chartInfo as BarChartInfo;
+    const horizontal = this.chart.isHorizontal;
+    const valueAxisLength = horizontal ? this.chart.width : this.chart.height;
     const orderIdx = Object.keys(this._stack.bars).indexOf(this.series.key);
     const numBars = Object.keys(this._stack.bars).length;
-    const extra = (numBars - 1)*chartInfo.config.stackInsideGap;
+    const extra = (numBars - 1) * chartInfo.config.stackInsideGap;
     const delta = extra/numBars;
     const yRange = chartInfo.yRangeInfo!.interval.end - chartInfo.yRangeInfo!.interval.start;
-    const pxPerYUnit = this.paraview.documentView!.chartLayers.logicalHeight / yRange;
+    const pxPerYUnit = valueAxisLength / yRange;
     const distFromXAxis = Object.values(this._stack.bars).slice(0, orderIdx)
       .map(bar => bar.value.value * pxPerYUnit - delta)
       .reduce((a, b) => a + b, 0);
-    const zeroHeight = this.paraview.documentView!.chartLayers.logicalHeight
-      - (chartInfo.yRangeInfo!.interval.end * this.paraview.documentView!.chartLayers.logicalHeight / yRange);
-    this._height = Math.max(1, Math.abs(this.datapoint.facetValueAsNumber('y')! * pxPerYUnit * bezT) - delta);
-    if (this.datapoint.facetValueAsNumber('y')! < 0) {
-      this._y = this.chart.height - distFromXAxis * bezT - zeroHeight;
+    const zeroOffset = valueAxisLength - (chartInfo.yRangeInfo!.interval.end * valueAxisLength / yRange);
+    const value = this.datapoint.facetValueAsNumber('y')!;
+    const barLength = progress === 0
+      ? 0
+      : Math.max(1, Math.abs(value * pxPerYUnit * progress) - delta);
+    if (horizontal) {
+      this._width = barLength;
+      this._x = value < 0
+        ? distFromXAxis * progress + zeroOffset - barLength
+        : distFromXAxis * progress + zeroOffset + orderIdx * delta;
     } else {
-      this._y = this.chart.height
-        - this.height
-        - distFromXAxis * bezT
-        - zeroHeight
-        - orderIdx * chartInfo.config.stackInsideGap;
+      this._height = barLength;
+      if (value < 0) {
+        this._y = this.chart.height - distFromXAxis * progress - zeroOffset;
+      } else {
+        this._y = this.chart.height
+          - this.height
+          - distFromXAxis * progress
+          - zeroOffset
+          - orderIdx * chartInfo.config.stackInsideGap;
+      }
     }
+  }
+
+  beginAnimStep(bezT: number, linearT: number): void {
+    this._setValueGeometry(bezT);
     super.beginAnimStep(bezT, linearT);
   }
 
@@ -438,11 +435,7 @@ export class Bar extends PlaneDatapointView {
     super.completeLayout();
     const chartInfo = this.chart.chartInfo as BarChartInfo;
 //    let textAnchor: LabelTextAnchor = 'middle';
-    let angle = 0;
-    if (this.chart.parent.orientation === 'east') {
-  //    textAnchor = 'start';
-      angle = -90;
-    }
+    const angle = this.chart.isHorizontal ? 0 : this.chart.parent.orientation === 'east' ? -90 : 0;
     if (chartInfo.config.isDrawRecordLabels) {
       this._recordLabel?.remove();
       this._recordLabel = new Label(this.paraview, {
@@ -456,8 +449,13 @@ export class Bar extends PlaneDatapointView {
         stroke: 'none',
         fill: this.paraview.paraState.colors.contrastValueAt(this._isStyleEnabled ? this.index : this.parent.index)
       };
-      this._recordLabel.centerX = this.centerX;
-      this._recordLabel.y = this.chart.height - this._recordLabel.height - chartInfo.config.stackLabelGap;
+      if (this.chart.isHorizontal) {
+        this._recordLabel.left = this.chart.width - this._recordLabel.width - chartInfo.config.stackLabelGap;
+        this._recordLabel.centerY = this.centerY;
+      } else {
+        this._recordLabel.centerX = this.centerX;
+        this._recordLabel.y = this.chart.height - this._recordLabel.height - chartInfo.config.stackLabelGap;
+      }
     }
     if (chartInfo.config.isDrawDataLabels) {
       this._dataLabel?.remove();
@@ -475,15 +473,34 @@ export class Bar extends PlaneDatapointView {
           ? this.index
           : this.parent.index)
       };
-      this._dataLabel.centerX = this.centerX;
-      if (chartInfo.config.dataLabelPosition === 'center') {
+      if (this.chart.isHorizontal) {
         this._dataLabel.centerY = this.centerY;
-      } else if (chartInfo.config.dataLabelPosition === 'end') {
-        this._dataLabel.top = this.top;
-      } else if (chartInfo.config.dataLabelPosition === 'base') {
-        this._dataLabel.bottom = this.bottom;
+        if (chartInfo.config.dataLabelPosition === 'center') {
+          this._dataLabel.centerX = this.centerX;
+        } else if (chartInfo.config.dataLabelPosition === 'end') {
+          this.datapoint.facetValueAsNumber('y')! < 0
+            ? this._dataLabel.left = this.left
+            : this._dataLabel.right = this.right;
+        } else if (chartInfo.config.dataLabelPosition === 'base') {
+          this.datapoint.facetValueAsNumber('y')! < 0
+            ? this._dataLabel.left = this.right
+            : this._dataLabel.right = this.left;
+        } else {
+          this.datapoint.facetValueAsNumber('y')! < 0
+            ? this._dataLabel.right = this.left
+            : this._dataLabel.left = this.right;
+        }
       } else {
-        this._dataLabel.bottom = this.top;
+        this._dataLabel.centerX = this.centerX;
+        if (chartInfo.config.dataLabelPosition === 'center') {
+          this._dataLabel.centerY = this.centerY;
+        } else if (chartInfo.config.dataLabelPosition === 'end') {
+          this._dataLabel.top = this.top;
+        } else if (chartInfo.config.dataLabelPosition === 'base') {
+          this._dataLabel.bottom = this.bottom;
+        } else {
+          this._dataLabel.bottom = this.top;
+        }
       }
     }
   }

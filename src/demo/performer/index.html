@@ -76,10 +76,14 @@
 					text.innerHTML = 'Change manifest';
 					chart.api.setManifest('/src/demo-data/bar-multi-manifest-48.json');
                 },
-
+*/
 				() => {
 					text.innerHTML = 'Highlight title';
 					chart.api.getTitle().highlight();
+				},
+				() => {
+					text.innerHTML = 'Clear highlight title';
+					chart.api.getTitle().clearHighlight();
 				},
 				() => {
 					text.innerHTML = 'Highlight horizontal axis';
@@ -89,8 +93,16 @@
 					text.innerHTML = 'Highlight vertical axis';
 					chart.api.getVerticalAxis().highlight();
 				},
+				() => {
+					text.innerHTML = 'Clear Highlight horizontal axis';
+					chart.api.getHorizontalAxis().clearHighlight();
+				},
+				() => {
+					text.innerHTML = 'Clear Highlight vertical axis';
+					chart.api.getVerticalAxis().clearHighlight();
+				},
 
-			*/() => {
+			() => {
 					text.innerHTML = 'Highlight first intersection';
 					chart.api.highlightIntersection(0, 1)
 				},

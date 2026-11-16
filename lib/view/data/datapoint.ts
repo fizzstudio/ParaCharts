@@ -226,7 +226,7 @@ export class DatapointView extends DataView {
     if (this.paraview.paraState.comboModel) {
       sel = `dataset${datasetIndex}_` + sel;
     }
-    const id = (this.paraview.paraState.jimerator!.manifest.jim as any).selectors[sel].dom as string;
+    const id = (this.paraview.paraState.jimerator!.manifest.jim as any).bindings[sel].dom as string;
     // don't include the '#' from JIM
     return id.slice(1);
   }
@@ -407,7 +407,7 @@ export class DatapointView extends DataView {
     const { text, xInput, yInput, focus, select } = options;
     let datapointText = `${this.index + 1}/${this.series.datapoints.length}: ${this.chart.chartInfo.summarizer.getDatapointSummary(this.datapoint, 'statusBar')}`;
     if (this.paraview.paraState.model!.multi) {
-      datapointText = `${this.series.getLabel()} ${datapointText}`
+      datapointText = `${this.series.label} ${datapointText}`;
     }
     if (this.paraview.paraState.thresholds.length > 0) {
       const horizTs = this.paraview.paraState.thresholds.filter(t => t.orientation == 'horiz');
@@ -466,6 +466,9 @@ export class DatapointView extends DataView {
     let pointerControlled = false;
     if (['bar', 'column', 'waterfall', 'histogram', 'heatmap'].includes(this.paraview.paraState.type)) {
       x = this.x + this.width / 2
+      if (this.paraview.paraState.type === 'bar') {
+        y = this.y + this.height / 2;
+      }
       if (this.paraview.paraState.config.popup.activation == "onHover") {
         pointerControlled = true;
       }
@@ -504,8 +507,8 @@ export class DatapointView extends DataView {
         id: this.id,
         colorIndex: color,
         points: [this],
-        rotationExempt: this.paraview.paraState.type == 'bar' ? false : true,
-        angle: this.paraview.paraState.type == 'bar' ? -90 : 0,
+        rotationExempt: true,
+        angle: 0,
         pointerControlled
       },
       {
@@ -543,7 +546,10 @@ export class DatapointView extends DataView {
         this._popup.horizShift = this.paraview.paraState.pointerCoords.x - (this._popup.grid.x + this._popup.grid.width / 2)
       }
       else if (this.paraview.paraState.type == 'bar') {
-        this.addDatapointPopup({ xInput: this.paraview.paraState.pointerCoords.y, yInput: this.chart.height - this.paraview.paraState.pointerCoords.x })
+        this.addDatapointPopup({
+          xInput: this.paraview.paraState.pointerCoords.x,
+          yInput: this.paraview.paraState.pointerCoords.y
+        })
       }
     }
   }

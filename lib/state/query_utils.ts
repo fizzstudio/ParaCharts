@@ -38,9 +38,9 @@ export function describeSelections(
         const targetValue = visitedDatapoint.datapoint.facetValueNumericized('y')!;
         const result = compare(viewValue, targetValue);
         const comparatorMsg = comparisonMsgs[result.relationship].msg;
-        const diff = result.diff! !== 0 ? templum.replace('${diff:number} ', { diff: result.diff! }) : undefined;
+        const diff = result.diff.toString();
         msgArray.push(capitalize(templum.replace(
-          '${diff:string?}${comparatorMsg:string} ${seriesLabel:string} ${datapointXY:string}',
+          '${diff:string?} ${comparatorMsg:string} ${seriesLabel:string} ${datapointXY:string}',
           { diff, comparatorMsg, seriesLabel: view.series.getLabel(), datapointXY: formatXYDatapoint(view.datapoint, 'raw') }
         )));
       }

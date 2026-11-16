@@ -4,7 +4,7 @@ import {
   html, css,
 } from 'lit';
 import { customElement } from 'lit/decorators.js';
-import { AxisAnnotation, BaseAnnotation, DatapointAnnotation, formatXYDatapointX, IntersectionAnnotation, type PlaneDatapoint } from '@fizz/chartsignal-internal';
+import { AxisAnnotation, BaseAnnotation, DatapointAnnotation, formatXYDatapointX, IntersectionAnnotation, SequenceAnnotation, ThresholdAnnotation, type PlaneDatapoint } from '@fizz/chartsignal-internal';
 import { LineBreakControlsDialog } from '../dialogs/line_break_controls_dialog';
 import { createRef, ref } from 'lit/directives/ref.js';
 import { datapointIdToCursor,  } from '../../state/parastate';
@@ -56,7 +56,7 @@ export class AnnotationPanel extends ControlPanelTabPanel {
     }
     return html`
       <ol class="annotations">
-        ${this._paraState.model.annotations.map(item => html`
+        ${this._paraState.model.annotations.filter((a) => 'text' in a).map(item => html`
             <li
               id="${item.id}"
               data-series="${(item as DatapointAnnotation).seriesIndex}"
@@ -68,7 +68,7 @@ export class AnnotationPanel extends ControlPanelTabPanel {
         event.preventDefault()
         this.editAnnotation(event)
       }}
-            >${this.getAnnotationMessage(item)}</li>
+            >${this.getAnnotationMessage(item as unknown as BaseAnnotation)}</li>
           `)
       }
       </ol>
@@ -83,10 +83,18 @@ export class AnnotationPanel extends ControlPanelTabPanel {
       return `${seriesLabel}, datapoint ${datapointAnnot.datapointIndex}: ${datapointAnnot.text}`
     }
     else if (annot.type == 'axis-annotation') {
-      const axisAnnot = annot as AxisAnnotation;
-      const cap = axisAnnot.axis == 'y' ? "Y axis" : "X axis";
-      const isThreshold = axisAnnot.kind == 'threshold' ? "threshold" : "marker";
-      return `${cap} ${isThreshold} - ${axisAnnot.value}: ${axisAnnot.text}`;
+      if (annot.kind == 'threshold') {
+        const axisAnnot = annot as ThresholdAnnotation;
+        const cap = axisAnnot.axis == 'y' ? "Y axis" : "X axis";
+        const isThreshold = axisAnnot.kind == 'threshold' ? "threshold" : "marker";
+        return `${cap} ${isThreshold} - ${axisAnnot.value}: ${axisAnnot.text}`;
+      }
+      else if (annot.kind == 'highlight') {
+        const axisAnnot = annot as ThresholdAnnotation;
+        const cap = axisAnnot.axis == 'y' ? "Y axis" : "X axis";
+        const label = axisAnnot.axis == 'y' ? this._paraState.chartInfo.vertFacet?.label : this._paraState.chartInfo.horizFacet?.label
+        return `${cap}: ${label}`
+      }
     }
     else if (annot.type == 'intersection-annotation') {
       const intersectionAnnot = annot as IntersectionAnnotation
@@ -102,7 +110,16 @@ export class AnnotationPanel extends ControlPanelTabPanel {
         const loc2 = targetSeries1.datapoints[intersectionAnnot.intersection.record.afterIndex].facetBox('x')!.raw;
         return `Intersection between ${targetSeries1.label} and ${targetSeries2.label} between ${loc1} and ${loc2}`;
       }
-
+    }
+    else if (annot.type == 'title-annotation') {
+      return `Title: ${annot.text}`;
+    }
+    else if (annot.type == 'sequence-annotation') {
+      const sequenceAnnot = annot as SequenceAnnotation;
+      const seriesKey = this._paraState.model!.seriesKeys[sequenceAnnot.seriesIndex];
+      const seriesAnalysis = this._paraState.seriesAnalyses[seriesKey]!;
+      const index = seriesAnalysis!.sequences.findIndex(s => s.start === sequenceAnnot.startIndex && s.end === sequenceAnnot.endIndex) + 1;
+      return `Sequence ${index}/${seriesAnalysis!.sequences.length}: ${annot.text}`;
     }
     return annot.text;
   }
@@ -153,7 +170,7 @@ export class AnnotationPanel extends ControlPanelTabPanel {
         continue;
       }
       const annotationText = text;
-      const id = `${series}-${recordLabel}-${this._paraState.model?.nextAnnotID(seriesKey, index, annotationText)}`;
+      const id = `${series}-${recordLabel}-${this._paraState.model?.nextAnnotID()}`;
       if (annotationText) {
         newAnnotationList.push({
           type: "datapoint-annotation",

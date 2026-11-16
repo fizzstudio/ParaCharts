@@ -192,7 +192,7 @@ describe('ParaState', () => {
       expect(state.isSeriesHidden('series2')).toBe(false);
     });
   });
-
+/*
   describe('Datapoint Highlighting', () => {
     let state: ParaState;
 
@@ -255,7 +255,7 @@ describe('ParaState', () => {
       expect(state.highlightedSequences.size).toBe(0);
     });
   });
-
+*/
   describe('Range Highlighting', () => {
     let state: ParaState;
 

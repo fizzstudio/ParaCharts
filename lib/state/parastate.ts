@@ -25,8 +25,13 @@ import {
   numberToScaledNumberRounded, SequenceInfo, SeriesAnalysis, clusterObject, facetsFromDataset,
   Model, modelFromExternalData, modelFromInlineData, FacetSignature, PlaneDatapoint,
   planeModelFromInlineData, planeModelFromExternalData, PlaneModel, type Datapoint,
-  Facet, FormatType, formatXYDatapointX, formatXYDatapointY, HighlightedSummary, type Highlight, 
-  formatBox, DatapointAnnotation, Jimerator } from '@fizz/chartsignal-internal';
+  Facet, FormatType, formatXYDatapointX, formatXYDatapointY, HighlightedSummary, type Highlight,
+  formatBox, DatapointAnnotation,
+  SequenceAnnotation,
+  AxisAnnotation,
+  Jimerator,
+  hasInlineData
+} from '@fizz/chartsignal-internal';
 
 import { BaseState, SettingObserver } from './base_state';
 import {
@@ -48,7 +53,7 @@ import { Popup } from '../view/popup';
 import { type DatapointCursor } from '../view/layers/data/navigation';
 import { type PathShape } from '../view/shape';
 import { type GlobalState } from './global_state';
-import { type BaseChartInfo, chartInfoClasses, ComboChartInfo, LineChartInfo, ScatterChartInfo } from '../chart_types';
+import { type BaseChartInfo, chartInfoClasses, ComboChartInfo, LineChartInfo, PlaneChartInfo, ScatterChartInfo } from '../chart_types';
 import { firstDataset, type Manifest } from '../loader/common';
 import { ClusterShellView } from '../view/layers';
 import { computeLabels } from '../common/axisinfo';
@@ -233,7 +238,6 @@ export class ParaState extends BaseState {
   protected _colors: Colors;
   protected _keymapManager = new KeymapManager(actionMap);
   //protected _summarizer!: Summarizer;
-  protected _annotID: number = 0;
   protected _legendID: number = 0;
   protected _markerID: number = 0;
   protected log: Logger = getLogger("ParaState");
@@ -710,7 +714,7 @@ export class ParaState extends BaseState {
     this._title = dataset.title;
     this._facets = facetsFromDataset(dataset);
 
-    if (!dataset.href) {
+    if (hasInlineData(this._manifest)) {
       if (isPastryType(this._type) || isVennType(this._type)) {
         this._model = modelFromInlineData(manifest);
       } else {
@@ -758,7 +762,7 @@ export class ParaState extends BaseState {
       await Promise.all(
         this._model.seriesKeys.map(async (seriesKey) => {
           this._seriesAnalyses = {
-            [seriesKey]: await (this._model as PlaneModel).getSeriesAnalysis(seriesKey, { maxError: maxError, maxSegments: maxSegments, extremumWeight: extremumWeight }),
+            [seriesKey]: await (this._model as PlaneModel).getSeriesAnalysis(seriesKey, { maxError: maxError, maxSegments: maxSegments, extremumWeight: extremumWeight, yAxis: (this.chartInfo as PlaneChartInfo).yRangeInfo!.interval }),
             ...this._seriesAnalyses
           };
         }));
@@ -1503,16 +1507,16 @@ export class ParaState extends BaseState {
   }
 
   highlightDatapoint(seriesKey: string, index: number) {
-    this._highlightedDatapoints = new Set([
-      ...this._highlightedDatapoints.values(),
-      makeDatapointId(seriesKey, index)
-    ]);
+    const highlightText = this.chartInfo ? this.chartInfo.summarizer.getDatapointSummary(this.model!.series.filter(s =>
+      s.key == seriesKey)[0].datapoints[index], 'statusBar') : '';
+    this.annotatePoint(seriesKey, index, highlightText, true);
   }
 
   clearDatapointHighlight(seriesKey: string, index: number) {
-    this._highlightedDatapoints = new Set(
-      [...this._highlightedDatapoints.values()].filter(id => id !== makeDatapointId(seriesKey, index))
-    );
+    const seriesIndex = this.model!.seriesKeys.indexOf(seriesKey);
+    const targetAnnotation = this.model!.allDatapointAnnotations.filter(dp =>
+      dp.seriesIndex == seriesIndex && dp.datapointIndex == index)[0];
+    this.model?.removeAnnotation(targetAnnotation.id);
   }
 
   get crosshairedDatapoints() {
@@ -1601,17 +1605,29 @@ export class ParaState extends BaseState {
     return this._highlightedSequences;
   }
 
-  highlightSequence(seriesKey: string, index1: number, index2: number) {
-    this._highlightedSequences = new Set([
-      ...this._highlightedSequences.values(),
-      makeSequenceId(seriesKey, index1, index2)
-    ]);
+  highlightSequence(seriesKey: string, startIndex: number, endIndex: number) {
+    const seriesAnalysis = this.seriesAnalyses[seriesKey]!;
+    const index = seriesAnalysis.sequences.findIndex(s => s.start === startIndex && s.end === endIndex);
+    const labels = this.model!.series[0].datapoints.map(
+      (p) => formatBox(p.facetBox('x')!, this.getFormatType('horizTick'))
+    );
+    const points = this.model!.series.find(s => s.key === seriesKey)!.datapoints;
+    let text = '';
+    text = text.concat(`${trendTranslation[seriesAnalysis.sequences[index].slopeInfo.classes[0]]} trend`)
+    const changeVal = parseFloat((points[seriesAnalysis.sequences[index].end - 1].facetValueAsNumber("y")!
+      - points[seriesAnalysis.sequences[index].start].facetValueAsNumber("y")!).toFixed(4));
+    text = text.concat(`\n${changeVal > 0 ? '+' : ''}${changeVal}`);
+    text = text.concat(`\n${labels[seriesAnalysis.sequences[index].start]}-${labels[seriesAnalysis.sequences[index].end - 1]}`);
+    text = text.concat(`\n${seriesAnalysis.sequences[index].end - seriesAnalysis.sequences[index].start} records`);
+    this.annotateSequence(seriesKey, startIndex, endIndex, text, true);
   }
 
-  clearSequenceHighlight(seriesKey: string, index1: number, index2: number) {
-    this._highlightedSequences = new Set(
-      [...this._highlightedSequences.values()].filter(id => id !== makeSequenceId(seriesKey, index1, index2))
-    );
+  clearSequenceHighlight(seriesKey: string, startIndex: number, endIndex: number) {
+    const seriesIndex = this.model!.seriesKeys.indexOf(seriesKey);
+    const targetAnnot = this.model!.allSequenceAnnotations.filter(a => a.seriesIndex == seriesIndex
+      && a.startIndex == startIndex
+      && a.endIndex == endIndex)[0];
+    this.model!.removeAnnotation(targetAnnot.id);
   }
 
   clearAllSequenceHighlights() {
@@ -1640,7 +1656,7 @@ export class ParaState extends BaseState {
       intersectionIndex: intersectionIndex,
       intersection: targetIntersection,
       text: text,
-      id: `intersection-${this.model!.nextAnnotID(targetSeries1.key, 0, text)}`
+      id: `intersection-${this.model!.nextAnnotID()}`
     }
     this.model?.addAnnotation(annot);
     this.refreshParaView();
@@ -1697,13 +1713,52 @@ export class ParaState extends BaseState {
     this._clusterShellViews.splice(0, this._clusterShellViews.length);
   }
 
+  highlightTitle() {
+    const annot = {
+      type: "title-annotation",
+      text: this.title,
+      temporary: true,
+      id: `title-${this.model!.nextAnnotID()}`
+    };
+    this.model!.addAnnotation(annot);
+    this.refreshParaView();
+  }
+
+  clearTitleHighlight() {
+    this.model!.allTitleAnnotations.forEach(a => this.model?.removeAnnotation(a.id));
+    this.refreshParaView();
+  }
+
+  highlightAxis(axis: "x" | "y") {
+    const annot: AxisAnnotation = {
+      type: 'axis-annotation',
+      axis: axis,
+      text: 'test',
+      temporary: true,
+      kind: 'highlight',
+      id: `vert-axis-${this.model!.nextAnnotID()}`
+    };
+    this.model!.addAnnotation(annot);
+    this.refreshParaView();
+  }
+
+  clearAxisHighlight(axis: "x" | "y") {
+    this.model!.allAxisAnnotations.filter(a =>
+      a.axis == axis && a.kind == 'highlight').forEach(a =>
+        this.model?.removeAnnotation(a.id))
+    this.refreshParaView();
+  }
+
+
   clearAllHighlights() {
+    this.model?.clearTemporaryAnnotations();
     this.clearAllDatapointHighlights();
     this.clearAllSequenceHighlights();
     this.clearAllIntersectionHighlights();
     this.clearAllRangeHighlights();
     this.clearAllSeriesDimming();
     this.clearAllAxisLabelHighlights();
+    this.clearCrosshairs();
     this._highlightedClusters = new Set();
     this._clusterShellViews = [];
     this.isTitleHighlighted = false;
@@ -1716,6 +1771,8 @@ export class ParaState extends BaseState {
     this.updateConfig(draft => {
       draft.type.scatter.isShowTrendLine = false
     });
+    this.clearPopups();
+    this.refreshParaView();
   }
 
   get selectedDatapoints() {
@@ -1791,24 +1848,46 @@ export class ParaState extends BaseState {
       : SettingsManager.get(FORMAT_CONTEXT_SETTINGS[context], this.config) as FormatType;
   }
 
-  annotatePoint(seriesKey: string, datapointIndex: number, text: string) {
+  annotatePoint(seriesKey: string, datapointIndex: number, text: string, isTemporary = false) {
     if (this.model?.annotations.find((annot: DatapointAnnotation) =>
       this.model!.seriesKeys[annot.seriesIndex] === seriesKey && annot.datapointIndex === datapointIndex && annot.text === text)) {
       return;
     }
+    const seriesIndex = this.model!.seriesKeys.indexOf(seriesKey) ?? 0;
     const recordLabel = formatXYDatapointX(
       this._model!.atKeyAndIndex(seriesKey, datapointIndex) as PlaneDatapoint, 'raw');
+    const id = `${seriesKey}-${recordLabel}-${this.model?.nextAnnotID()}`
     const annot = {
       type: 'datapoint-annotation',
-      seriesKey,
+      seriesIndex,
       datapointIndex,
-      annotation: `${seriesKey}, ${recordLabel}: ${text}`,
       text,
-      id: `${seriesKey}-${recordLabel}-${this._annotID}`,
-      isSelected: true
+      id: id,
+      temporary: isTemporary
     }
+    this._selectedAnnotations.push(id);
     this.model!.addAnnotation(annot);
-    this._annotID++;
+  }
+
+  annotateSequence(seriesKey: string, startIndex: number, endIndex: number, text: string, isTemporary = false) {
+    if (this.model?.allSequenceAnnotations.find((annot: SequenceAnnotation) =>
+      this.model!.seriesKeys[annot.seriesIndex] === seriesKey && annot.startIndex === startIndex
+      && annot.endIndex == endIndex && annot.text === text)) {
+      return;
+    }
+    const seriesIndex = this.model!.seriesKeys.indexOf(seriesKey) ?? 0;
+    const id = `${seriesKey}-${startIndex}-${endIndex}-${this.model?.nextAnnotID()}`
+    const annot = {
+      type: 'sequence-annotation',
+      seriesIndex,
+      startIndex,
+      endIndex,
+      text,
+      id: id,
+      temporary: isTemporary
+    };
+    this._selectedAnnotations.push(id);
+    this.model!.addAnnotation(annot);
   }
 
   async showMDRAnnotations() {
@@ -2112,6 +2191,10 @@ export class ParaState extends BaseState {
     this.focusPopups.splice(0, this.focusPopups.length);
     this.selectPopups.splice(0, this.selectPopups.length);
     this.crossHairs.splice(0, this.crossHairs.length);
+  }
+
+  clearCrosshairs() {
+    this._crosshairedDatapoints = new Set();
   }
 
   async shortDescription(): Promise<HighlightedSummary> {

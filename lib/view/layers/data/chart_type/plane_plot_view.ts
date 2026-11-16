@@ -89,7 +89,7 @@ export abstract class PlanePlotView extends DataLayer {
           distances = points.map((dp, i) => Number(Math.abs((dp.x + dp.width / 2 - coords.x) ** 2)));
         }
         else if (['bar'].includes(type)) {
-          distances = points.map((dp, i) => Number(Math.abs((dp.x - coords.y) ** 2)));
+          distances = points.map(dp => Number(Math.abs((dp.centerY - coords.y) ** 2)));
         }
         else if (['heatmap'].includes(type)) {
           distances = points.map((dp, i) => Number(Math.abs((dp.x + dp.width / 2 - coords.x) ** 2 + (dp.y + dp.height / 2 - coords.y) ** 2)));
@@ -102,6 +102,13 @@ export abstract class PlanePlotView extends DataLayer {
           if (['column', 'histogram'].includes(type)) {
             nearestPoint = nearestPoint.withCousins.filter(p => p.y < coords.y && p.y + p.height + this.paraview.paraState.config.type.bar.barGap > coords.y)[0]
               ?? nearestPoint.withCousins.sort((a, b) => a.y - b.y)[0];
+          } else if (type === 'bar') {
+            nearestPoint = nearestPoint.withCousins.find(p =>
+              p.x <= coords.x && p.right >= coords.x
+              && p.y <= coords.y && p.bottom >= coords.y
+            ) ?? nearestPoint.withCousins.sort((a, b) =>
+              Math.abs(a.centerY - coords.y) - Math.abs(b.centerY - coords.y)
+            )[0];
           }
           else {
             nearestPoint = nearestPoint.withCousins.sort((a, b) => Math.abs(a.y - coords.y) - Math.abs(b.y - coords.y))[0];
@@ -162,17 +169,31 @@ export abstract class PlanePlotView extends DataLayer {
       });
       horizLines.push(horizLine);
       if (type == 'bar') {
+        const valueX = nearestPoint.datapoint.facetValueAsNumber('y')! < 0
+          ? nearestPoint.left
+          : nearestPoint.right;
+        vertLine = new PathShape(this.paraview, {
+          points: [new Vec2(valueX, 0), new Vec2(valueX, this.height)],
+          fill: "black",
+          stroke: "black"
+        });
+        horizLine = new PathShape(this.paraview, {
+          points: [new Vec2(0, nearestPoint.centerY), new Vec2(this.width, nearestPoint.centerY)],
+          fill: "black",
+          stroke: "black"
+        });
+        horizLines = [horizLine];
         const vertLabel = new Popup(this.paraview, {
           text: String(nearestPoint.datapoint.facetBox("y")!.raw),
-          x: this.height - nearestPoint.y,
-          y: this.width,
+          x: valueX,
+          y: this.height,
           margin: 0,
           fill: "black"
         }, { shape: "box", fill: "hsl(0, 0%, 100%)" });
         const horizLabel = new Popup(this.paraview, {
           text: String(nearestPoint.datapoint.facetBox("x")!.raw),
           x: 0,
-          y: nearestPoint.x,
+          y: nearestPoint.centerY,
           margin: 0,
           inbounds: false,
           fill: "black"
@@ -274,12 +295,8 @@ export abstract class PlanePlotView extends DataLayer {
     const chartInfo = this.chartInfo as PlaneChartInfo;
     const coords = this.paraview.paraState.pointerCoords;
     const isBar = this.paraview.paraState.type == 'bar' ? true : false;
-    let x = coords.x
-    let y = coords.y
-    if (isBar) {
-      x = coords.y;
-      y = this.height - coords.x;
-    }
+    const x = coords.x;
+    const y = coords.y;
     const vertLine = new PathShape(this.paraview, {
       points: [new Vec2(x, 0),
       new Vec2(x, this.height),],
@@ -294,7 +311,12 @@ export abstract class PlanePlotView extends DataLayer {
       fill: "black",
       stroke: "black"
     });
-    const vertProportion = ((this.height - y) / this.height) * (chartInfo.yRangeInfo!.interval.end - chartInfo.yRangeInfo!.interval.start) + chartInfo.yRangeInfo!.interval.start;
+    const vertProportion = isBar
+      ? (x / this.width) * (chartInfo.yRangeInfo!.interval.end - chartInfo.yRangeInfo!.interval.start)
+        + chartInfo.yRangeInfo!.interval.start
+      : ((this.height - y) / this.height)
+        * (chartInfo.yRangeInfo!.interval.end - chartInfo.yRangeInfo!.interval.start)
+        + chartInfo.yRangeInfo!.interval.start;
     let horizText = '';
     if (chartInfo.xRangeInfo) {
       horizText = ((x / this.width) * (chartInfo.xRangeInfo.interval.end - chartInfo.xRangeInfo.interval.start) + chartInfo.xRangeInfo.interval.start).toFixed(2);
@@ -304,16 +326,16 @@ export abstract class PlanePlotView extends DataLayer {
     }
 
     const vertLabel = new Popup(this.paraview, {
-      text: horizText,
-      x: coords.x,
-      y: isBar ? this.width : this.height,
+      text: isBar ? vertProportion.toFixed(2) : horizText,
+      x,
+      y: this.height,
       margin: 0,
       fill: "black"
     }, { shape: "box", fill: "hsl(0, 0%, 100%)" });
     const horizLabel = new Popup(this.paraview, {
-      text: vertProportion.toFixed(2),
+      text: isBar ? String(nearestPoint.datapoint.facetBox("x")!.raw) : vertProportion.toFixed(2),
       x: 0,
-      y: coords.y,
+      y,
       margin: 0,
       inbounds: false,
       fill: "black"
@@ -332,8 +354,9 @@ export abstract class PlanePlotView extends DataLayer {
     const chartInfo = this.chartInfo as PlaneChartInfo;
     const isBar = this.paraview.paraState.type == 'bar' ? true : false;
     if (isBar) {
-      x = y;
-      y = this.height - x;
+      const categoryY = x;
+      x = this.width - y;
+      y = categoryY;
     }
     const vertLine = new PathShape(this.paraview, {
       points: [new Vec2(x, 0),
@@ -366,7 +389,12 @@ export abstract class PlanePlotView extends DataLayer {
       vertAdjust(vertLabel);
     }
     if (chartInfo.yRangeInfo) {
-      const vertProportion = ((this.height - y) / this.height) * (chartInfo.yRangeInfo.interval.end - chartInfo.yRangeInfo.interval.start) + chartInfo.yRangeInfo.interval.start;
+      const vertProportion = isBar
+        ? (x / this.width) * (chartInfo.yRangeInfo.interval.end - chartInfo.yRangeInfo.interval.start)
+          + chartInfo.yRangeInfo.interval.start
+        : ((this.height - y) / this.height)
+          * (chartInfo.yRangeInfo.interval.end - chartInfo.yRangeInfo.interval.start)
+          + chartInfo.yRangeInfo.interval.start;
       horizLabel = new Popup(this.paraview, {
         text: vertProportion.toFixed(2),
         x: 0,
@@ -384,7 +412,7 @@ export abstract class PlanePlotView extends DataLayer {
     let datapointViews = datapoint.withCousins;
     let text = '';
     for (let dpView of datapointViews) {
-      text = text.concat(`${dpView.series.getLabel()}: ${this.paraview.documentView!.chartLayers!.dataLayer.chartInfo.summarizer.getDatapointSummary(dpView.datapoint, 'statusBar')}\n`);
+      text = text.concat(`${dpView.series.label}: ${this.paraview.documentView!.chartLayers!.dataLayer.chartInfo.summarizer.getDatapointSummary(dpView.datapoint, 'statusBar')}\n`);
     }
     const dpView = datapointViews[0];
     const items = this.paraview.documentView?.chartLayers.dataLayer.chartInfo.popuplegend()!;

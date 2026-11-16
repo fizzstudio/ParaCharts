@@ -798,12 +798,14 @@ export class ParaAPITitle {
 
   /** Highlight the title. */
   highlight() {
-    this._api.paraChart.paraState.isTitleHighlighted = true;
+    this._api.paraChart.paraState.highlightTitle();
+    //this._api.paraChart.paraState.isTitleHighlighted = true;
   }
 
   /** Clear any title highlight. */
   clearHighlight() {
-    this._api.paraChart.paraState.isTitleHighlighted = false;
+    //this._api.paraChart.paraState.isTitleHighlighted = false;
+    this._api.paraChart.paraState.clearTitleHighlight();
   }
 }
 
@@ -816,12 +818,14 @@ export class ParaAPIHorizontalAxis {
 
   /** Highlight the horizontal axis. */
   highlight() {
-    this._api.paraChart.paraState.isHorizontalAxisHighlighted = true;
+    //this._api.paraChart.paraState.isHorizontalAxisHighlighted = true;
+    this._api.paraChart.paraState.highlightAxis("x");
   }
 
   /** Clear any horizontal axis highlight. */
   clearHighlight() {
-    this._api.paraChart.paraState.isHorizontalAxisHighlighted = false;
+    //this._api.paraChart.paraState.isHorizontalAxisHighlighted = false;
+    this._api.paraChart.paraState.clearAxisHighlight("x");
   }
 
   highlightLabel(tierIndex: number, labelIndex: number) {
@@ -857,12 +861,14 @@ export class ParaAPIVerticalAxis {
 
   /** Highlight the vertical axis. */
   highlight() {
-    this._api.paraChart.paraState.isVerticalAxisHighlighted = true;
+    //this._api.paraChart.paraState.isVerticalAxisHighlighted = true;
+    this._api.paraChart.paraState.highlightAxis("y");
   }
 
   /** Clear any vertical axis highlight. */
   clearHighlight() {
-    this._api.paraChart.paraState.isVerticalAxisHighlighted = false;
+    //this._api.paraChart.paraState.isVerticalAxisHighlighted = false;
+    this._api.paraChart.paraState.clearAxisHighlight("y");
   }
 
   highlightLabel(tierIndex: number, labelIndex: number) {

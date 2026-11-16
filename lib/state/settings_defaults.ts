@@ -20,7 +20,6 @@ import { ChartType } from '@fizz/chartsignal-internal';
 // Per-chart-type default settings outside of the chart's own setting group
 export const chartTypeDefaults: Partial<{ [Property in ChartType]: SettingsInput }> = {
   bar: {
-    'chart.orientation': 'east',
     'axis.vert.labelOrder': 'northToSouth',
     'axis.horiz.ticks.isDrawTicks': false,
     'grid.isDrawHorizLines': false,
