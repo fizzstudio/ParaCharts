@@ -583,36 +583,18 @@ export class AnnotationLayer extends PlotLayer {
           }
           overlays.push((dpView.symbol ?? dpView.shapes[0]).clone());
           if (this.type === 'foreground' && !this.paraview.paraState.popups.some(p => p.id == dpView.id)) {
-            dpView.addDatapointPopup();
+            overlays.forEach(view => this.group('datapoint-annotations')!.append(view));
           }
-          overlays.at(-1)!.scale = 1.2;
+          if (['pastry', 'pie', 'donut'].includes(this.paraview.paraState.type)) {
+            overlays.at(-1)!.scale = 1.2;
+            overlays.at(-1)!.fill = this.paraview.paraState.colors.colorValueAt(dpView.colorIndex);
+          }
+          else {
+            overlays.at(-1)!.scale = 3;
+            overlays.at(-1)!.fill = "empty"
+          }
           overlays.at(-1)!.opacity = 0.5;
-          overlays.at(-1)!.fill = this.paraview.paraState.colors.colorValueAt(dpView.colorIndex);
-
-          let popup = new Popup(this.paraview,
-            {
-              text: annot.text,
-              x: dpView.x,
-              y: dpView.y,
-              id: this.id,
-              colorIndex: dpView.colorIndex,
-              points: [dpView]
-            },
-            {
-              fill: this.paraview.paraState.config.ui.isLowVisionModeEnabled ? "hsl(0, 0%, 100%)"
-                : this.paraview.paraState.config.popup.backgroundColor === "light" ?
-                  this.paraview.paraState.colors.lighten(this.paraview.paraState.colors.colorValueAt(dpView.colorIndex), 6)
-                  : this.paraview.paraState.colors.colorValueAt(dpView.colorIndex),
-              stroke: this.paraview.paraState.config.ui.isLowVisionModeEnabled ? "hsl(0, 0%, 0%)"
-                : this.paraview.paraState.config.popup.backgroundColor === "light" ?
-                  this.paraview.paraState.colors.colorValueAt(dpView.colorIndex)
-                  : "black",
-            })
-          popup.classInfo = { 'popup': true };
-          overlays.forEach(view => this.group('datapoint-annotations')!.append(view));
-          this.group('datapoint-annotations')!.append(popup);
         }
-
       }
       else {
         if (this._groups.has('datapoint-annotations')) {

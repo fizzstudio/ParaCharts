@@ -156,7 +156,7 @@ export class HighlightsLayer extends PlotLayer {
       const tier = this.paraview.documentView?.yAxis?.tickLabelTiers[options.tierIndex]!
       const yValues = tier.children.map((c) => (c as Label).text)
       tier.addPopup(yValues[options.labelIndex], options.labelIndex)
-      let width = tier.children[options.labelIndex].width * 2
+      let width = tier.children[options.labelIndex].width * 1.5
       let height = tier.children[options.labelIndex].height * 1.5
       const shape = new RectShape(this.paraview, {
         width: width,

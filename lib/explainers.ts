@@ -32,7 +32,7 @@ const explainers: Partial<Explainers> = {
         <span data-phrasecode="4" data-action="clearVerticalAxisHighlight()">In this example, the columns show how many students are enrolled in each school subject. </span>
         <span data-phrasecode="5" data-action="getVerticalAxis().getMaxPoints().highlight()">Taller columns mean more students. </span>
         <span data-phrasecode="6" data-action="getVerticalAxis().getMinPoints().highlight()">Shorter columns mean fewer students. </span>
-        <span data-phrasecode="7" data-action="getHorizontalAxis().getMaxPoints().highlight();getHorizontalAxis().getMinPoints().highlight()">By comparing the heights of the columns, you can determine which subjects have higher or lower enrollment. </span>
+        <span data-phrasecode="7" data-action="getVerticalAxis().getMaxPoints().highlight();getVerticalAxis().getMinPoints().highlight()">By comparing the heights of the columns, you can determine which subjects have higher or lower enrollment. </span>
       `),
       manifest: {
         "jim": {
@@ -528,8 +528,8 @@ const explainers: Partial<Explainers> = {
         <span data-phrasecode="1" data-action="highlightHorizontalAxis()">Each point's position left‑to‑right shows its value on the x‑axis, </span>
         <span data-phrasecode="2" data-action="highlightVerticalAxis()">and its position bottom‑to‑top shows its value on the y‑axis. </span>
         <span data-phrasecode="3" data-action="getSeries('Student Scores').getPoint(0).highlight();getSeries('Student Scores').getPoint(0).addCrosshair()">Reading a point simply means matching its coordinates to the two axes. </span>
-        <span data-phrasecode="4" data-action="getSeries('Student Scores').getPoints(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31).highlight()">When many points are shown together, you can spot patterns such as trends, clusters, or outliers, </span>
-        <span data-phrasecode="5">and a best‑fit line can help reveal the overall direction of the relationship.</span>
+        <span data-phrasecode="4" data-action="getSeries('Student Scores').getPoints(5, 10, 22).highlight()">When many points are shown together, you can spot patterns such as trends, clusters, or outliers, </span>
+        <span data-phrasecode="5" data-action="addTrendLine()">and a best‑fit line can help reveal the overall direction of the relationship.</span>
       `),
       manifest: {
         "jim": {

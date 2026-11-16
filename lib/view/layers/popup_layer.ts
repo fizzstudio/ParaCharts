@@ -1,4 +1,4 @@
-import { formatBox } from "@fizz/chartsignal-internal";
+import { DatapointAnnotation, formatBox } from "@fizz/chartsignal-internal";
 import { type ViewContext } from '../view_context';
 import { datapointIdToCursor, makeSequenceId } from "../../state";
 import { Container, View } from "../base_view";
@@ -18,7 +18,7 @@ export class PopupLayer extends PlotLayer {
     }
 
     protected _createId() {
-        return super._createId(`${this.type}-annotation`);
+        return super._createId(`${this.type}-popup`);
     }
 
     group(name: string) {
@@ -92,10 +92,35 @@ export class PopupLayer extends PlotLayer {
                 datapointView.addDatapointPopup({ select: true });
             }
         }
+        if (this.paraview.paraState.model?.allDatapointAnnotations) {
+            const annots = structuredClone(this.paraview.paraState.model?.allDatapointAnnotations.filter(a =>
+                this.paraview.paraState._selectedAnnotations.includes(a.id)));
+            for (let dp of this.paraview.paraState.visitedDatapoints) {
+                let cursor = datapointIdToCursor(dp)
+                let dpView = this.paraview.documentView!.chartLayers.dataLayer.datapointView(cursor.seriesKey, cursor.index)
+                for (let annot of this.paraview.paraState.model?.allDatapointAnnotations) {
+                    if (dpView!.seriesKey === this.paraview.paraState.model!.seriesKeys[annot.seriesIndex]
+                        && dpView!.index === annot.datapointIndex
+                        && !this.paraview.paraState._selectedAnnotations.includes(annot.id)) {
+                        annots.push(annot as DatapointAnnotation)
+                    }
+                }
+            }
+
+            for (const annot of annots) {
+                const seriesKey = this.paraview.paraState.model!.series[annot.seriesIndex].key;
+                const dpView = this.paraview.documentView?.chartLayers.dataLayer.datapointViews.filter(d =>
+                    d.seriesKey == seriesKey && d.index == annot.datapointIndex)[0]!
+                if (!dpView) {
+                    break;
+                }
+                dpView.addDatapointPopup({ focus: true })
+            }
+        }
         if (this.paraview.paraState.crosshairedDatapoints.size > 0) {
             const crosshairedPoints = Array.from(this.paraview.paraState.crosshairedDatapoints).map(s => this.paraview.paraState.getDatapoint(s));
             const planeChart = this.paraview.documentView?.chartLayers.dataLayer as PlanePlotView;
-            planeChart.makeCrosshairsLocked(crosshairedPoints.map(datapoint => planeChart.datapointView(datapoint.seriesKey, datapoint.datapointIndex)! as PlaneDatapointView), true);
+            planeChart.makeCrosshairsLocked(crosshairedPoints.map(datapoint => planeChart.datapointView(datapoint.seriesKey, datapoint.datapointIndex)! as PlaneDatapointView), true, undefined, false);
         }
         let crosshairElements = this.paraview.paraState.crossHairs.map(ch => ch.popups).flat()
         for (const popup of [...crosshairElements,
@@ -104,7 +129,7 @@ export class PopupLayer extends PlotLayer {
         ...this.paraview.paraState.selectPopups,
         ]) {
             if (this.type === 'foreground') {
-                if (!popup.parent){
+                if (!popup.parent) {
                     this.group('datapoint-popups')!.append(popup);
                 }
             }

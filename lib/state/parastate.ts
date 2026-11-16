@@ -1507,8 +1507,8 @@ export class ParaState extends BaseState {
   }
 
   highlightDatapoint(seriesKey: string, index: number) {
-    const highlightText = this.chartInfo.summarizer.getDatapointSummary(this.model!.series.filter(s =>
-      s.key == seriesKey)[0].datapoints[index], 'statusBar');
+    const highlightText = this.chartInfo ? this.chartInfo.summarizer.getDatapointSummary(this.model!.series.filter(s =>
+      s.key == seriesKey)[0].datapoints[index], 'statusBar') : '';
     this.annotatePoint(seriesKey, index, highlightText, true);
   }
 
@@ -1758,6 +1758,7 @@ export class ParaState extends BaseState {
     this.clearAllRangeHighlights();
     this.clearAllSeriesDimming();
     this.clearAllAxisLabelHighlights();
+    this.clearCrosshairs();
     this._highlightedClusters = new Set();
     this._clusterShellViews = [];
     this.isTitleHighlighted = false;
@@ -1770,6 +1771,7 @@ export class ParaState extends BaseState {
     this.updateConfig(draft => {
       draft.type.scatter.isShowTrendLine = false
     });
+    this.clearPopups();
     this.refreshParaView();
   }
 
@@ -2189,6 +2191,10 @@ export class ParaState extends BaseState {
     this.focusPopups.splice(0, this.focusPopups.length);
     this.selectPopups.splice(0, this.selectPopups.length);
     this.crossHairs.splice(0, this.crossHairs.length);
+  }
+
+  clearCrosshairs() {
+    this._crosshairedDatapoints = new Set();
   }
 
   async shortDescription(): Promise<HighlightedSummary> {
