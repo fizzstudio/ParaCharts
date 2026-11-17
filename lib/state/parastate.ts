@@ -1638,10 +1638,12 @@ export class ParaState extends BaseState {
     return this._highlightedIntersections;
   }
 
-  highlightIntersection(series1Index: number, series2Index: number, intersectionIndex = 0) {
+  highlightIntersection(series1Key: string, series2Key: string, intersectionIndex = 0) {
     const series = this.model!.series;
-    const targetSeries1 = series[series1Index];
-    const targetSeries2 = series[series2Index];
+    const targetSeries1 = this.model!.atKey(series1Key)!;
+    const targetSeries2 = this.model!.atKey(series2Key)!;
+    const series1Index = series.findIndex(s => s.key == series1Key);
+    const series2Index = series.findIndex(s => s.key == series2Key);
     const targetIntersection = (this.model! as PlaneModel).intersections.filter(i =>
       i.series.includes(targetSeries1.key)
       && i.series.includes(targetSeries2.key))[intersectionIndex];
@@ -1656,7 +1658,8 @@ export class ParaState extends BaseState {
       intersectionIndex: intersectionIndex,
       intersection: targetIntersection,
       text: text,
-      id: `intersection-${this.model!.nextAnnotID()}`
+      id: `intersection-${this.model!.nextAnnotID()}`,
+      temporary: true
     }
     this.model?.addAnnotation(annot);
     this.refreshParaView();
@@ -1673,7 +1676,12 @@ export class ParaState extends BaseState {
     return this._highlightedClusters;
   }
 
-  clearIntersectionHighlight(series1Index: number, series2Index: number, intersectionIndex = 0) {
+  clearIntersectionHighlight(series1Key: string, series2Key: string, intersectionIndex = 0) {
+    const series = this.model!.series;
+    const targetSeries1 = this.model!.atKey(series1Key)!;
+    const targetSeries2 = this.model!.atKey(series2Key)!;
+    const series1Index = series.findIndex(s => s.key == series1Key);
+    const series2Index = series.findIndex(s => s.key == series2Key);
     const annot = this.model?.allIntersectionAnnotations.filter(a => a.series1Index == series1Index
       && a.series2Index == series2Index && a.intersectionIndex == intersectionIndex)[0];
     if (annot) {

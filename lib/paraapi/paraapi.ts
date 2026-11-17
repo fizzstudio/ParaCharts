@@ -459,8 +459,8 @@ export class ParaAPI {
   }
 
   /** Get an intersection between two or more series. */
-  getIntersection(series1Index: number, series2Index: number, intersectionIndex = 0): ParaAPIIntersection {
-    return new ParaAPIIntersection(series1Index, series2Index, intersectionIndex, this);
+  getIntersection(series1Key: string, series2Key: string, intersectionIndex = 0): ParaAPIIntersection {
+    return new ParaAPIIntersection(series1Key, series2Key, intersectionIndex, this);
   }
 
   // protected _labelToKey(seriesLabel: string): string {
@@ -703,13 +703,13 @@ export class ParaAPI {
   }
 
   /** Highlight an intersection between series. */
-  highlightIntersection(series1Index: number, series2Index: number, intersectionIndex = 0) {
-    this.getIntersection(series1Index, series2Index, intersectionIndex).highlight();
+  highlightIntersection(series1Key: string, series2Key: string, intersectionIndex = 0) {
+    this.getIntersection(series1Key, series2Key, intersectionIndex).highlight();
   }
 
   /** Clear any series intersection highlight. */
-  clearIntersectionHighlight(series1Index: number, series2Index: number, intersectionIndex = 0) {
-    this.getIntersection(series1Index, series2Index, intersectionIndex).clearHighlight();
+  clearIntersectionHighlight(series1Key: string, series2Key: string, intersectionIndex = 0) {
+    this.getIntersection(series1Key, series2Key, intersectionIndex).clearHighlight();
   }
 
   /** Clear all chart horizontal range highlights. */
@@ -967,12 +967,12 @@ export class ParaAPIRange {
  * Perform operations on an intersection between two or more series.
  */
 export class ParaAPIIntersection {
-  constructor(protected series1Index: number, protected series2Index: number, protected intersectionIndex = 0, protected _api: ParaAPI) {
+  constructor(protected series1Key: string, protected series2Key: string, protected intersectionIndex = 0, protected _api: ParaAPI) {
     if (!(this._api.paraChart.paraState.model instanceof PlaneModel)) {
       throw new Error('chart type does not support intersections');
     }
-    const targetSeries1 = this._api.paraChart.paraState.model!.series[series1Index];
-    const targetSeries2 = this._api.paraChart.paraState.model!.series[series2Index];
+    const targetSeries1 = this._api.paraChart.paraState.model!.atKey(series1Key)!;
+    const targetSeries2 = this._api.paraChart.paraState.model!.atKey(series2Key)!;
     const allSeriesIntersects = this._api.paraChart.paraState.model.intersections.filter(i =>
       i.series.includes(targetSeries1.key)
       && i.series.includes(targetSeries2.key));
@@ -990,12 +990,12 @@ export class ParaAPIIntersection {
 
   /** Highlight the intersection. */
   highlight() {
-    this._api.paraChart.paraState.highlightIntersection(this.series1Index, this.series2Index, this.intersectionIndex);
+    this._api.paraChart.paraState.highlightIntersection(this.series1Key, this.series2Key, this.intersectionIndex);
   }
 
   /** Clear any highlight. */
   clearHighlight() {
-    this._api.paraChart.paraState.clearIntersectionHighlight(this.series1Index, this.series2Index, this.intersectionIndex);
+    this._api.paraChart.paraState.clearIntersectionHighlight(this.series1Key, this.series2Key, this.intersectionIndex);
   }
 }
 
