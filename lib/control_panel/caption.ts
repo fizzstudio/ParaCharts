@@ -42,7 +42,7 @@ export class ParaCaptionBox extends ParaComponent {
         grid-column: 1 / 3
       }
       #exploration-bar {
-        background-color: var(--theme-color-light);
+        background-color: var(--fizz-theme-color-light);
         padding: 0.2rem;
         display: var(--exploration-bar-display);
         flex-direction: column;
@@ -54,7 +54,7 @@ export class ParaCaptionBox extends ParaComponent {
         align-self: flex-start;
       }
       #caption span.highlight {
-        background-color: var(--theme-color-light);
+        background-color: var(--fizz-theme-color-light);
       }
       #exploration-bar span.highlight {
         background-color: white;
