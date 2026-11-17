@@ -10,6 +10,9 @@ const localVennManifest3 = new URL('./local-venn-manifest-3.json', import.meta.u
 const meta = {
   title: "Demos",
   render: (args) => Chart(args),
+  args: {
+    config: { 'controlPanel.isControlPanelDefaultOpen': false },
+  },
 } satisfies Meta<ChartProps>;
 
 export default meta;
@@ -62,7 +65,8 @@ export const DemoChart7: Story = {
   args: {
     filename: 'manifests/autogen/bar-multi/bar-multi-manifest-48.json',
     config: {
-      'type.column.isDrawTotalLabels': false
+      'type.column.isDrawTotalLabels': false,
+      'controlPanel.isControlPanelDefaultOpen': false
     }
   }
 }
@@ -80,7 +84,8 @@ export const DemoChart9: Story = {
   args: {
     filename: "manifests/autogen/line-single/line-single-manifest-172.json",
     config: {
-      'type.line.isTrendNavigationModeEnabled': true
+      'type.line.isTrendNavigationModeEnabled': true,
+      'controlPanel.isControlPanelDefaultOpen': false
     },
   }
 }

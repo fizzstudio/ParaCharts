@@ -23,7 +23,7 @@ export const Chart = ({
   filename, config, forcecharttype, slot, legendOrder, description, manifestType
 }: ChartProps) => {
   config ??= {};
-  config['controlPanel.isControlPanelDefaultOpen'] = true;
+  config['controlPanel.isControlPanelDefaultOpen'] ??= true;
   return html`
     <style>
       /*
