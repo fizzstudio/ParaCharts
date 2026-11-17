@@ -157,7 +157,7 @@ export class DataTable extends ParaComponent {
       thead {
         position: sticky;
         top: 0;
-        background: var(--theme-color-light);
+        background: var(--fizz-theme-color-light);
       }
       .wrapper {
         overflow: scroll;
