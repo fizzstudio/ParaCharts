@@ -15,14 +15,15 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { Logger, getLogger } from '@fizz/logger';
-import { ChartType, Facet, Datapoint, clusterObject, Highlight, formatBox, ExtendedSummarizer, HighlightedSummary, extendedSummarizerFromModelAndLang } from '@fizz/chartsignal-internal';
+import { ChartType, Facet, Datapoint, clusterObject, Highlight, formatBox, ExtendedSummarizer, HighlightedSummary, extendedSummarizerFromModelAndLang, type Series } from '@fizz/chartsignal-internal';
 import { ConfigSetting, DeepReadonly, LegendConfig, PlaneDirection } from '../config/config_types';
 import { ConfigGroup, Direction, HorizDirection } from '../config/config_types';
 import { ParaView } from '../paraview/paraview';
 import { LegendItemsWithPosition, type LegendItem } from '../view/legend';
 import { AxisOrientation } from '../view/axis';
 import { NavMap, type NavNode, NavNodeType, DatapointNavNodeType, ChordNavNodeOptions } from '../view/layers/data/navigation';
-import { type ParaState, type SparkBrailleInfo, datapointIdToCursor, SettingsManager } from '../state';
+import { type ParaState, type SparkBrailleInfo, type SeriesPropertyManager, datapointIdToCursor, SettingsManager } from '../state';
+import { type ChartColorUse } from '../common/contrast';
 import { Sonifier } from '../audio/sonifier';
 
 
@@ -241,6 +242,38 @@ export abstract class BaseChartInfo {
 
   legend(): LegendItemsWithPosition[] {
     return [];
+  }
+
+  /**
+   * The data colors this chart actually draws, for contrast checking.
+   * Defaults to one palette color per series, including any combo series.
+   * Chart types that color by something else (slices, clusters, semantic
+   * colors) override this.
+   * @internal
+   */
+  colorsInUse(): ChartColorUse[] {
+    const uses: ChartColorUse[] = [];
+    const addSeries = (series: readonly Series[], props: SeriesPropertyManager) => {
+      for (const s of series) {
+        uses.push(this._paletteColorUse(props.properties(s.key).colorIndex, s.getLabel()));
+      }
+    };
+    addSeries(this._paraState.model?.series ?? [], this._paraState.seriesProperties);
+    if (this._paraState.comboModel) {
+      addSeries(this._paraState.comboModel.series, this._paraState.comboSeriesProperties);
+    }
+    return uses;
+  }
+
+  protected _paletteColorUse(index: number, label: string): ChartColorUse {
+    const colors = this._paraState.colors;
+    const color = colors.colorValueAt(index);
+    return {
+      color,
+      label,
+      paletteIndex: index,
+      colorName: colors.palette.colors.find(c => c.value === color)?.name,
+    };
   }
 
   shouldDrawTitle(): boolean {

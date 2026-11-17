@@ -590,6 +590,10 @@ export class ParaView extends ParaComponent implements ViewContext {
     this._storeChangeUnsub = this._paraState.subscribe(async (key, value) => {
       await this._documentView?.storeDidChange(key, value);
       await this._paraState.chartInfo?.storeDidChange(key, value);
+      if (key === 'clusterAnalyses') {
+        // Scatter points are recolored by cluster
+        this._colorPrefManager?.refreshContrastWarnings();
+      }
     });
     this.computeViewBox();
     // this._hotkeyActions ??= new NormalHotkeyActions(this);
@@ -619,6 +623,8 @@ export class ParaView extends ParaComponent implements ViewContext {
       this._paraState.chartInfo.setParaView(this);
       this._paraState.comboChartInfo?.setParaView(this);
       await this.createDocumentView();
+      // The chart's data colors are only known once the data and chart type are known
+      this._colorPrefManager?.refreshContrastWarnings();
       if (this.paraChart.headless) {
         await this.addJIMSeriesSummaries();
       }

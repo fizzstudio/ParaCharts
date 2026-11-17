@@ -4,7 +4,7 @@ import { ConfigSetting, type ColorPrefSource } from '../config/config_types';
 import { hexToOklch, formatOklch } from '../common/color_space';
 import {
   cssColorToHex, checkContrast,
-  type ContrastWarning, type ContrastRole,
+  type ContrastWarning, type ContrastRole, type ChartColorUse,
 } from '../common/contrast';
 
 // ---------------------------------------------------------------------------
@@ -269,6 +269,15 @@ export class ColorPrefManager extends PreferenceManager<StoredColorPrefs> {
     };
   }
 
+  /**
+   * Re-run the contrast check without re-resolving preferences. Call when the
+   * colors the chart draws may have changed: data loaded, chart type changed,
+   * clustering finished, palette changed.
+   */
+  refreshContrastWarnings(): void {
+    this._paraState.updateContrastWarnings(this._checkContrast());
+  }
+
   // -------------------------------------------------------------------------
   // Private — matchMedia setup
   // -------------------------------------------------------------------------
@@ -381,6 +390,14 @@ export class ColorPrefManager extends PreferenceManager<StoredColorPrefs> {
     const lvVertGridFn     = (_old: ConfigSetting, newVal: ConfigSetting) => { if (!this._programmaticUpdate) this.save({ lowVisionIsVertGridlines:  newVal as boolean }); };
     const lvAnimFn         = (_old: ConfigSetting, newVal: ConfigSetting) => { if (!this._programmaticUpdate) this.save({ lowVisionDisableAnimations: newVal as boolean }); };
     const lvFullscreenFn   = (_old: ConfigSetting, newVal: ConfigSetting) => { if (!this._programmaticUpdate) this.save({ lowVisionIsFullscreen:     newVal as boolean }); };
+
+    // These change which data colors are drawn, not the resolved preferences
+    const drawnColorsFn = () => this.refreshContrastWarnings();
+    const drawnColorPaths = ['color.colorPalette', 'color.colorVisionMode', 'type.bar.colorByDatapoint'];
+    for (const path of drawnColorPaths) {
+      this._paraState.observeSetting(path, drawnColorsFn);
+      this._settingObservers.push({ path, fn: drawnColorsFn });
+    }
 
     this._paraState.observeSetting('color.themeMode',                themeFn);
     this._paraState.observeSetting('color.contrastMode',             contrastFn);
@@ -576,25 +593,39 @@ export class ColorPrefManager extends PreferenceManager<StoredColorPrefs> {
       }
     }
 
-    // Check first 6 series palette colors separately to capture index + name.
-    const paletteColors = this._paraState.colors;
-    if (paletteColors) {
-      const paletteSize = Math.min(6, paletteColors.palette?.colors?.length ?? 0);
-      for (let i = 0; i < paletteSize; i++) {
-        const fgCss = paletteColors.colorValueAt(i);
-        const fgHex = cssColorToHex(fgCss);
-        if (!fgHex) continue;
+    // Check only the data colors the chart actually draws. Before a chart is
+    // loaded there are none; refreshContrastWarnings() re-runs this once it is.
+    // Several things may share one color (e.g. when the palette wraps), so group
+    // by color and check each once.
+    const colorUses = new Map<string, { fgCss: string; usedBy: string[]; colorName?: string }>();
+    let chartColors: ChartColorUse[] = [];
+    try {
+      chartColors = this._paraState.chartInfo?.colorsInUse() ?? [];
+    } catch (err) {
+      // Chart may be mid-load (e.g. series properties not yet reset); a throw
+      // here must not abort preference resolution in _resolve()
+      this._log.warn('Could not determine chart colors for contrast check', err);
+    }
+    for (const use of chartColors) {
+      const fgHex = cssColorToHex(use.color);
+      if (!fgHex) continue;
+      const entry = colorUses.get(fgHex);
+      if (entry) {
+        entry.usedBy.push(use.label);
+      } else {
+        colorUses.set(fgHex, { fgCss: use.color, usedBy: [use.label], colorName: use.colorName });
+      }
+    }
 
-        const result = checkContrast(fgHex, bgHex, 'non-text', 'spot');
-        if (!result.wcag.AA || !result.apca.pass) {
-          const seriesName = paletteColors.palette.colors[i]?.name;
-          warnings.push({ role: 'series', fg: fgHex, bg: bgHex, result, seriesIndex: i, seriesName });
-          this._log.warn(
-            `Contrast warning [series]: fg=${fgCss} bg=${bgRaw} ` +
-            `WCAG ${result.wcag.ratio.toFixed(2)}:1 (AA ${result.wcag.AA ? 'pass' : 'FAIL'}) ` +
-            `APCA Lc${result.apca.lc.toFixed(1)} (${result.apca.pass ? 'pass' : 'FAIL'})`
-          );
-        }
+    for (const [fgHex, { fgCss, usedBy, colorName }] of colorUses) {
+      const result = checkContrast(fgHex, bgHex, 'non-text', 'spot');
+      if (!result.wcag.AA || !result.apca.pass) {
+        warnings.push({ role: 'series', fg: fgHex, bg: bgHex, result, usedBy, colorName });
+        this._log.warn(
+          `Contrast warning [series]: fg=${fgCss} bg=${bgRaw} used by ${usedBy.join(', ')} ` +
+          `WCAG ${result.wcag.ratio.toFixed(2)}:1 (AA ${result.wcag.AA ? 'pass' : 'FAIL'}) ` +
+          `APCA Lc${result.apca.lc.toFixed(1)} (${result.apca.pass ? 'pass' : 'FAIL'})`
+        );
       }
     }
 

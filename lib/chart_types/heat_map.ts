@@ -4,6 +4,7 @@ import { SettingsManager, type ParaState } from '../state';
 import { LegendItemsWithPosition } from '../view/legend';
 import { LegendConfig } from '../config/config_types';
 import { populateNavMap } from '../navigation/nav_map_builder';
+import { type ChartColorUse } from '../common/contrast';
 
 export class HeatMapInfo extends PlaneChartInfo {
   protected _resolution!: number;
@@ -123,5 +124,11 @@ export class HeatMapInfo extends PlaneChartInfo {
       legendItems.push({ position: position, items: items });
     }
     return legendItems;
+  }
+
+  // All cells are shades of the first palette color, scaled by count
+  // (see HeatmapTileView.fillColor); check the base color
+  colorsInUse(): ChartColorUse[] {
+    return [this._paletteColorUse(0, 'heat map cells')];
   }
 }

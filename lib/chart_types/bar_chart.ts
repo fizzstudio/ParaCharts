@@ -16,13 +16,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { Logger, getLogger } from '@fizz/logger';
 
-import { ChartType, strToId, enumerate, Box, Series, formatBox, formatXYDatapoint, 
-  formatXYDatapointX } from '@fizz/chartsignal-internal';
+import { ChartType, strToId, enumerate, Box, Series, formatBox, formatXYDatapoint,
+  formatXYDatapointX, type PlaneDatapoint } from '@fizz/chartsignal-internal';
 import { PlaneChartInfo, computeAxisRange, AxisRangeInfo } from './plane_chart';
 import { datapointIdToCursor, type ParaState, queryMessages, describeAdjacentDatapoints, describeSelections, getDatapointMinMax, SettingsManager } from '../state';
 import { ConfigSetting, DeepReadonly, LegendConfig, TypeBarConfig } from '../config/config_types';
 import { type Label } from '../view/label';
 import { LegendItemsWithPosition } from '../view/legend';
+import { type ChartColorUse } from '../common/contrast';
 import { NavMap, type NavNode } from '../view/layers';
 import { populateNavMap } from '../navigation/nav_map_builder';
 
@@ -338,6 +339,22 @@ export class BarChartInfo extends PlaneChartInfo {
       legendItems.push({ position: position, items: items });
     }
     return legendItems;
+  }
+
+  // With colorByDatapoint, each bar takes the palette color of its datapoint index
+  // (see PlaneDatapointView.colorIndex)
+  colorsInUse(): ChartColorUse[] {
+    if (!this._paraState.config.type.bar.colorByDatapoint) {
+      return super.colorsInUse();
+    }
+    const model = this._paraState.model;
+    const count = Math.max(0, ...(model?.series ?? []).map(s => s.datapoints.length));
+    const uses: ChartColorUse[] = [];
+    for (let i = 0; i < count; i++) {
+      const dp = model!.series.find(s => s.datapoints[i])!.datapoints[i];
+      uses.push(this._paletteColorUse(i, formatXYDatapointX(dp as PlaneDatapoint, 'raw')));
+    }
+    return uses;
   }
 
   // TODO (@simonvarey): localize this text output by moving it to the summarizer. See #1427

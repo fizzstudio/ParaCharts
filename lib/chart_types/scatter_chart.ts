@@ -6,6 +6,7 @@ import { DataSymbols } from '../view/symbol';
 import { LegendItemsWithPosition } from '../view/legend';
 import { SettingsManager } from '../state';
 import { LegendConfig } from '../config/config_types';
+import { type ChartColorUse } from '../common/contrast';
 import { populateNavMap } from '../navigation/nav_map_builder';
 
 
@@ -143,5 +144,17 @@ export class ScatterChartInfo extends PointChartInfo {
       }
       return legendItems;
     }
+  }
+
+  // Once clustering is available, scatter points are colored by cluster, not series
+  // (see ScatterPointView._createSymbol)
+  colorsInUse(): ChartColorUse[] {
+    // clusterAnalyses is set just before _clustering, and its store notice is
+    // what triggers the re-check, so fall back to it
+    const clustering = this._clustering ?? this._paraState.clusterAnalyses;
+    if (!clustering) {
+      return super.colorsInUse();
+    }
+    return clustering.map((c, i) => this._paletteColorUse(i, `cluster ${i + 1}`));
   }
 }
