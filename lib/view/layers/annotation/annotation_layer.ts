@@ -350,7 +350,7 @@ export class AnnotationLayer extends PlotLayer {
     if (this.paraview.paraState.model!.allIntersectionAnnotations.length == 0) {
       return;
     }
-
+    this.group('intersections')!.clearChildren();
     for (let intersection of (this.paraview.paraState.model!.allIntersectionAnnotations)) {
       const chartInfo = this.paraview.paraState.chartInfo as PlaneChartInfo;
       const yRange = chartInfo.yRangeInfo!.interval.end - chartInfo.yRangeInfo!.interval.start;
@@ -371,6 +371,7 @@ export class AnnotationLayer extends PlotLayer {
       sym.y = y
       sym.scale = 3;
       sym.opacity = 0.5;
+      sym.colorIndex = 0;
       sym.fill = 'empty';
       this.group('intersections')?.append(sym);
       const planeChart = this.paraview.documentView?.chartLayers.dataLayer as PlanePlotView;
