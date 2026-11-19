@@ -186,21 +186,17 @@ export class ColorPrefsDialog extends SettingControlContainer {
       <div class="contrast-warnings" role="alert">
         <span class="warning-icon">${unsafeSVG(warningIcon)}</span> Low contrast against this background:
         <ul>
-          ${unique.map(w => {
-            const dataLabel = w.role === 'series'
-              ? this._paraState.model?.series[w.seriesIndex!]?.getLabel()
-              : undefined;
-            return html`
+          ${unique.map(w => html`
             <li>
               ${w.role === 'series' ? html`
                 <span class="series-label">
-                  <span class="color-swatch" style="background-color:${w.fg}"></span>${w.seriesIndex! + 1}${w.seriesName ? html` (${w.seriesName})` : ''}${dataLabel ? html`, ${dataLabel}` : ''}
+                  <span class="color-swatch" style="background-color:${w.fg}"></span>${w.usedBy?.join(', ')}${w.colorName ? html` (${w.colorName})` : ''}
                 </span>
               ` : ROLE_LABELS[w.role] ?? w.role}:
               WCAG ${w.result.wcag.ratio.toFixed(1)}:1
               ${w.result.wcag.AA ? '' : html`<em>(AA fail)</em>`}
             </li>
-          `; })}
+          `)}
         </ul>
       </div>
     `;

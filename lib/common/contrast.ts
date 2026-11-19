@@ -25,13 +25,25 @@ export interface ContrastResult {
 
 export type ContrastRole = 'label' | 'axis' | 'gridline' | 'series' | 'visited';
 
+/**
+ * A data color a chart actually draws, as reported by the chart type.
+ * One entry per thing drawn (series, slice, cluster, etc.); several entries
+ * may share a color when the palette wraps.
+ */
+export interface ChartColorUse {
+  color: string;          // CSS color value as rendered
+  label: string;          // what the color is drawn for, e.g. a series label
+  paletteIndex?: number;  // set when the color comes from the current palette
+  colorName?: string;     // palette color name, if any
+}
+
 export interface ContrastWarning {
   role: ContrastRole;
   fg: string;         // #rrggbb
   bg: string;         // #rrggbb
   result: ContrastResult;
-  seriesIndex?: number;  // set when role === 'series'
-  seriesName?: string;   // set when role === 'series' (palette color name)
+  usedBy?: string[];  // set when role === 'series': labels of everything drawn in this color
+  colorName?: string; // set when role === 'series' and the color is named
 }
 
 // ---------------------------------------------------------------------------

@@ -58,6 +58,13 @@ export class ParaControlPanel extends ParaComponent {
   protected _dialogRef = createRef<ParaDialog>();
   protected _annotationDialogRef = createRef<AnnotationDialog>();
   protected _msgDialogRef = createRef<MessageDialog>();
+  // TEMP FIX (contrast badge): FizzTabs builds its tab buttons and absorbs its
+  // panels lazily, on first open, and announces completion with a 'ready' event.
+  // Its own _ready flag is protected, so track readiness here. Resolved in the
+  // @ready handler on <fizz-tabs> in render(). See
+  // _ignore/ai/claude/contrast-badge-open-report.md.
+  protected _tabsReadyResolver!: () => void;
+  protected _tabsReady = new Promise<void>(resolve => this._tabsReadyResolver = resolve);
 
   static styles = [
     //styles,
@@ -299,14 +306,23 @@ export class ParaControlPanel extends ParaComponent {
   }
 
   async openColorPrefsViaAlert() {
+    const tabs = this._tabsRef.value!;
     if (!this._panelOpen) {
-      const tabs = this._tabsRef.value!;
       tabs.open = true;
       tabs.dispatchEvent(new CustomEvent('open', { bubbles: true, composed: true }));
       await this.updateComplete;
     }
-    this._tabsRef.value!.selectedTab = 2;
-    await this.updateComplete;
+    // TEMP FIX (contrast badge): this.updateComplete only covers the control
+    // panel. On first open, FizzTabs needs more render passes before its tab
+    // buttons exist; setting selectedTab before then throws in its setter
+    // (_tabRefs[i].value.focus()). Wait for 'ready', then for the tabs to render.
+    await this._tabsReady;
+    await tabs.updateComplete;
+    tabs.selectedTab = 2;
+    // TEMP FIX (contrast badge): when the panel is closed, FizzTabs doesn't render
+    // the sections holding the absorbed panel content, so the dialog is detached.
+    // Wait for the tabs (not just this element) to render it before showing it.
+    await tabs.updateComplete;
     this._colorsPanelRef.value!.showColorPrefsDialog();
   }
 
@@ -402,7 +418,13 @@ export class ParaControlPanel extends ParaComponent {
             }
           }
           @invalidvalue=${(e: CustomEvent) => this._msgDialogRef.value!.show(e.detail)}
-          @ready=${() => {
+          @ready=${(e: Event) => {
+            // TEMP FIX (contrast badge): mark the tabs ready for
+            // openColorPrefsViaAlert(). 'ready' bubbles, so ignore any that
+            // come from descendants rather than <fizz-tabs> itself.
+            if (e.target === this._tabsRef.value) {
+              this._tabsReadyResolver();
+            }
             // this.log.info('fizz-tab-details ready; focusing data layer');
             // if (this.todo.canvas.documentView) {
             //   this.todo.canvas.documentView.chartLayers.dataLayer.focus();

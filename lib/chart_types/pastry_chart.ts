@@ -20,6 +20,7 @@ import { type ParaState, datapointIdToCursor, queryMessages, describeSelections,
 import { HorizDirection, LegendConfig } from '../config/config_types';
 import { type NavNode } from '../view/layers/data/navigation'
 import { LegendItemsWithPosition } from '../view/legend';
+import { type ChartColorUse } from '../common/contrast';
 import { populateNavMap } from '../navigation/nav_map_builder';
 
 
@@ -59,6 +60,13 @@ export class PastryChartInfo extends BaseChartInfo {
       legendItems.push({ position: position, items: items });
     }
     return legendItems;
+  }
+
+  // One palette color per slice
+  colorsInUse(): ChartColorUse[] {
+    const series = this._paraState.model?.series[0];
+    return (series?.datapoints ?? []).map((dp, i) => this._paletteColorUse(i,
+      formatBox(dp.facetBox('x')!, this._paraState.getFormatType('pieSliceLabel'))));
   }
 
   shouldDrawTitle(): boolean {

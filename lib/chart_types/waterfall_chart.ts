@@ -21,6 +21,7 @@ import { NavNode } from '../view/layers';
 import { PlaneChartInfo, SONI_RIFF_SPEEDS, computeAxisRange, AxisRangeInfo } from './plane_chart';
 import { loopParaviewRefresh } from '../common';
 import { SoniPoint } from '../audio/soni_point';
+import { type ChartColorUse } from '../common/contrast';
 import { populateNavMap } from '../navigation/nav_map_builder';
 
 export class WaterfallChartInfo extends PlaneChartInfo {
@@ -80,6 +81,26 @@ export class WaterfallChartInfo extends PlaneChartInfo {
   }
 
   navCursorDidChange(cursor: NavNode): void {
+  }
+
+  // Waterfall bars use the semantic palette, not the current one
+  // (see WaterfallBarView._updateStyleInfo)
+  colorsInUse(): ChartColorUse[] {
+    const colors = this._paraState.colors;
+    const pal = colors.palettes[colors.indexOfPalette('semantic')];
+    const datapoints = this._paraState.model?.series[0].datapoints ?? [];
+    const middle = datapoints.slice(1, -1);
+    const uses: ChartColorUse[] = [];
+    if (middle.some(dp => dp.facetValueAsNumber('y')! >= 0)) {
+      uses.push({ color: pal.colors[0].value, label: 'increases', colorName: pal.colors[0].name });
+    }
+    if (middle.some(dp => dp.facetValueAsNumber('y')! < 0)) {
+      uses.push({ color: pal.colors[1].value, label: 'decreases', colorName: pal.colors[1].name });
+    }
+    if (datapoints.length) {
+      uses.push({ color: pal.colors[2].value, label: 'start and total', colorName: pal.colors[2].name });
+    }
+    return uses;
   }
 
   // async navRunDidEnd(cursor: NavNode) {
