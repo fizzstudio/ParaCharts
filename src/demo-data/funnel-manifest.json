@@ -1,0 +1,75 @@
+{
+  "jim": {
+    "datasets": [
+      {
+        "representation": {
+          "type": "chart",
+          "subtype": "funnel"
+        },
+        "title": "Sales Pipeline",
+        "facets": {
+          "x": {
+            "label": "Amount",
+            "variableType": "dependent",
+            "measure": "ratio",
+            "datatype": "number",
+            "displayType": {
+              "type": "axis"
+            }
+          },
+          "y": {
+            "label": "Stage",
+            "variableType": "independent",
+            "measure": "nominal",
+            "datatype": "string",
+            "displayType": {
+              "type": "axis"
+            }
+          }
+        },
+        "topic": {
+          "baseQuantity": "sales prospect",
+          "baseKind": "number"
+        },
+        "series": [
+          {
+            "key": "Amount",
+            "topic": {
+              "baseQuantity": "sales prospect",
+              "baseKind": "number"
+            },
+            "records": [
+              {
+                "x": "500",
+                "y": "Prospects"
+              },
+              {
+                "x": "425",
+                "y": "Qualified Prospects"
+              },
+              {
+                "x": "200",
+                "y": "Needs Analysis"
+              },
+              {
+                "x": "150",
+                "y": "Price Quotes"
+              },
+              {
+                "x": "100",
+                "y": "Negotiations"
+              },
+              {
+                "x": "90",
+                "y": "Closed Sales"
+              }
+            ]
+          }
+        ],
+        "source": {
+          "url": "https://support.microsoft.com/en-us/excel/create-a-funnel-chart-based-on-excel-data"
+        }
+      }
+    ]
+  }
+}
