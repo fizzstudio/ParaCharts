@@ -1,6 +1,6 @@
 //import { styles } from '../../styles';
 import { ControlPanelTabPanel } from './tab_panel';
-import { SoniSettingsDialog } from '../dialogs';
+import { SoniSettingsDialog, CaptionsDialog } from '../dialogs';
 import '../dialogs';
 
 import {
@@ -13,6 +13,8 @@ import { ref, createRef } from 'lit/directives/ref.js';
 export class AudioPanel extends ControlPanelTabPanel {
 
   protected _soniDialogRef = createRef<SoniSettingsDialog>();
+  // CAPTIONS DIALOG
+  protected _captionsDialogRef = createRef<CaptionsDialog>();
 
   static styles = [
     ...ControlPanelTabPanel.styles,
@@ -43,8 +45,8 @@ export class AudioPanel extends ControlPanelTabPanel {
     this._paraState.settingControls.insert('sonification.isSonificationEnabled');
     this._paraState.settingControls.insert('ui.isTourGuideEnabled');
     this._paraState.settingControls.insert('ui.isTourGuidePaused');
-    // WORD HIGHLIGHT: toggle for the per-word Tour Guide highlight
-    this._paraState.settingControls.insert('ui.isTourGuideWordHighlightEnabled');
+    // CAPTIONS DIALOG: the per-word highlight checkbox that was inserted here
+    // moved into the Captions dialog (CaptionsDialog.connectedCallback)
   }
 
   render() {
@@ -55,6 +57,12 @@ export class AudioPanel extends ControlPanelTabPanel {
         </section>
         <section id="narrative">
           ${this._paraState.settingControls.getContent('controlPanel.tabs.audio.narrative')}
+          <!-- CAPTIONS DIALOG: replaces the "highlight each word" checkbox -->
+          <button
+            @click=${() => this._captionsDialogRef.value?.show()}
+          >
+            ${this._globalState.l10n.localize('cpanel.tabs.audio.captions')}
+          </button>
         </section>
         <section id="sonification">
           ${this._paraState.settingControls.getContent('controlPanel.tabs.audio.sonification')}
@@ -70,6 +78,12 @@ export class AudioPanel extends ControlPanelTabPanel {
         id="sonification-settings-dialog"
         .globalState=${this._globalState}
       ></para-soni-settings-dialog>
+      <!-- CAPTIONS DIALOG -->
+      <para-captions-dialog
+        ${ref(this._captionsDialogRef)}
+        id="captions-dialog"
+        .globalState=${this._globalState}
+      ></para-captions-dialog>
     `;
   }
 

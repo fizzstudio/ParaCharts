@@ -33,6 +33,18 @@
                     "tour_guide": "tour guide",
                     "pause_tour_guide": "play/pause tour guide",
                     "tour_guide_word_highlight": "highlight each word",
+                    "captions": "captions",
+                    "captions_dialog": {
+                        "title": "Caption Settings",
+                        "phrase_highlight_color": "phrase highlight color",
+                        "word_highlight_color": "word highlight color",
+                        "font_family": "font family",
+                        "font_size": "font size",
+                        "letter_spacing": "letter spacing",
+                        "word_spacing": "word spacing",
+                        "line_spacing": "line spacing",
+                        "reset": "reset to defaults"
+                    },
                     "speech_rate": "speech rate",
                     "announce_screen_reader": "announce to screen reader",
                     "soni_dialog": {

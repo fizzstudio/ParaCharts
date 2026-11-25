@@ -13,6 +13,22 @@ import { type WordHighlight } from '../components/aria_live/voicing';
 
 type HoverListener = (event: PointerEvent) => void;
 
+/**
+ * CAPTIONS DIALOG: CSS font stacks for the caption font family options
+ * (controlPanel.caption.fontFamily). Used by ParaChart to set
+ * --caption-font-family.
+ */
+export const CAPTION_FONT_STACKS: Record<string, string> = {
+  'Atkinson Hyperlegible': '"Atkinson Hyperlegible", sans-serif',
+  'Arial': 'Arial, Helvetica, sans-serif',
+  'Helvetica': 'Helvetica, Arial, sans-serif',
+  'Verdana': 'Verdana, sans-serif',
+  'Calibri': 'Calibri, Carlito, sans-serif',
+  'Courier': '"Courier New", Courier, monospace',
+  'Georgia': 'Georgia, serif',
+  'Comic Sans': '"Comic Sans MS", "Comic Sans", "Comic Neue", cursive',
+};
+
 @customElement('para-caption-box')
 export class ParaCaptionBox extends ParaComponent {
   private log: Logger = getLogger("ParaCaptionBox");
@@ -45,6 +61,17 @@ export class ParaCaptionBox extends ParaComponent {
       #caption {
         padding: 0.25rem;
       }
+      /* CAPTIONS DIALOG: caption typography. The --caption-* properties are
+         set on para-chart's :host by ParaChart (from controlPanel.caption.*),
+         deferring to page CSS --paracharts-caption-* while a setting is at
+         its default. */
+      #caption, #exploration-bar-text {
+        font-family: var(--caption-font-family);
+        font-size: var(--caption-font-size);
+        letter-spacing: var(--caption-letter-spacing);
+        word-spacing: var(--caption-word-spacing);
+        line-height: var(--caption-line-height);
+      }
       #caption.solo {
         grid-column: 1 / 3
       }
@@ -61,7 +88,8 @@ export class ParaCaptionBox extends ParaComponent {
         align-self: flex-start;
       }
       #caption span.highlight {
-        background-color: var(--fizz-theme-color-light);
+        /* CAPTIONS DIALOG: was var(--fizz-theme-color-light); now configurable */
+        background-color: var(--caption-phrase-highlight-color, var(--fizz-theme-color-light));
       }
       #exploration-bar span.highlight {
         background-color: white;
@@ -71,19 +99,15 @@ export class ParaCaptionBox extends ParaComponent {
         display: none;
       }
       /* WORD HIGHLIGHT: per-word Tour Guide mark, drawn with the CSS Custom
-         Highlight API. Override from page CSS by setting
-         --paracharts-tour-word-highlight-background / -color on para-chart or
-         an ancestor (when the caption is externalized it is moved outside
-         para-chart, so set them on a shared ancestor such as body).
-         ::highlight() supports only color, background-color, text-decoration,
-         text-shadow and a few others. */
-      :host {
-        --tour-word-highlight-background: var(--paracharts-tour-word-highlight-background, var(--fizz-theme-color, navy));
-        --tour-word-highlight-color: var(--paracharts-tour-word-highlight-color, white);
-      }
+         Highlight API. ::highlight() supports only color, background-color,
+         text-decoration, text-shadow and a few others.
+         CAPTIONS DIALOG: colors now come from --caption-word-highlight-color
+         and --caption-word-highlight-text-color, set by ParaChart (page CSS:
+         --paracharts-caption-word-highlight-color / -text-color). This
+         replaces the earlier --paracharts-tour-word-highlight-* names. */
       ::highlight(para-tour-word) {
-        background-color: var(--tour-word-highlight-background);
-        color: var(--tour-word-highlight-color);
+        background-color: var(--caption-word-highlight-color, var(--fizz-theme-color, navy));
+        color: var(--caption-word-highlight-text-color, white);
       }
     `
   ];

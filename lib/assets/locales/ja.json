@@ -28,6 +28,18 @@
                     "tour_guide": "ツアーガイド",
                     "pause_tour_guide": "ツアーガイドを再生/一時停止",
                     "tour_guide_word_highlight": "単語ごとにハイライト",
+                    "captions": "キャプション",
+                    "captions_dialog": {
+                        "title": "キャプション設定",
+                        "phrase_highlight_color": "フレーズのハイライト色",
+                        "word_highlight_color": "単語のハイライト色",
+                        "font_family": "フォント",
+                        "font_size": "文字サイズ",
+                        "letter_spacing": "文字間隔",
+                        "word_spacing": "単語間隔",
+                        "line_spacing": "行間",
+                        "reset": "既定値に戻す"
+                    },
                     "speech_rate": "発声速度",
                     "announce_screen_reader": "スクリーンリーダーに発表"
                 },

@@ -40,6 +40,9 @@ import '../paraview';
 import '../components/data_table';
 import '../control_panel';
 import '../control_panel/caption';
+// CAPTIONS DIALOG: font stacks and defaults for the caption --caption-* properties
+import { CAPTION_FONT_STACKS } from '../control_panel/caption';
+import { defaultConfig } from '../config/config_defaults';
 import { SlotLoader } from '../loader/slotloader';
 import { TourBus } from './tour_bus';
 import hyperFont from '../assets/Atkinson-Hyperlegible-Regular-102a.woff2';
@@ -300,6 +303,22 @@ export class ParaChart extends ParaComponent {
       ...this.shadowRoot!.adoptedStyleSheets,
       this._styleManager.stylesheet
     ];
+    // CAPTIONS DIALOG: caption typography and highlight colors. While a
+    // setting is at its default, the property defers to page CSS
+    // (--paracharts-caption-<name>) and then to the built-in default; once the
+    // user (Captions dialog) or config changes it, the setting wins over page
+    // CSS. NB: choosing the default value again hands control back to CSS.
+    const captionConfig = () => this._paraState.config.controlPanel.caption;
+    const captionDefaults = defaultConfig.controlPanel.caption;
+    const captionVar = <K extends keyof typeof captionDefaults>(
+      key: K, name: string, cssDefault: string,
+      format: (value: (typeof captionDefaults)[K]) => string = value => `${value}`
+    ) => () => {
+      const value = captionConfig()[key];
+      return value === captionDefaults[key]
+        ? `var(--paracharts-caption-${name}, ${cssDefault})`
+        : format(value);
+    };
     const hostDeclarations: Record<string, StyleManagerDeclarationValue> = {
       '--background-color': 'white',
       '--fizz-theme-color': 'var(--paracharts-theme-color, navy)',
@@ -336,6 +355,19 @@ export class ParaChart extends ParaComponent {
       '--bar-label-font-size': () => this._paraState.config.type.bar.labelFontSize,
       '--column-label-font-size': () => this._paraState.config.type.column.labelFontSize,
       '--waterfall-label-font-size': () => this._paraState.config.type.waterfall.labelFontSize,
+      // CAPTIONS DIALOG: consumed by ParaCaptionBox styles (caption.ts)
+      '--caption-font-family': captionVar('fontFamily', 'font-family',
+        CAPTION_FONT_STACKS['Atkinson Hyperlegible'],
+        value => CAPTION_FONT_STACKS[value] ?? `"${value}", sans-serif`),
+      '--caption-font-size': captionVar('fontSize', 'font-size', '1em', value => `${value}em`),
+      '--caption-letter-spacing': captionVar('letterSpacing', 'letter-spacing', 'normal', value => `${value}em`),
+      '--caption-word-spacing': captionVar('wordSpacing', 'word-spacing', 'normal', value => `${value}em`),
+      '--caption-line-height': captionVar('lineHeight', 'line-height', 'normal'),
+      '--caption-phrase-highlight-color': captionVar('phraseHighlightColor', 'phrase-highlight-color',
+        'var(--fizz-theme-color-light)'),
+      '--caption-word-highlight-color': captionVar('wordHighlightColor', 'word-highlight-color',
+        'var(--fizz-theme-color)'),
+      '--caption-word-highlight-text-color': 'var(--paracharts-caption-word-highlight-text-color, white)',
       'display': 'block',
       'font-family': '"Trebuchet MS", Helvetica, sans-serif',
       'font-size': 'var(--chart-view-font-size, 1rem)'

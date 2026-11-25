@@ -42,7 +42,7 @@
             "control": "checkbox",
             "advanced": false,
             "panel": "audio",
-            "parentView": "controlPanel.tabs.audio.narrative",
+            "parentView": "controlPanel.tabs.audio.captions.dialog",
             "keywords": ["audio", "tourguide", "highlight"]
         },
         "isAnnouncementEnabled": {

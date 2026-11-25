@@ -578,6 +578,20 @@ export interface ControlpanelCaptionConfig extends ConfigGroup {
   hasBorder: boolean;
   /** Place exploration bar beside caption instead of below */
   isExplorationBarBeside: boolean;
+  /** Caption font family; at the default, page CSS --paracharts-caption-font-family applies */
+  fontFamily: string;
+  /** Caption font size, in em; at the default, page CSS --paracharts-caption-font-size applies */
+  fontSize: number;
+  /** Caption letter spacing, in em; at the default, page CSS --paracharts-caption-letter-spacing applies */
+  letterSpacing: number;
+  /** Caption word spacing, in em; at the default, page CSS --paracharts-caption-word-spacing applies */
+  wordSpacing: number;
+  /** Caption line spacing (unitless line height); at the default, page CSS --paracharts-caption-line-height applies */
+  lineHeight: number;
+  /** Tour Guide phrase highlight color; empty means page CSS --paracharts-caption-phrase-highlight-color, else the light theme color */
+  phraseHighlightColor: string;
+  /** Tour Guide word highlight color; empty means page CSS --paracharts-caption-word-highlight-color, else the theme color */
+  wordHighlightColor: string;
 }
 /**
  * Generated chart description settings.
