@@ -32,6 +32,7 @@
                     "self_voicing": "self-voicing",
                     "tour_guide": "tour guide",
                     "pause_tour_guide": "play/pause tour guide",
+                    "tour_guide_word_highlight": "highlight each word",
                     "speech_rate": "speech rate",
                     "announce_screen_reader": "announce to screen reader",
                     "soni_dialog": {

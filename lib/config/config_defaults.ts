@@ -439,6 +439,7 @@ export const defaultConfig: Config = {
       isVoicingEnabled: false,
       isTourGuideEnabled: false,
       isTourGuidePaused: false,
+      isTourGuideWordHighlightEnabled: true,
       isAnnouncementEnabled: true,
       speechRate: 1,
       liveUpdateDelay: 1,

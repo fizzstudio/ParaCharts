@@ -2,6 +2,15 @@ import { Highlight } from '@fizz/chartsignal-internal';
 import { Logger, getLogger } from '@fizz/logger';
 import { ParaState } from '../../state';
 
+// WORD HIGHLIGHT: payload of the 'wordStart' notice. `offset` is relative to
+// the phrase's own text (not the whole message), so it can be applied inside
+// the matching caption span regardless of any text between spans.
+export interface WordHighlight {
+  phrasecode: string;
+  offset: number;
+  length: number;
+}
+
 export class Voicing {
   protected _voice: SpeechSynthesis | null = null;
   protected _lang: string = 'en-US';
@@ -31,6 +40,10 @@ export class Voicing {
   speak(msg: string, highlights: Highlight[]): Promise<void> {
     if (this._voice) {
       this.shutUp();
+      // WORD HIGHLIGHT: landmarkStart is now posted only when the phrase index
+      // changes, so reset it; otherwise a new message starting on the same
+      // index as the last one would never post its first landmarkStart
+      this._highlightIndex = null;
 
       this.speakText(msg);
       this._speakingCount++;
@@ -44,13 +57,28 @@ export class Voicing {
           this._highlightIndex = null;
           return;
         }
-        this._highlightIndex = highlightIndex;
-        const highlight = highlights[this._highlightIndex];
-        this._paraState.postNotice('landmarkStart', highlight);
+        const highlight = highlights[highlightIndex];
+        // WORD HIGHLIGHT: boundaries now fire per word, so only post
+        // landmarkStart when the phrase changes. Previously it was re-posted on
+        // every boundary, re-running the phrase's ParaAPI action for each word.
+        if (highlightIndex !== this._highlightIndex) {
+          this._highlightIndex = highlightIndex;
+          this._paraState.postNotice('landmarkStart', highlight);
+        }
+        // WORD HIGHLIGHT: post the word being spoken, relative to its phrase
+        if (event.name === 'word') {
+          this._paraState.postNotice('wordStart', {
+            phrasecode: highlight.phrasecode,
+            offset: event.charIndex - highlight.start,
+            length: this._wordLength(msg, event),
+          } satisfies WordHighlight);
+        }
       };
 
       const prom = new Promise<void>((resolve, reject) => {
         this._utterance!.onend = (event: SpeechSynthesisEvent) => {
+          // WORD HIGHLIGHT: clear the word mark when speech finishes
+          this._paraState.postNotice('wordEnd', null);
           this._paraState.postNotice('landmarkEnd', null);
           this._speakingCount--;
           resolve();
@@ -70,6 +98,35 @@ export class Voicing {
     this._utterance.pitch = this._pitch;
     this._utterance.volume = this._volume;
     this._voice!.speak(this._utterance);
+  }
+
+  /**
+   * WORD HIGHLIGHT: speak a single phrase, posting 'wordStart' for each word.
+   * Used by manual phrase navigation (ParaCaptionBox.highlightSpan). Unlike
+   * speak(), this posts no landmark notices (the caller does that) and doesn't
+   * change _speakingCount, matching the speakText() call it replaces.
+   */
+  speakPhrase(text: string, highlight: Highlight) {
+    this.speakText(text);
+    this._utterance!.onboundary = (event: SpeechSynthesisEvent) => {
+      if (event.name !== 'word') return;
+      this._paraState.postNotice('wordStart', {
+        phrasecode: highlight.phrasecode,
+        // text is the phrase itself, so charIndex is already phrase-relative
+        offset: event.charIndex,
+        length: this._wordLength(text, event),
+      } satisfies WordHighlight);
+    };
+    this._utterance!.onend = () => this._paraState.postNotice('wordEnd', null);
+  }
+
+  // WORD HIGHLIGHT: charLength isn't supplied by every engine (Safari and
+  // Firefox are unreliable), and its meaning varies (MDN describes it as the
+  // characters *left to be spoken*). Use the run of non-space characters at
+  // charIndex, narrowed by charLength when the engine gives a smaller value.
+  protected _wordLength(text: string, event: SpeechSynthesisEvent): number {
+    const runLength = text.slice(event.charIndex).match(/^\S+/)?.[0].length ?? 0;
+    return event.charLength ? Math.min(event.charLength, runLength) : runLength;
   }
 
   pause() {
@@ -96,6 +153,9 @@ export class Voicing {
     if (this._voice && this._voice.speaking) {
       this._voice.cancel();
       this._highlightIndex = null;
+      // WORD HIGHLIGHT: some engines don't fire 'end' on cancel(), so clear
+      // the word mark explicitly
+      this._paraState.postNotice('wordEnd', null);
     }
   }
 

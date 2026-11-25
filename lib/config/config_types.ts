@@ -1128,6 +1128,8 @@ export interface UiConfig extends ConfigGroup {
   isTourGuideEnabled: boolean;
   /** Pause Tour Guide */
   isTourGuidePaused: boolean;
+  /** Highlight each word in the caption as the Tour Guide speaks it */
+  isTourGuideWordHighlightEnabled: boolean;
   /** Enable aria-live announcements */
   isAnnouncementEnabled: boolean;
   /** Self-voicing speech rate. Range: 0.5 to 2 */

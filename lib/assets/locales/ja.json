@@ -27,6 +27,7 @@
                     "self_voicing": "自己発声",
                     "tour_guide": "ツアーガイド",
                     "pause_tour_guide": "ツアーガイドを再生/一時停止",
+                    "tour_guide_word_highlight": "単語ごとにハイライト",
                     "speech_rate": "発声速度",
                     "announce_screen_reader": "スクリーンリーダーに発表"
                 },

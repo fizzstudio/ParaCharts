@@ -43,6 +43,8 @@ export class AudioPanel extends ControlPanelTabPanel {
     this._paraState.settingControls.insert('sonification.isSonificationEnabled');
     this._paraState.settingControls.insert('ui.isTourGuideEnabled');
     this._paraState.settingControls.insert('ui.isTourGuidePaused');
+    // WORD HIGHLIGHT: toggle for the per-word Tour Guide highlight
+    this._paraState.settingControls.insert('ui.isTourGuideWordHighlightEnabled');
   }
 
   render() {
