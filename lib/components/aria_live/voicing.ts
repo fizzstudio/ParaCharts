@@ -70,7 +70,9 @@ export class Voicing {
           this._paraState.postNotice('wordStart', {
             phrasecode: highlight.phrasecode,
             offset: event.charIndex - highlight.start,
-            length: this._wordLength(msg, event),
+            // Cap at the phrase end: msg holds the whole message, and a merged
+            // token (e.g. "2005 to 2018") must not run into the next phrase
+            length: this._wordLength(msg, event, highlight.end - event.charIndex),
           } satisfies WordHighlight);
         }
       };
@@ -114,19 +116,49 @@ export class Voicing {
         phrasecode: highlight.phrasecode,
         // text is the phrase itself, so charIndex is already phrase-relative
         offset: event.charIndex,
-        length: this._wordLength(text, event),
+        // text is a single phrase, so its end is the phrase end
+        length: this._wordLength(text, event, text.length - event.charIndex),
       } satisfies WordHighlight);
     };
     this._utterance!.onend = () => this._paraState.postNotice('wordEnd', null);
   }
 
-  // WORD HIGHLIGHT: charLength isn't supplied by every engine (Safari and
-  // Firefox are unreliable), and its meaning varies (MDN describes it as the
-  // characters *left to be spoken*). Use the run of non-space characters at
-  // charIndex, narrowed by charLength when the engine gives a smaller value.
-  protected _wordLength(text: string, event: SpeechSynthesisEvent): number {
+  /**
+   * WORD HIGHLIGHT: length, in characters of `text`, of the token a 'word'
+   * boundary event refers to, capped at `maxLength` (the characters left in
+   * the current phrase) so the mark never spills into the next phrase.
+   *
+   * A "token" is not always one word. Speech engines normalize text before
+   * speaking it, and can treat several words as one unit. Example, observed in
+   * Chrome on macOS for "over time from 2005 to 2018.":
+   *
+   *   word 10 4  "from"
+   *   word 15 12 "2005 to 2018"   <- one event for the whole year range
+   *   word 27 1  "."
+   *
+   * There is no event for "to" or "2018", so the range must be highlighted as
+   * a single unit while it is spoken (which matches what the listener hears).
+   * An earlier version clamped every token to the first run of non-space
+   * characters, which marked only "2005" and then nothing until the next phrase.
+   *
+   * So `charLength` is trusted as the token length when it is plausible:
+   * - Engines that report the real token length (Chrome, per the log above):
+   *   use it.
+   * - MDN describes charLength as the characters *left to be spoken*, and some
+   *   engines may report it that way. That value equals the rest of the
+   *   utterance (`text.length - charIndex`), so when charLength reaches the end
+   *   of `text`, it is ignored. (For the last word of an utterance both readings
+   *   give the same answer, so nothing is lost.)
+   * - Engines that omit charLength or report 0 (Safari and Firefox are
+   *   unreliable): fall back to the run of non-space characters at charIndex.
+   *   A merged token like the range above can't be detected this way; only its
+   *   first word is marked.
+   */
+  protected _wordLength(text: string, event: SpeechSynthesisEvent, maxLength: number): number {
     const runLength = text.slice(event.charIndex).match(/^\S+/)?.[0].length ?? 0;
-    return event.charLength ? Math.min(event.charLength, runLength) : runLength;
+    const remaining = text.length - event.charIndex;
+    const isTokenLength = !!event.charLength && event.charLength < remaining;
+    return Math.max(0, Math.min(isTokenLength ? event.charLength : runLength, maxLength));
   }
 
   pause() {
