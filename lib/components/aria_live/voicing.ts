@@ -1,6 +1,8 @@
 import { Highlight } from '@fizz/chartsignal-internal';
 import { Logger, getLogger } from '@fizz/logger';
 import { ParaState } from '../../state';
+// VOICE SELECTION
+import { resolveVoice, voiceInventory, type VoiceResolution } from './voices';
 
 // WORD HIGHLIGHT: payload of the 'wordStart' notice. `offset` is relative to
 // the phrase's own text (not the whole message), so it can be applied inside
@@ -20,6 +22,9 @@ export class Voicing {
   protected _utterance: SpeechSynthesisUtterance | null = null;
   protected _highlightIndex: number | null = null;
   protected _speakingCount = 0;
+  // VOICE SELECTION (preview start/stop): called once when the current preview
+  // ends for any reason (finished, stopped, or replaced by other speech)
+  protected _onPreviewEnd: (() => void) | null = null;
   private log: Logger = getLogger("Voicing");
 
   constructor(protected _paraState: ParaState) {
@@ -27,6 +32,10 @@ export class Voicing {
     if (!this._voice) {
       this.log.warn('Speech Synthesis unsupported');
     }
+    // VOICE SELECTION: start voice discovery now, so the (often asynchronous)
+    // voice list is likely ready by the first utterance
+    // (reading .voices registers the single page-wide listener; see voices.ts)
+    void voiceInventory.voices;
   }
 
   get highlightIndex(): number | null {
@@ -45,7 +54,12 @@ export class Voicing {
       // index as the last one would never post its first landmarkStart
       this._highlightIndex = null;
 
-      this.speakText(msg);
+      // VOICE SELECTION: speakText() refuses to speak when only an implicit
+      // remote voice is available; don't count it as speaking or wait on an
+      // 'end' event that will never fire
+      if (!this.speakText(msg)) {
+        return Promise.resolve();
+      }
       this._speakingCount++;
       // Get the index of the highlight containing the word
       const getHighlightIndex = (wordIndex: number) =>
@@ -91,7 +105,12 @@ export class Voicing {
     return Promise.resolve();
   }
 
-  speakText(text: string) {
+  // VOICE SELECTION: now returns whether speech was started
+  speakText(text: string): boolean {
+    // VOICE SELECTION (preview start/stop): any new utterance replaces a
+    // running preview, so report the preview as ended. Needed because engines
+    // don't reliably fire 'end' or 'error' on a cancelled utterance.
+    this._endPreview();
     // Keep the utterance around until it finishes playing so it doesn't
     // get GC'd
     this._utterance = new SpeechSynthesisUtterance(text);
@@ -99,7 +118,68 @@ export class Voicing {
     this._utterance.lang = this._lang;
     this._utterance.pitch = this._pitch;
     this._utterance.volume = this._volume;
+    // VOICE SELECTION: use the saved voice for this language, or a local
+    // System default. Previously no voice was set, so the browser chose one,
+    // possibly a remote (online) voice. Rate, pitch and volume are unchanged.
+    const { voice, canSpeak } = this.voiceResolution;
+    if (!canSpeak) {
+      // No local voice and no explicit remote choice: don't fall back to a
+      // remote voice silently (the Caption Settings dialog explains why)
+      return false;
+    }
+    if (voice) {
+      this._utterance.voice = voice;
+    }
     this._voice!.speak(this._utterance);
+    return true;
+  }
+
+  /** VOICE SELECTION: the voice the next utterance will use, and why. */
+  get voiceResolution(): VoiceResolution {
+    return resolveVoice(this._lang);
+  }
+
+  /**
+   * VOICE SELECTION: speak a voice preview with the current voice and speech
+   * settings. Cancels anything already speaking (including a previous
+   * preview) instead of queueing. Posts no notices, so it doesn't affect
+   * highlights or navigation; the next normal utterance cancels it in turn.
+   *
+   * VOICE SELECTION (preview start/stop): `onEnd` is called exactly once when this preview ends,
+   * whether it finishes, is stopped (stopPreview), or is replaced by any other
+   * speech. Returns false (and doesn't call onEnd) if nothing was spoken.
+   */
+  preview(text: string, onEnd?: () => void): boolean {
+    if (!this._voice) return false;
+    this.shutUp();
+    if (!this.speakText(text)) return false;
+    this._onPreviewEnd = onEnd ?? null;
+    const utterance = this._utterance!;
+    // 'error' covers engines that report cancellation as an 'interrupted' error.
+    // The identity check ignores late events from an utterance already replaced.
+    utterance.onend = utterance.onerror = () => {
+      if (this._utterance === utterance) this._endPreview();
+    };
+    return true;
+  }
+
+  /** VOICE SELECTION (preview start/stop): stop a running preview, if any. */
+  stopPreview() {
+    if (!this._onPreviewEnd) return;
+    this.shutUp();
+    this._endPreview();
+  }
+
+  /** VOICE SELECTION (preview start/stop): true while a preview is speaking. */
+  get isPreviewing(): boolean {
+    return !!this._onPreviewEnd;
+  }
+
+  // Clear the callback before calling it, so it runs at most once
+  protected _endPreview() {
+    const onEnd = this._onPreviewEnd;
+    this._onPreviewEnd = null;
+    onEnd?.();
   }
 
   /**
@@ -109,7 +189,8 @@ export class Voicing {
    * change _speakingCount, matching the speakText() call it replaces.
    */
   speakPhrase(text: string, highlight: Highlight) {
-    this.speakText(text);
+    // VOICE SELECTION: speakText() may refuse (see there)
+    if (!this.speakText(text)) return;
     this._utterance!.onboundary = (event: SpeechSynthesisEvent) => {
       if (event.name !== 'word') return;
       this._paraState.postNotice('wordStart', {

@@ -83,7 +83,10 @@ export class AudioPanel extends ControlPanelTabPanel {
         ${ref(this._captionsDialogRef)}
         id="captions-dialog"
         .globalState=${this._globalState}
+        .parachart=${this.controlPanel.paraChart}
       ></para-captions-dialog>
+      <!-- VOICE SELECTION: .parachart gives the dialog the chart's Voicing,
+           for the voice preview and the speech language -->
     `;
   }
 
