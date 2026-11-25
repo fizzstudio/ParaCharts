@@ -13,6 +13,32 @@ export interface WordHighlight {
   length: number;
 }
 
+// UTTERANCE GC FIX: strong references to every utterance from speak() until it
+// ends. Chrome can garbage-collect a SpeechSynthesisUtterance that nothing
+// references while it is still speaking; its event handlers then stop firing
+// (no more 'boundary', so phrase and word highlights freeze) although the audio
+// continues. Suspected cause of the intermittent "word highlight stops midway"
+// problem; see _ignore/ai/claude/word-highlight-stops-midway-report.md.
+// `_utterance` alone isn't enough: it holds only the latest utterance, and it
+// belongs to a Voicing instance, which is replaced if the aria-live region
+// reconnects (AriaLive.connectedCallback). This set is module-level, so it
+// outlives both.
+const liveUtterances = new Set<SpeechSynthesisUtterance>();
+// Safety cap in case an engine never fires 'end'/'error' for some utterance
+const MAX_LIVE_UTTERANCES = 50;
+
+function retainUtterance(utterance: SpeechSynthesisUtterance) {
+  liveUtterances.add(utterance);
+  // addEventListener, not onend/onerror, so other code can still assign those
+  const release = () => liveUtterances.delete(utterance);
+  utterance.addEventListener('end', release);
+  utterance.addEventListener('error', release);
+  if (liveUtterances.size > MAX_LIVE_UTTERANCES) {
+    // Sets iterate in insertion order, so this drops the oldest
+    liveUtterances.delete(liveUtterances.values().next().value!);
+  }
+}
+
 export class Voicing {
   protected _voice: SpeechSynthesis | null = null;
   protected _lang: string = 'en-US';
@@ -130,6 +156,8 @@ export class Voicing {
     if (voice) {
       this._utterance.voice = voice;
     }
+    // UTTERANCE GC FIX: keep it alive until it ends
+    retainUtterance(this._utterance);
     this._voice!.speak(this._utterance);
     return true;
   }
@@ -265,6 +293,9 @@ export class Voicing {
   shutUp() {
     if (this._voice && this._voice.speaking) {
       this._voice.cancel();
+      // UTTERANCE GC FIX: cancel() drops every queued and speaking utterance,
+      // and engines don't reliably fire 'end' for them, so release them all
+      liveUtterances.clear();
       this._highlightIndex = null;
       // WORD HIGHLIGHT: some engines don't fire 'end' on cancel(), so clear
       // the word mark explicitly
