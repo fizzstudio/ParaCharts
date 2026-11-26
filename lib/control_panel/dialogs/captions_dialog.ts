@@ -16,6 +16,8 @@ import * as ui from '@fizz/ui-components';
 import { html, css, nothing } from 'lit';
 import { property, customElement, state } from 'lit/decorators.js';
 import { ref, createRef } from 'lit/directives/ref.js';
+// VOICE SELECTION (reset display fix): see the note in _renderVoice()
+import { live } from 'lit/directives/live.js';
 
 const CAPTIONS_VIEW = 'controlPanel.tabs.audio.captions.dialog';
 
@@ -200,6 +202,12 @@ export class CaptionsDialog extends SettingControlContainer {
       status = key('voice_status_remote');
     }
 
+    // VOICE SELECTION (reset display fix): the language and voice options use
+    // the .selected property through live(), not the ?selected attribute.
+    // Once the user has picked an option, the browser ignores later changes
+    // to the selected attribute, so Reset to defaults cleared the saved prefs
+    // but the dropdowns kept showing the old picks. live() compares with the
+    // option's actual state, so reused <option> elements can't go stale.
     return html`
       <!-- VOICE SELECTION line 1: language, then voices in that language -->
       <div class="voice-row">
@@ -210,7 +218,7 @@ export class CaptionsDialog extends SettingControlContainer {
             @change=${(e: Event) => this._setLocale((e.target as HTMLSelectElement).value)}
           >
             ${voiceLocales(lang, voices).map(l => html`
-              <option value=${l} ?selected=${l === locale}>${languageName(l)}</option>
+              <option value=${l} .selected=${live(l === locale)}>${languageName(l)}</option>
             `)}
           </select>
         </label>
@@ -220,19 +228,19 @@ export class CaptionsDialog extends SettingControlContainer {
             ?disabled=${!isSupported}
             @change=${(e: Event) => this._setVoice((e.target as HTMLSelectElement).value)}
           >
-            <option value="" ?selected=${!savedURI}>${defaultLabel}</option>
+            <option value="" .selected=${live(!savedURI)}>${defaultLabel}</option>
             ${isSavedMissing ? html`
-              <option value=${savedURI} selected>${savedURI} (${key('voice_unavailable')})</option>
+              <option value=${savedURI} .selected=${live(true)}>${savedURI} (${key('voice_unavailable')})</option>
             ` : nothing}
             ${local.map(voice => html`
-              <option value=${voice.voiceURI} ?selected=${voice.voiceURI === savedURI}>
+              <option value=${voice.voiceURI} .selected=${live(voice.voiceURI === savedURI)}>
                 ${voiceDisplayName(voice)}
               </option>
             `)}
             ${remote.length ? html`
               <optgroup label=${key('voice_remote_group')}>
                 ${remote.map(voice => html`
-                  <option value=${voice.voiceURI} ?selected=${voice.voiceURI === savedURI}>
+                  <option value=${voice.voiceURI} .selected=${live(voice.voiceURI === savedURI)}>
                     ${voiceDisplayName(voice)}
                   </option>
                 `)}
@@ -277,6 +285,8 @@ export class CaptionsDialog extends SettingControlContainer {
   // and switches to that language's default voice (a local one; see
   // defaultVoiceForLocale). Saved per speech language. Doesn't speak.
   protected _setLocale(locale: string) {
+    // VOICE SELECTION (stop preview): changing the language changes the voice
+    this._stopPreview();
     const lang = this._speechLang;
     voicePrefs.setLocale(lang, locale);
     voicePrefs.set(lang, '');
@@ -286,6 +296,8 @@ export class CaptionsDialog extends SettingControlContainer {
   // Saved per speech language; applies to the next utterance. Selecting a
   // voice does not speak (use Preview).
   protected _setVoice(voiceURI: string) {
+    // VOICE SELECTION (stop preview): don't keep previewing the old voice
+    this._stopPreview();
     voicePrefs.set(this._speechLang, voiceURI);
     this.requestUpdate();
   }
@@ -298,14 +310,22 @@ export class CaptionsDialog extends SettingControlContainer {
     const voicing = this._voicing;
     if (!voicing) return;
     if (this._isPreviewing) {
-      voicing.stopPreview();
-      this._isPreviewing = false;
+      this._stopPreview();
       return;
     }
     const text = import.meta.env.DEV && this._devSampleIndex >= 0
       ? DEV_PREVIEW_SAMPLES[this._devSampleIndex][1]
       : this._globalState.l10n.localize('cpanel.tabs.audio.captions_dialog.voice_preview_text');
     this._isPreviewing = voicing.preview(text, () => this._isPreviewing = false);
+  }
+
+  // VOICE SELECTION (stop preview): stop a speaking preview and reset the
+  // button. Used by the toggle, voice and language changes, Reset to
+  // defaults, and closing the dialog. Does nothing if no preview is speaking
+  // (Voicing.stopPreview checks), so chart speech is never cut off.
+  protected _stopPreview() {
+    this._voicing?.stopPreview();
+    this._isPreviewing = false;
   }
 
   // -----------------------------------------------------------------------
@@ -359,6 +379,8 @@ export class CaptionsDialog extends SettingControlContainer {
     // local voice. These are device preferences in localStorage, not config,
     // so updateConfig() above doesn't cover them. Saved voices for other
     // speech languages are left alone. Doesn't speak.
+    // VOICE SELECTION (stop preview): the voice goes back to the default
+    this._stopPreview();
     const lang = this._speechLang;
     voicePrefs.setLocale(lang, '');
     voicePrefs.set(lang, '');
@@ -374,6 +396,9 @@ export class CaptionsDialog extends SettingControlContainer {
     this.requestUpdate();
     await this.updateComplete;
     await this._dialogRef.value!.show();
+    // VOICE SELECTION (stop preview): show() resolves when the dialog closes
+    // (OK, Escape or the close button), so a preview doesn't keep speaking
+    this._stopPreview();
   }
 }
 
