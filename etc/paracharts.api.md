@@ -368,9 +368,16 @@ export interface ConfigSettingMetadata<T extends ConfigControlType = ConfigContr
 
 // @public
 export interface ControlpanelCaptionConfig extends ConfigGroup {
+    fontFamily: string;
+    fontSize: number;
     hasBorder: boolean;
     isCaptionExternalWhenControlPanelClosed: boolean;
     isExplorationBarBeside: boolean;
+    letterSpacing: number;
+    lineHeight: number;
+    phraseHighlightColor: string;
+    wordHighlightColor: string;
+    wordSpacing: number;
 }
 
 // @public
@@ -623,7 +630,7 @@ export class ParaAPI {
     clearCrosshair(xAxis: string | number, yAxis: string | number): void;
     clearEastLegendHighlight(): void;
     clearHorizontalAxisHighlight(): void;
-    clearIntersectionHighlight(series1Index: number, series2Index: number, intersectionIndex?: number): void;
+    clearIntersectionHighlight(series1Key: string, series2Key: string, intersectionIndex?: number): void;
     clearNorthLegendHighlight(): void;
     clearRangeHighlight(startPortion: number, endPortion: number): void;
     // (undocumented)
@@ -652,7 +659,7 @@ export class ParaAPI {
     // Warning: (ae-forgotten-export) The symbol "ParaAPIHorizontalAxis" needs to be exported by the entry point index.d.ts
     getHorizontalAxis(): ParaAPIHorizontalAxis;
     // Warning: (ae-forgotten-export) The symbol "ParaAPIIntersection" needs to be exported by the entry point index.d.ts
-    getIntersection(series1Index: number, series2Index: number, intersectionIndex?: number): ParaAPIIntersection;
+    getIntersection(series1Key: string, series2Key: string, intersectionIndex?: number): ParaAPIIntersection;
     getJIM(): Manifest | undefined;
     // Warning: (ae-forgotten-export) The symbol "ParaAPILegend" needs to be exported by the entry point index.d.ts
     getLegend(location: CardinalDirection): ParaAPILegend;
@@ -670,7 +677,7 @@ export class ParaAPI {
     highlightCluster(clusterID: number): void;
     highlightEastLegend(): void;
     highlightHorizontalAxis(): void;
-    highlightIntersection(series1Index: number, series2Index: number, intersectionIndex?: number): void;
+    highlightIntersection(series1Key: string, series2Key: string, intersectionIndex?: number): void;
     highlightNorthLegend(): void;
     highlightRange(startPortion: number, endPortion: number): void;
     highlightSouthLegend(): void;
@@ -1159,6 +1166,7 @@ export interface UiConfig extends ConfigGroup {
     isLowVisionModeEnabled: boolean;
     isTourGuideEnabled: boolean;
     isTourGuidePaused: boolean;
+    isTourGuideWordHighlightEnabled: boolean;
     isVoicingEnabled: boolean;
     liveUpdateDelay: number;
     lowVisionDisableAnimations: boolean;

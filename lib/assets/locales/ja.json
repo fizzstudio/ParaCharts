@@ -27,6 +27,33 @@
                     "self_voicing": "自己発声",
                     "tour_guide": "ツアーガイド",
                     "pause_tour_guide": "ツアーガイドを再生/一時停止",
+                    "tour_guide_word_highlight": "単語ごとにハイライト",
+                    "captions": "キャプション",
+                    "captions_dialog": {
+                        "title": "キャプション設定",
+                        "phrase_highlight_color": "フレーズのハイライト色",
+                        "word_highlight_color": "単語のハイライト色",
+                        "font_family": "フォント",
+                        "font_size": "文字サイズ",
+                        "letter_spacing": "文字間隔",
+                        "word_spacing": "単語間隔",
+                        "line_spacing": "行間",
+                        "reset": "既定値に戻す",
+                        "voice": "音声",
+                        "voice_language": "言語",
+                        "voice_default": "既定",
+                        "voice_none_local": "この端末にはありません",
+                        "voice_unavailable": "利用不可",
+                        "voice_remote_group": "オンライン音声（テキストは外部サービスに送信されます）",
+                        "voice_preview": "音声をプレビュー",
+                        "voice_preview_stop": "プレビューを停止",
+                        "voice_preview_text": "この折れ線グラフは、1月から6月までの月間売上を示しています。売上は1月の12,500ドルから6月の18,200ドルに増加し、45.6パーセントの増加となりました。最も大きな月間の減少は3月に発生しました。",
+                        "voice_status_unsupported": "このブラウザでは音声合成を利用できません。",
+                        "voice_status_loading": "音声を読み込み中…",
+                        "voice_status_no_local": "端末上の音声がないため、自己発声は無音です。有効にするにはオンライン音声を選択してください。その場合、グラフのテキストは外部サービスに送信されます。",
+                        "voice_status_unavailable": "選択した音声はこの端末で利用できません。代わりに既定の音声を使用します。",
+                        "voice_status_remote": "これはオンライン音声です。グラフのテキストは外部の音声サービスに送信されます。"
+                    },
                     "speech_rate": "発声速度",
                     "announce_screen_reader": "スクリーンリーダーに発表"
                 },
@@ -56,7 +83,13 @@
                     "show_symbols": "記号を表示",
                     "show_popups": "ポップアップを表示",
                     "popup_settings": "ポップアップ設定",
-                    "font_settings": "フォント設定"
+                    "font_settings": "フォント設定",
+                    "font_dialog": {
+                        "title": "フォント設定",
+                        "reset": "既定値に戻す",
+                        "font_family": "フォント",
+                        "font_scale": "文字の倍率"
+                    }
                 },
                 "annotations": {
                     "title": "注釈",

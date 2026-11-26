@@ -21,6 +21,93 @@
             "default": true,
             "control": "checkbox",
             "parentView": "controlPanel.tabs.controls.dialog.settings"
+        },
+        "fontFamily": {
+            "label": "cpanel.tabs.audio.captions_dialog.font_family",
+            "description": "Caption font family; at the default, page CSS --paracharts-caption-font-family applies",
+            "type": "string",
+            "default": "Atkinson Hyperlegible",
+            "control": "dropdown",
+            "controlOptions": {
+                "options": ["Atkinson Hyperlegible", "Arial", "Helvetica", "Verdana", "Tahoma", "Calibri", "Times New Roman", "Georgia", "Courier", "Comic Sans"]
+            },
+            "panel": "audio",
+            "parentView": "controlPanel.tabs.audio.captions.dialog",
+            "keywords": ["caption", "font"]
+        },
+        "fontSize": {
+            "label": "cpanel.tabs.audio.captions_dialog.font_size",
+            "description": "Caption font size, in em; at the default, page CSS --paracharts-caption-font-size applies",
+            "type": "number",
+            "default": 1,
+            "control": "slider",
+            "controlOptions": {
+                "min": 0.75,
+                "max": 2,
+                "step": 0.05,
+                "showValue": true
+            },
+            "panel": "audio",
+            "parentView": "controlPanel.tabs.audio.captions.dialog",
+            "keywords": ["caption", "font"]
+        },
+        "letterSpacing": {
+            "label": "cpanel.tabs.audio.captions_dialog.letter_spacing",
+            "description": "Caption letter spacing, in em; at the default, page CSS --paracharts-caption-letter-spacing applies",
+            "type": "number",
+            "default": 0,
+            "control": "slider",
+            "controlOptions": {
+                "min": 0,
+                "max": 0.3,
+                "step": 0.01,
+                "showValue": true
+            },
+            "panel": "audio",
+            "parentView": "controlPanel.tabs.audio.captions.dialog",
+            "keywords": ["caption", "spacing"]
+        },
+        "wordSpacing": {
+            "label": "cpanel.tabs.audio.captions_dialog.word_spacing",
+            "description": "Caption word spacing, in em; at the default, page CSS --paracharts-caption-word-spacing applies",
+            "type": "number",
+            "default": 0,
+            "control": "slider",
+            "controlOptions": {
+                "min": 0,
+                "max": 1,
+                "step": 0.05,
+                "showValue": true
+            },
+            "panel": "audio",
+            "parentView": "controlPanel.tabs.audio.captions.dialog",
+            "keywords": ["caption", "spacing"]
+        },
+        "lineHeight": {
+            "label": "cpanel.tabs.audio.captions_dialog.line_spacing",
+            "description": "Caption line spacing (unitless line height); at the default, page CSS --paracharts-caption-line-height applies",
+            "type": "number",
+            "default": 1.2,
+            "control": "slider",
+            "controlOptions": {
+                "min": 1,
+                "max": 3,
+                "step": 0.1,
+                "showValue": true
+            },
+            "panel": "audio",
+            "parentView": "controlPanel.tabs.audio.captions.dialog",
+            "keywords": ["caption", "spacing"]
+        },
+        "phraseHighlightColor": {
+            "description": "Tour Guide phrase highlight color; empty means page CSS --paracharts-caption-phrase-highlight-color, else the light theme color",
+            "type": "string",
+            "default": ""
+        },
+        "wordHighlightColor": {
+            "description": "Tour Guide word highlight color; empty means page CSS --paracharts-caption-word-highlight-color, else the theme color",
+            "type": "string",
+            "default": ""
         }
     }
 }

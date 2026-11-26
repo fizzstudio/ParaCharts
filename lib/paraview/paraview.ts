@@ -136,6 +136,9 @@ export class ParaView extends ParaComponent implements ViewContext {
       svg.canvas {
         width: var(--chart-width);
         height: var(--chart-height);
+        /* FONT UNIFICATION (Plan A): chart text family, set on para-chart's
+           :host (parachart.ts); was an inline style from _rootStyle() */
+        font-family: var(--chart-font-family);
       }
       svg.scalable {
         width: 100%;
@@ -1273,16 +1276,12 @@ export class ParaView extends ParaComponent implements ViewContext {
   }
 
   protected _rootStyle() {
-    const fontFamilyClasses: Record<string, string> = {
-      'Helvetica': 'sans-serif',
-      'Verdana': 'sans-serif',
-      'Tahoma': 'sans-serif',
-      'Times New Roman': 'serif',
-      'Georgia': 'serif'
-    };
+    // FONT UNIFICATION (Plan A): font-family is no longer set inline here. The
+    // old fontFamilyClasses table had no entry for the default (Atkinson
+    // Hyperlegible), giving "Atkinson Hyperlegible,undefined". The family now
+    // comes from --chart-font-family (parachart.ts, using lib/common/fonts.ts),
+    // applied by the `svg.canvas` rule in static styles.
     const style: { [prop: string]: any } = {
-      fontFamily: this._paraState.config.chart.fontFamily
-        + ',' + fontFamilyClasses[this._paraState.config.chart.fontFamily],
       fontWeight: this._paraState.config.chart.fontWeight
     };
     if (this._isFullscreen) {

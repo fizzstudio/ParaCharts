@@ -52,7 +52,7 @@
             "default": "Atkinson Hyperlegible",
             "control": "dropdown",
             "controlOptions": {
-                "options": ["Helvetica", "Verdana", "Tahoma", "Times New Roman", "Georgia", "Atkinson Hyperlegible"]
+                "options": ["Atkinson Hyperlegible", "Arial", "Helvetica", "Verdana", "Tahoma", "Calibri", "Times New Roman", "Georgia", "Courier", "Comic Sans"]
             },
             "panel": "chart",
             "parentView": "controlPanel.tabs.chart.font.dialog"

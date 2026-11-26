@@ -32,6 +32,33 @@
                     "self_voicing": "self-voicing",
                     "tour_guide": "tour guide",
                     "pause_tour_guide": "play/pause tour guide",
+                    "tour_guide_word_highlight": "highlight each word",
+                    "captions": "captions",
+                    "captions_dialog": {
+                        "title": "Caption Settings",
+                        "phrase_highlight_color": "phrase highlight color",
+                        "word_highlight_color": "word highlight color",
+                        "font_family": "font family",
+                        "font_size": "font size",
+                        "letter_spacing": "letter spacing",
+                        "word_spacing": "word spacing",
+                        "line_spacing": "line spacing",
+                        "reset": "reset to defaults",
+                        "voice": "voice",
+                        "voice_language": "language",
+                        "voice_default": "Default",
+                        "voice_none_local": "none on this device",
+                        "voice_unavailable": "unavailable",
+                        "voice_remote_group": "Online voices (text is sent to an external service)",
+                        "voice_preview": "preview voice",
+                        "voice_preview_stop": "stop preview",
+                        "voice_preview_text": "This line chart shows monthly revenue from January to June. Revenue increased from twelve thousand five hundred dollars in January to eighteen thousand two hundred dollars in June, an increase of forty-five point six percent. The largest monthly decline occurred in March.",
+                        "voice_status_unsupported": "Speech synthesis isn't available in this browser.",
+                        "voice_status_loading": "Loading voices…",
+                        "voice_status_no_local": "No on-device voice is available, so self-voicing is silent. Choose an online voice to enable it; chart text will then be sent to an external service.",
+                        "voice_status_unavailable": "The selected voice isn't available on this device; using the default voice instead.",
+                        "voice_status_remote": "This is an online voice: chart text will be sent to an external speech service."
+                    },
                     "speech_rate": "speech rate",
                     "announce_screen_reader": "announce to screen reader",
                     "soni_dialog": {
@@ -121,6 +148,8 @@
                         "crosshair_follow": "Track crosshair to pointer?"
                     },
                     "font_dialog": {
+                        "title": "Font Settings",
+                        "reset": "reset to defaults",
                         "font_family": "font family",
                         "font_scale": "font scale"
                     },

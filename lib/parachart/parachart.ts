@@ -40,6 +40,10 @@ import '../paraview';
 import '../components/data_table';
 import '../control_panel';
 import '../control_panel/caption';
+// FONT UNIFICATION (Plan A): one font-stack table for chart and caption text
+// (replaces CAPTION_FONT_STACKS from ../control_panel/caption)
+import { fontStack, primaryFamily } from '../common/fonts';
+import { defaultConfig } from '../config/config_defaults';
 import { SlotLoader } from '../loader/slotloader';
 import { TourBus } from './tour_bus';
 import hyperFont from '../assets/Atkinson-Hyperlegible-Regular-102a.woff2';
@@ -300,6 +304,22 @@ export class ParaChart extends ParaComponent {
       ...this.shadowRoot!.adoptedStyleSheets,
       this._styleManager.stylesheet
     ];
+    // CAPTIONS DIALOG: caption typography and highlight colors. While a
+    // setting is at its default, the property defers to page CSS
+    // (--paracharts-caption-<name>) and then to the built-in default; once the
+    // user (Captions dialog) or config changes it, the setting wins over page
+    // CSS. NB: choosing the default value again hands control back to CSS.
+    const captionConfig = () => this._paraState.config.controlPanel.caption;
+    const captionDefaults = defaultConfig.controlPanel.caption;
+    const captionVar = <K extends keyof typeof captionDefaults>(
+      key: K, name: string, cssDefault: string,
+      format: (value: (typeof captionDefaults)[K]) => string = value => `${value}`
+    ) => () => {
+      const value = captionConfig()[key];
+      return value === captionDefaults[key]
+        ? `var(--paracharts-caption-${name}, ${cssDefault})`
+        : format(value);
+    };
     const hostDeclarations: Record<string, StyleManagerDeclarationValue> = {
       '--background-color': 'white',
       '--fizz-theme-color': 'var(--paracharts-theme-color, navy)',
@@ -324,6 +344,17 @@ export class ParaChart extends ParaComponent {
         : 'none',
       '--chart-width': () => `${this._paraState.config.chart.width}px`,
       '--chart-height': () => `${this._paraState.config.chart.height}px`,
+      // FONT UNIFICATION (Plan A): chart text family as a custom property,
+      // consumed by `svg.canvas` in ParaView's static styles (it used to be an
+      // inline style from ParaView._rootStyle()). Same precedence as the
+      // caption properties: at the default, page CSS
+      // --paracharts-chart-font-family applies; otherwise the setting wins.
+      '--chart-font-family': () => {
+        const family = this._paraState.config.chart.fontFamily;
+        return family === defaultConfig.chart.fontFamily
+          ? `var(--paracharts-chart-font-family, ${fontStack(family)})`
+          : fontStack(family);
+      },
       '--chart-font-scale': () => this._paraState.config.chart.fontScale,
       '--chart-title-font-size': () => this._paraState.config.chart.title.fontSize,
       '--chart-subtitle-font-size': () => this._paraState.config.chart.subtitle.fontSize,
@@ -336,6 +367,19 @@ export class ParaChart extends ParaComponent {
       '--bar-label-font-size': () => this._paraState.config.type.bar.labelFontSize,
       '--column-label-font-size': () => this._paraState.config.type.column.labelFontSize,
       '--waterfall-label-font-size': () => this._paraState.config.type.waterfall.labelFontSize,
+      // CAPTIONS DIALOG: consumed by ParaCaptionBox styles (caption.ts)
+      // FONT UNIFICATION (Plan A): stacks now come from lib/common/fonts.ts
+      '--caption-font-family': captionVar('fontFamily', 'font-family',
+        fontStack(captionDefaults.fontFamily), fontStack),
+      '--caption-font-size': captionVar('fontSize', 'font-size', '1em', value => `${value}em`),
+      '--caption-letter-spacing': captionVar('letterSpacing', 'letter-spacing', 'normal', value => `${value}em`),
+      '--caption-word-spacing': captionVar('wordSpacing', 'word-spacing', 'normal', value => `${value}em`),
+      '--caption-line-height': captionVar('lineHeight', 'line-height', 'normal'),
+      '--caption-phrase-highlight-color': captionVar('phraseHighlightColor', 'phrase-highlight-color',
+        'var(--fizz-theme-color-light)'),
+      '--caption-word-highlight-color': captionVar('wordHighlightColor', 'word-highlight-color',
+        'var(--fizz-theme-color)'),
+      '--caption-word-highlight-text-color': 'var(--paracharts-caption-word-highlight-text-color, white)',
       'display': 'block',
       'font-family': '"Trebuchet MS", Helvetica, sans-serif',
       'font-size': 'var(--chart-view-font-size, 1rem)'
@@ -357,10 +401,15 @@ export class ParaChart extends ParaComponent {
     // Ensure webfonts are actually loaded before initial measurements.
     // Use a small timeout as a safety cap so we don't hang forever.
     if (document.fonts && document.fonts.load) {
-      const family = this._paraState.config.chart.fontFamily;
+      // FONT UNIFICATION (Plan A): load the primary family of each stack
+      // (e.g. "Comic Sans MS" for "Comic Sans"), and the caption family too,
+      // not only the chart family
+      const family = primaryFamily(this._paraState.config.chart.fontFamily);
+      const captionFamily = primaryFamily(this._paraState.config.controlPanel.caption.fontFamily);
       const loads = [
         // representative sizes so glyph metrics are available
         document.fonts.load(`16px "${family}"`).catch(() => { }),
+        document.fonts.load(`16px "${captionFamily}"`).catch(() => { }),
         document.fonts.load('16px "Atkinson Hyperlegible"').catch(() => { }),
         document.fonts.load('36pt "Braille36 US"').catch(() => { })
       ];

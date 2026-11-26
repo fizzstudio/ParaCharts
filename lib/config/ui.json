@@ -34,6 +34,17 @@
             "parentView": "controlPanel.tabs.audio.narrative",
             "keywords": ["audio", "tourguide"]
         },
+        "isTourGuideWordHighlightEnabled": {
+            "label": "cpanel.tabs.audio.tour_guide_word_highlight",
+            "description": "Highlight each word in the caption as the Tour Guide speaks it",
+            "type": "boolean",
+            "default": true,
+            "control": "checkbox",
+            "advanced": false,
+            "panel": "audio",
+            "parentView": "controlPanel.tabs.audio.captions.dialog",
+            "keywords": ["audio", "tourguide", "highlight"]
+        },
         "isAnnouncementEnabled": {
             "label": "cpanel.tabs.audio.announce_screen_reader",
             "description": "Enable aria-live announcements",

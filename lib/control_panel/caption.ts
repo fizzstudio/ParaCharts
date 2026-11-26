@@ -8,8 +8,14 @@ import { Highlight, HighlightedSummary } from '@fizz/chartsignal-internal';
 import { ParaComponent } from '../components';
 import { ParaChart } from '../parachart/parachart';
 import { ConfigSetting } from '../config/config_types';
+// WORD HIGHLIGHT: payload type of the 'wordStart' notice
+import { type WordHighlight } from '../components/aria_live/voicing';
 
 type HoverListener = (event: PointerEvent) => void;
+
+// FONT UNIFICATION (Plan A): CAPTION_FONT_STACKS was here. It moved to
+// FONT_STACKS in lib/common/fonts.ts, which chart text and caption text now
+// share.
 
 @customElement('para-caption-box')
 export class ParaCaptionBox extends ParaComponent {
@@ -25,6 +31,11 @@ export class ParaCaptionBox extends ParaComponent {
   protected _spans: HTMLSpanElement[] = [];
   protected _isEBarVisible = false;
   protected _captionRef = createRef<HTMLElement>();
+  // WORD HIGHLIGHT: the Range this caption box contributes to the shared
+  // 'para-tour-word' highlight. CSS.highlights is document-wide, so each
+  // caption box adds and removes only its own range rather than replacing the
+  // registry entry (keeps multiple charts on a page independent).
+  protected _wordRange: Range | null = null;
 
   static styles = [
     css`
@@ -37,6 +48,17 @@ export class ParaCaptionBox extends ParaComponent {
       }
       #caption {
         padding: 0.25rem;
+      }
+      /* CAPTIONS DIALOG: caption typography. The --caption-* properties are
+         set on para-chart's :host by ParaChart (from controlPanel.caption.*),
+         deferring to page CSS --paracharts-caption-* while a setting is at
+         its default. */
+      #caption, #exploration-bar-text {
+        font-family: var(--caption-font-family);
+        font-size: var(--caption-font-size);
+        letter-spacing: var(--caption-letter-spacing);
+        word-spacing: var(--caption-word-spacing);
+        line-height: var(--caption-line-height);
       }
       #caption.solo {
         grid-column: 1 / 3
@@ -54,7 +76,8 @@ export class ParaCaptionBox extends ParaComponent {
         align-self: flex-start;
       }
       #caption span.highlight {
-        background-color: var(--fizz-theme-color-light);
+        /* CAPTIONS DIALOG: was var(--fizz-theme-color-light); now configurable */
+        background-color: var(--caption-phrase-highlight-color, var(--fizz-theme-color-light));
       }
       #exploration-bar span.highlight {
         background-color: white;
@@ -62,6 +85,17 @@ export class ParaCaptionBox extends ParaComponent {
       #exploration-bar.hidden {
         /* Using this rather than 'hidden' attr to override flex display */
         display: none;
+      }
+      /* WORD HIGHLIGHT: per-word Tour Guide mark, drawn with the CSS Custom
+         Highlight API. ::highlight() supports only color, background-color,
+         text-decoration, text-shadow and a few others.
+         CAPTIONS DIALOG: colors now come from --caption-word-highlight-color
+         and --caption-word-highlight-text-color, set by ParaChart (page CSS:
+         --paracharts-caption-word-highlight-color / -text-color). This
+         replaces the earlier --paracharts-tour-word-highlight-* names. */
+      ::highlight(para-tour-word) {
+        background-color: var(--caption-word-highlight-color, var(--fizz-theme-color, navy));
+        color: var(--caption-word-highlight-text-color, white);
       }
     `
   ];
@@ -85,6 +119,8 @@ export class ParaCaptionBox extends ParaComponent {
     super.disconnectedCallback();
     this._globalStateChangeUnsub();
     this._paraStateChangeUnsub();
+    // WORD HIGHLIGHT: don't leave this box's Range in the document-wide registry
+    this._clearWord();
   }
 
   protected updated(_changedProperties: PropertyValues): void {
@@ -120,6 +156,12 @@ export class ParaCaptionBox extends ParaComponent {
       this._prevSpanIdx = 0;
       this._highlightManualOverride = false;
       this._lastSpans.clear();
+      // WORD HIGHLIGHT
+      this._clearWord();
+    }
+    // WORD HIGHLIGHT: turning the word highlight off removes any current mark
+    if (path === 'ui.isTourGuideWordHighlightEnabled' && !newValue) {
+      this._clearWord();
     }
   }
 
@@ -137,11 +179,21 @@ export class ParaCaptionBox extends ParaComponent {
           }
         }
       } else if (key === 'landmarkEnd') {
+        // WORD HIGHLIGHT: the word mark always goes when speech ends, even if
+        // the phrase stays lit under manual override
+        this._clearWord();
         if (!this._highlightManualOverride) {
           for (const span of this._lastSpans) {
             span.classList.remove('highlight');
           }
         }
+      // WORD HIGHLIGHT: mark/unmark the word currently being spoken
+      } else if (key === 'wordStart') {
+        if (this._paraState.config.ui.isTourGuideWordHighlightEnabled) {
+          this._showWord(value as WordHighlight);
+        }
+      } else if (key === 'wordEnd') {
+        this._clearWord();
       }
     }
   }
@@ -174,7 +226,9 @@ export class ParaCaptionBox extends ParaComponent {
       //const msg = getMsg(idx);
       const msg = this._captionRef.value!.firstElementChild!.children[idx].textContent;
       voicing.shutUp();
-      voicing.speakText(msg);
+      // WORD HIGHLIGHT: was speakText(msg); speakPhrase also posts per-word
+      // notices. msg is this span's textContent, so offsets match the DOM.
+      voicing.speakPhrase(msg!, highlight);
     }
     this._paraState.postNotice('landmarkStart', highlight);
   }
@@ -182,6 +236,59 @@ export class ParaCaptionBox extends ParaComponent {
   clearSpanHighlights() {
     for (const span of this.getSpans()) {
       span.classList.remove('highlight');
+    }
+  }
+
+  // WORD HIGHLIGHT: the shared highlight object, created on first use.
+  // CSS Custom Highlight API: Chrome/Edge 105+, Safari 17.2+, Firefox 140+;
+  // returns null where unsupported, leaving only the phrase highlight.
+  // NB: globalThis.Highlight because Highlight from chartsignal shadows the DOM class.
+  protected _wordHighlight(): globalThis.Highlight | null {
+    if (!('highlights' in CSS)) return null;
+    let hl = CSS.highlights.get('para-tour-word');
+    if (!hl) {
+      hl = new globalThis.Highlight();
+      CSS.highlights.set('para-tour-word', hl);
+    }
+    return hl;
+  }
+
+  // WORD HIGHLIGHT: mark one word inside the caption span for its phrase
+  protected _showWord(word: WordHighlight) {
+    this._clearWord();
+    const hl = this._wordHighlight();
+    if (!hl || word.length <= 0) return;
+    const span = Array.from(this._captionRef.value?.querySelectorAll('span') ?? [])
+      .find(s => s.dataset.phrasecode === `${word.phrasecode}`);
+    if (!span) return;
+    // Walk the span's text nodes to turn phrase offsets into a DOM Range;
+    // the word may cross text nodes if the phrase has inline markup
+    const walker = document.createTreeWalker(span, NodeFilter.SHOW_TEXT);
+    const range = document.createRange();
+    const end = word.offset + word.length;
+    let pos = 0;
+    let isStartSet = false;
+    for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+      const len = node.textContent!.length;
+      if (!isStartSet && word.offset < pos + len) {
+        range.setStart(node, word.offset - pos);
+        isStartSet = true;
+      }
+      if (isStartSet && end <= pos + len) {
+        range.setEnd(node, end - pos);
+        hl.add(range);
+        this._wordRange = range;
+        return;
+      }
+      pos += len;
+    }
+  }
+
+  // WORD HIGHLIGHT: remove only this caption box's range from the shared highlight
+  protected _clearWord() {
+    if (this._wordRange) {
+      this._wordHighlight()?.delete(this._wordRange);
+      this._wordRange = null;
     }
   }
 
