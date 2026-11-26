@@ -458,7 +458,7 @@ export class PopupSettingsDialog extends ParaComponent {
     /**
      * Close button text.
      */
-    @property() btnText = 'Okay';
+    @property() btnText = 'OK';
 
     static styles = css`
     fizz-dialog {

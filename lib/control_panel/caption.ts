@@ -13,21 +13,9 @@ import { type WordHighlight } from '../components/aria_live/voicing';
 
 type HoverListener = (event: PointerEvent) => void;
 
-/**
- * CAPTIONS DIALOG: CSS font stacks for the caption font family options
- * (controlPanel.caption.fontFamily). Used by ParaChart to set
- * --caption-font-family.
- */
-export const CAPTION_FONT_STACKS: Record<string, string> = {
-  'Atkinson Hyperlegible': '"Atkinson Hyperlegible", sans-serif',
-  'Arial': 'Arial, Helvetica, sans-serif',
-  'Helvetica': 'Helvetica, Arial, sans-serif',
-  'Verdana': 'Verdana, sans-serif',
-  'Calibri': 'Calibri, Carlito, sans-serif',
-  'Courier': '"Courier New", Courier, monospace',
-  'Georgia': 'Georgia, serif',
-  'Comic Sans': '"Comic Sans MS", "Comic Sans", "Comic Neue", cursive',
-};
+// FONT UNIFICATION (Plan A): CAPTION_FONT_STACKS was here. It moved to
+// FONT_STACKS in lib/common/fonts.ts, which chart text and caption text now
+// share.
 
 @customElement('para-caption-box')
 export class ParaCaptionBox extends ParaComponent {

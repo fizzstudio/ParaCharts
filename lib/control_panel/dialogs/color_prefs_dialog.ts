@@ -26,7 +26,7 @@ export class ColorPrefsDialog extends SettingControlContainer {
 
   protected _dialogRef = createRef<ui.Dialog>();
 
-  @property() btnText = 'Okay';
+  @property() btnText = 'OK';
 
   static styles = css`
     fizz-dialog {

@@ -558,7 +558,9 @@ export class DocumentView extends Container(View) {
 
   settingDidChange(path: string, oldValue?: ConfigSetting, newValue?: ConfigSetting) {
     this.paraview.paraState.chartInfo.settingDidChange(path, oldValue, newValue);
-    if (['chart.width', 'chart.height', 'chart.fontScale', 'chart.isTactileEnabled',
+    // FONT UNIFICATION (Plan A): 'chart.fontFamily' added. Label sizes are
+    // measured in JS, so a new family needs the same rebuild as a new scale.
+    if (['chart.width', 'chart.height', 'chart.fontScale', 'chart.fontFamily', 'chart.isTactileEnabled',
       'chart.tactileBrailleGrade', 'chart.tactileLabelMode', 'chart.pageSize',
       'chart.pageMarginLeft', 'chart.pageMarginRight', 'chart.pageMarginTop', 'chart.pageMarginBottom'
     ].includes(path)) {

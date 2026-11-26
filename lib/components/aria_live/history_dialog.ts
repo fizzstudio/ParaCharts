@@ -11,7 +11,7 @@ export class AriaLiveHistoryDialog extends ParaComponent {
   /**
    * Close button text.
    */
-  @property() btnText = 'Okay';
+  @property() btnText = 'OK';
 
   /**
    * Status bar history.

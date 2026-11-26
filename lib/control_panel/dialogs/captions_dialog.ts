@@ -47,7 +47,7 @@ export class CaptionsDialog extends SettingControlContainer {
   /**
    * Close button text.
    */
-  @property() btnText = 'Okay';
+  @property() btnText = 'OK';
 
   // VOICE SELECTION: set by the Audio tab, to reach the chart's Voicing
   @property({ attribute: false }) parachart?: ParaChart;

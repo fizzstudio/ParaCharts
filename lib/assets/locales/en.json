@@ -148,6 +148,8 @@
                         "crosshair_follow": "Track crosshair to pointer?"
                     },
                     "font_dialog": {
+                        "title": "Font Settings",
+                        "reset": "reset to defaults",
                         "font_family": "font family",
                         "font_scale": "font scale"
                     },

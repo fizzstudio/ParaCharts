@@ -29,7 +29,7 @@
             "default": "Atkinson Hyperlegible",
             "control": "dropdown",
             "controlOptions": {
-                "options": ["Atkinson Hyperlegible", "Arial", "Helvetica", "Verdana", "Calibri", "Courier", "Georgia", "Comic Sans"]
+                "options": ["Atkinson Hyperlegible", "Arial", "Helvetica", "Verdana", "Tahoma", "Calibri", "Times New Roman", "Georgia", "Courier", "Comic Sans"]
             },
             "panel": "audio",
             "parentView": "controlPanel.tabs.audio.captions.dialog",

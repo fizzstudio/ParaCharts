@@ -83,7 +83,13 @@
                     "show_symbols": "記号を表示",
                     "show_popups": "ポップアップを表示",
                     "popup_settings": "ポップアップ設定",
-                    "font_settings": "フォント設定"
+                    "font_settings": "フォント設定",
+                    "font_dialog": {
+                        "title": "フォント設定",
+                        "reset": "既定値に戻す",
+                        "font_family": "フォント",
+                        "font_scale": "文字の倍率"
+                    }
                 },
                 "annotations": {
                     "title": "注釈",
